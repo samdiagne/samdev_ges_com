@@ -4,6 +4,12 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>@yield('title', 'Al-Adab Tech Store')</title>
+    @php $faviconLogo = App\Models\CompanySetting::getSettings()->logo; @endphp
+    @if($faviconLogo && file_exists(storage_path('app/public/' . $faviconLogo)))
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ Storage::url($faviconLogo) }}"/>
+        <link rel="icon" type="image/png" sizes="64x64" href="{{ Storage::url($faviconLogo) }}"/>
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ Storage::url($faviconLogo) }}"/>
+    @endif
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
