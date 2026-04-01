@@ -26,6 +26,17 @@
         <div class="absolute bottom-0 left-0 w-64 h-64 rounded-full pointer-events-none"
              style="background: radial-gradient(circle, rgba(245,168,0,0.12), transparent 70%); transform: translate(-30%, 30%);"></div>
 
+        {{-- Lien retour --}}
+        <a href="{{ url('/') }}"
+           class="absolute top-5 left-6 z-20 inline-flex items-center gap-1.5 text-xs transition-colors"
+           style="color: #94a3b8;"
+           onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='#94a3b8'">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Retour à la boutique
+        </a>
+
         <div class="relative z-10 flex flex-col justify-between h-full p-10 xl:p-14">
 
             {{-- Logo --}}
