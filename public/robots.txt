@@ -1,0 +1,26 @@
+User-agent: *
+Allow: /shop/
+Allow: /shop/catalogue
+Allow: /shop/produit/
+Allow: /shop/faq
+Allow: /shop/contact
+Allow: /shop/cgv
+
+Disallow: /dashboard
+Disallow: /caisse/
+Disallow: /produits/
+Disallow: /categories/
+Disallow: /clients/
+Disallow: /fournisseurs/
+Disallow: /commandes/
+Disallow: /factures/
+Disallow: /devis/
+Disallow: /rapports/
+Disallow: /etats/
+Disallow: /parametres/
+Disallow: /utilisateurs/
+Disallow: /compte/connexion
+Disallow: /compte/inscription
+Disallow: /admin/
+
+Sitemap: https://aladab-tech.com/sitemap.xml

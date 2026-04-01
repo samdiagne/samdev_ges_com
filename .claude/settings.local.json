@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -ri \"paydunya\\\\|smooth\" C:/xampp/htdocs/al-adab-tech/vendor --include=*.php -l)",
+      "WebSearch",
+      "Bash(php artisan:*)",
+      "Bash(find /c/xampp/htdocs/al-adab-tech -type f -name *EspaceClient* -o -name *Compte*)",
+      "Bash(find /c/xampp/htdocs/al-adab-tech/resources/views -type f -name *auth* -o -name *login* -o -name *register*)",
+      "Bash(grep -r \"compte\\\\|EspaceClient\\\\|mes-commandes\" /c/xampp/htdocs/al-adab-tech --include=*.blade.php --include=*.php)",
+      "Bash(grep -n \"user_id\" C:/xampp/htdocs/al-adab-tech/database/migrations/*customers*)",
+      "Bash(xargs sed:*)",
+      "Bash(xargs perl:*)",
+      "Bash(npm run:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(ls C:/xampp/htdocs/al-adab-tech/tailwind.config.*)",
+      "Bash(ls C:/xampp/htdocs/al-adab-tech/vite.config.*)"
+    ]
+  }
+}

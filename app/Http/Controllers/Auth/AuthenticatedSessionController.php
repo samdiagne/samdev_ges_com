@@ -1,0 +1,77 @@
+<?php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\LoginRequest;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
+
+class AuthenticatedSessionController extends Controller
+{
+    /**
+     * Display the login view.
+     */
+    public function create(): View
+    {
+        return view('auth.login');
+    }
+
+    /**
+     * Handle an incoming authentication request.
+     */
+    public function store(LoginRequest $request): RedirectResponse
+    {
+        $request->authenticate();
+        $request->session()->regenerate();
+
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        // Vérifier que le compte est actif
+        if (!$user->is_active) {
+            Auth::logout();
+            return redirect()->route('login')
+                ->withErrors(['email' => 'Votre compte a été désactivé.']);
+        }
+
+        // Redirection selon le rôle
+        if ($user->hasRole('admin')) {
+            return redirect()->route('dashboard')
+                ->with('success', 'Bienvenue ' . $user->name . ' !');
+        }
+
+        if ($user->hasRole('gestionnaire')) {
+            return redirect()->route('caisse.pos')
+                ->with('success', 'Bienvenue ' . $user->name . ' !');
+        }
+
+        // Client → espace client
+        // Ne pas utiliser intended() : évite la redirection vers des routes admin
+        // si l'URL était stockée en session depuis une visite précédente
+        $intended = session()->pull('url.intended', '');
+        $safePath = parse_url($intended, PHP_URL_PATH) ?? '';
+        $destination = str_starts_with($safePath, '/compte/')
+            ? $intended
+            : route('compte.commandes');
+
+        return redirect($destination)
+            ->with('success', 'Bienvenue ' . $user->name . ' !');
+    }
+
+    /**
+     * Destroy an authenticated session.
+     */
+    public function destroy(Request $request): RedirectResponse
+    {
+        Auth::guard('web')->logout();
+
+        $request->session()->invalidate();
+
+        $request->session()->regenerateToken();
+
+        return redirect('/');
+    }
+}
