@@ -318,14 +318,39 @@
                         placeholder="Nom du client *"
                         class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm
                                 bg-gray-50 focus:outline-none focus:border-primary transition-colors"/>
-                    <input wire:model="quickClientPhone"
+                    <input wire:model.live.debounce.400ms="quickClientPhone"
                         type="text"
                         placeholder="Téléphone / WhatsApp"
-                        class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm
-                                bg-gray-50 focus:outline-none focus:border-primary transition-colors"/>
-                    <p class="text-xs text-gray-400">
-                        💡 Une fiche client sera créée automatiquement
-                    </p>
+                        class="w-full px-3 py-2 border rounded-xl text-sm
+                                focus:outline-none transition-colors
+                                {{ $duplicateCustomer ? 'border-orange-300 bg-orange-50' : 'border-gray-200 bg-gray-50 focus:border-primary' }}"/>
+
+                    @if($duplicateCustomer)
+                        <div class="bg-orange-50 border border-orange-200 rounded-xl p-3">
+                            <p class="text-xs font-medium text-orange-700 mb-2">
+                                ⚠️ Ce numéro existe déjà :
+                            </p>
+                            <button wire:click="selectCustomer({{ $duplicateCustomer['id'] }}, '{{ addslashes($duplicateCustomer['name']) }}')"
+                                    class="w-full flex items-center gap-2 bg-white border border-orange-200
+                                           rounded-lg px-3 py-2 hover:bg-orange-100 transition-colors text-left">
+                                <div class="w-7 h-7 bg-orange-100 rounded-full flex items-center
+                                            justify-center text-xs font-bold text-orange-600 flex-shrink-0">
+                                    {{ strtoupper(substr($duplicateCustomer['name'], 0, 2)) }}
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-semibold text-dark truncate">
+                                        {{ $duplicateCustomer['name'] }}
+                                    </p>
+                                    <p class="text-xs text-gray-400">{{ $duplicateCustomer['phone'] }}</p>
+                                </div>
+                                <span class="text-xs text-primary font-medium flex-shrink-0">Sélectionner</span>
+                            </button>
+                        </div>
+                    @else
+                        <p class="text-xs text-gray-400">
+                            💡 Une fiche client sera créée automatiquement
+                        </p>
+                    @endif
                 </div>
 
             @else

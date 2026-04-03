@@ -24,9 +24,10 @@ class PointOfSale extends Component
     public string $selectedCustomerName = '';
 
     // Client rapide (si pas dans la base)
-    public string $quickClientName  = '';
-    public string $quickClientPhone = '';
-    public bool   $useQuickClient   = false;
+    public string  $quickClientName  = '';
+    public string  $quickClientPhone = '';
+    public bool    $useQuickClient   = false;
+    public ?array  $duplicateCustomer = null;
 
     // Paiement
     public string $paymentMethod = 'cash';
@@ -255,6 +256,23 @@ class PointOfSale extends Component
         $this->useQuickClient       = false;
         $this->quickClientName      = '';
         $this->quickClientPhone     = '';
+        $this->duplicateCustomer    = null;
+    }
+
+    public function updatedQuickClientPhone(): void
+    {
+        $this->duplicateCustomer = null;
+
+        if (strlen($this->quickClientPhone) >= 6) {
+            $found = \App\Models\Customer::where('phone', $this->quickClientPhone)->first();
+            if ($found) {
+                $this->duplicateCustomer = [
+                    'id'    => $found->id,
+                    'name'  => $found->name,
+                    'phone' => $found->phone,
+                ];
+            }
+        }
     }
 
     public function clearCustomer(): void
@@ -264,6 +282,7 @@ class PointOfSale extends Component
         $this->useQuickClient       = false;
         $this->quickClientName      = '';
         $this->quickClientPhone     = '';
+        $this->duplicateCustomer    = null;
     }
 
     // ── Ouvrir modal paiement ─────────────────────
@@ -300,10 +319,11 @@ class PointOfSale extends Component
             $customerId = $this->selectedCustomerId;
 
             if (!$customerId && $this->useQuickClient && $this->quickClientName) {
+                $phone    = $this->quickClientPhone ?: null;
                 $customer = \App\Models\Customer::create([
-                    'name'    => $this->quickClientName,
-                    'phone'   => $this->quickClientPhone ?: null,
-                    'whatsapp'=> $this->quickClientPhone ?: null,
+                    'name'     => $this->quickClientName,
+                    'phone'    => $phone,
+                    'whatsapp' => $phone,
                 ]);
                 $customerId = $customer->id;
             }

@@ -590,9 +590,14 @@
                             </label>
                             <input wire:model="phone" type="text"
                                    placeholder="+221 XX XXX XX XX"
-                                   class="w-full px-3 py-2.5 border border-gray-200 rounded-xl
-                                          text-sm bg-gray-50 focus:outline-none
-                                          focus:border-primary focus:bg-white transition-colors"/>
+                                   class="w-full px-3 py-2.5 border rounded-xl text-sm
+                                          bg-gray-50 focus:outline-none transition-colors
+                                          {{ $errors->has('phone')
+                                             ? 'border-red-400 bg-red-50'
+                                             : 'border-gray-200 focus:border-primary focus:bg-white' }}"/>
+                            @error('phone')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-dark mb-1.5">

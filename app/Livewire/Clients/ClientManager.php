@@ -42,7 +42,7 @@ class ClientManager extends Component
     {
         return [
             'name'         => 'required|string|min:2|max:255',
-            'phone'        => 'nullable|string|max:20',
+            'phone'        => 'nullable|string|max:20|unique:customers,phone,' . ($this->editingId ?? 'NULL'),
             'whatsapp'     => 'nullable|string|max:20',
             'email'        => 'nullable|email|max:255',
             'address'      => 'nullable|string|max:500',
@@ -56,6 +56,7 @@ class ClientManager extends Component
     protected $messages = [
         'name.required' => 'Le nom du client est obligatoire.',
         'email.email'   => 'Adresse email invalide.',
+        'phone.unique'  => 'Ce numéro de téléphone est déjà utilisé par un autre client.',
     ];
 
     public function updatingSearch(): void { $this->resetPage(); }

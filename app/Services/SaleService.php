@@ -31,6 +31,12 @@ class SaleService
             $amountPaid  = $payment['amount_paid'];
             $changeGiven = max(0, $amountPaid - $totalTtc);
 
+            // Résoudre la date/heure de la vente
+            $saleDate = $payment['sale_date'] ?? null;
+            $soldAt   = $saleDate && $saleDate !== now()->toDateString()
+                        ? \Carbon\Carbon::parse($saleDate)->startOfDay()
+                        : now();
+
             // Créer la vente
             $sale = Sale::create([
                 'reference'      => $this->generateReference(),
@@ -46,7 +52,7 @@ class SaleService
                 'change_given'   => $changeGiven,
                 'payment_method' => $payment['method'],
                 'notes'          => $payment['notes'] ?? null,
-                'sold_at'        => $payment['sale_date'] ?? now(),
+                'sold_at'        => $soldAt,
             ]);
 
             // Créer les lignes de vente + décrémenter stock
@@ -83,7 +89,7 @@ class SaleService
                 'tva_rate'       => 0,
                 'tva_amount'     => 0,
                 'total_ttc'      => $totalTtc,
-                'issued_at'      => $payment['sale_date'] ?? now(),
+                'issued_at'      => $soldAt,
             ]);
 
             // Incrémenter compteur facture
