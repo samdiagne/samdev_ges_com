@@ -33,6 +33,7 @@ class PointOfSale extends Component
     public float  $amountPaid    = 0;
     public float  $discount      = 0;
     public string $notes         = '';
+    public string $saleDate      = '';
 
     // Modals
     public bool $showPaymentModal  = false;
@@ -55,7 +56,8 @@ class PointOfSale extends Component
     public function mount(): void
     {
         $this->loadProducts();
-        $this->tvaRate = CompanySetting::getSettings()->tva_rate ?? 18;
+        $this->tvaRate  = CompanySetting::getSettings()->tva_rate ?? 18;
+        $this->saleDate = now()->toDateString();
     }
 
     // ── Recherche produits ────────────────────────
@@ -313,6 +315,7 @@ class PointOfSale extends Component
                     'amount_paid' => $this->amountPaid,
                     'discount'    => $this->discount,
                     'notes'       => $this->notes,
+                    'sale_date'   => $this->saleDate ?: now()->toDateString(),
                 ],
                 customerId: $customerId
             );

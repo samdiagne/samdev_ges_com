@@ -46,7 +46,7 @@ class SaleService
                 'change_given'   => $changeGiven,
                 'payment_method' => $payment['method'],
                 'notes'          => $payment['notes'] ?? null,
-                'sold_at'        => now(),
+                'sold_at'        => $payment['sale_date'] ?? now(),
             ]);
 
             // Créer les lignes de vente + décrémenter stock
@@ -83,7 +83,7 @@ class SaleService
                 'tva_rate'       => 0,
                 'tva_amount'     => 0,
                 'total_ttc'      => $totalTtc,
-                'issued_at'      => now(),
+                'issued_at'      => $payment['sale_date'] ?? now(),
             ]);
 
             // Incrémenter compteur facture

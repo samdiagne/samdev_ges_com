@@ -461,6 +461,18 @@
                         </p>
                     </div>
 
+                    {{-- Date de la vente --}}
+                    <div>
+                        <label class="block text-sm font-medium text-dark mb-1.5">
+                            Date de la vente
+                        </label>
+                        <input wire:model="saleDate" type="date"
+                               max="{{ now()->toDateString() }}"
+                               class="w-full px-3 py-2.5 border border-gray-200 rounded-xl
+                                      text-sm bg-gray-50 focus:outline-none
+                                      focus:border-primary transition-colors"/>
+                    </div>
+
                     {{-- Mode de paiement --}}
                     <div>
                         <label class="block text-sm font-medium text-dark mb-2">
