@@ -47,7 +47,7 @@ class CheckoutController extends Controller
             'customer_email'   => 'nullable|email|max:255',
             'delivery_address' => 'required|string|min:5|max:500',
             'city'             => 'required|string|max:100',
-            'payment_method'   => 'required|in:wave,om,mix,djamo,delivery,virement',
+            'payment_method'   => 'required|in:wave,om,mix,djamo,delivery,card',
             'notes'            => 'nullable|string|max:500',
         ], [
             'customer_name.required'    => 'Votre nom est obligatoire.',
@@ -95,7 +95,7 @@ class CheckoutController extends Controller
             return $this->initiatePaydunya($order);
         }
 
-        // Paiement à la livraison ou virement
+        // Paiement à la livraison ou carte bancaire
         session()->forget('cart');
         $this->sendOrderEmails($order);
         return redirect()->route('shop.confirmation', $order->reference)

@@ -143,7 +143,7 @@
             <div class="bg-white rounded-2xl border border-gray-100 p-5 text-sm text-gray-600 leading-relaxed space-y-3">
                 <p>Le paiement s'effectue au moment de la commande par les moyens suivants :</p>
                 <div class="grid grid-cols-2 gap-2 mt-2">
-                    @foreach(['Wave', 'Orange Money', 'Mix by Yass', 'Djamo', 'Paiement à la livraison', 'Virement bancaire'] as $mode)
+                    @foreach(['Wave', 'Orange Money', 'Mix by Yass', 'Djamo', 'Paiement à la livraison', 'Carte bancaire'] as $mode)
                         <div class="flex items-center gap-2 bg-light rounded-xl px-3 py-2">
                             <span class="w-2 h-2 bg-primary rounded-full shrink-0"></span>
                             <span class="text-xs font-medium text-dark">{{ $mode }}</span>

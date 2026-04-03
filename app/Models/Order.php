@@ -81,7 +81,7 @@ class Order extends Model
             'mix'      => 'Mix by Yass',
             'djamo'    => 'Djamo',
             'delivery' => 'À la livraison',
-            'virement' => 'Virement',
+            'card'     => 'Carte bancaire',
             default    => $this->payment_method,
         };
     }

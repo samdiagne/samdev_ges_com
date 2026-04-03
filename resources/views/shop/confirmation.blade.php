@@ -57,21 +57,21 @@
             </span>
         </div>
 
-        @if($order->payment_method === 'virement')
+        @if($order->payment_method === 'card')
             <div class="mt-3 bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-800 text-left">
-                <p class="font-semibold mb-2">🏦 Instructions de paiement par virement</p>
+                <p class="font-semibold mb-2">💳 Instructions de paiement par carte bancaire</p>
                 <p class="text-xs text-blue-700 mb-2">
-                    Pour finaliser votre commande, effectuez un virement bancaire du montant total
-                    et mentionnez votre référence commande <strong>{{ $order->reference }}</strong>.
+                    Un agent vous contactera pour traiter votre paiement par carte bancaire.
+                    Munissez-vous de votre carte et de la référence commande <strong>{{ $order->reference }}</strong>.
                 </p>
                 @if($settings->whatsapp || $settings->phone)
                     <p class="text-xs text-blue-700">
-                        Nos coordonnées bancaires vous seront envoyées par
+                        Vous serez contacté par
                         @if($settings->whatsapp)
                             <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $settings->whatsapp) }}"
                                target="_blank" class="underline font-medium">WhatsApp</a>
                         @endif
-                        après confirmation.
+                        après confirmation de votre commande.
                     </p>
                 @endif
             </div>
@@ -91,7 +91,7 @@
                         'mix'      => 'Mix by Yass',
                         'djamo'    => 'Djamo',
                         'delivery' => 'Paiement à la livraison',
-                        'virement' => 'Virement bancaire',
+                        'card'     => 'Carte bancaire',
                         default    => $order->payment_method,
                     } }}
                 </span>

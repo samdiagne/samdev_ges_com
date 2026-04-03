@@ -2,78 +2,12 @@
 @section('title', 'Finaliser ma commande')
 
 @section('content')
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-    <h1 class="text-xl sm:text-2xl font-bold text-dark mb-6 sm:mb-8">Finaliser ma commande</h1>
+    <h1 class="text-2xl font-bold text-dark mb-8">Finaliser ma commande</h1>
 
     <form action="{{ route('shop.checkout.store') }}" method="POST">
         @csrf
-
-        {{-- Résumé compact mobile (masqué sur lg) --}}
-        <div class="lg:hidden mb-5"
-             x-data="{ open: false }">
-            <button type="button"
-                    @click="open = !open"
-                    class="w-full flex items-center justify-between
-                           bg-white border border-gray-100 shadow-sm
-                           rounded-2xl px-4 py-3.5">
-                <div class="flex items-center gap-2">
-                    <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-                    </svg>
-                    <span class="text-sm font-semibold text-dark">
-                        Mon panier
-                        <span class="text-gray-400 font-normal">({{ count($cart) }} article{{ count($cart) > 1 ? 's' : '' }})</span>
-                    </span>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span class="text-sm font-bold text-primary">
-                        {{ number_format($total, 0, ',', ' ') }} FCFA
-                    </span>
-                    <svg class="w-4 h-4 text-gray-400 transition-transform duration-200"
-                         :class="open ? 'rotate-180' : ''"
-                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                    </svg>
-                </div>
-            </button>
-
-            <div x-show="open"
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0 -translate-y-2"
-                 x-transition:enter-end="opacity-100 translate-y-0"
-                 x-transition:leave="transition ease-in duration-150"
-                 x-transition:leave-start="opacity-100 translate-y-0"
-                 x-transition:leave-end="opacity-0 -translate-y-2"
-                 class="bg-white border border-t-0 border-gray-100 rounded-b-2xl
-                        shadow-sm px-4 pb-4">
-                <div class="space-y-3 pt-3 border-t border-gray-50">
-                    @foreach($cart as $item)
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 bg-gray-50 rounded-lg flex-shrink-0 overflow-hidden">
-                                @if($item['image'])
-                                    <img src="{{ Storage::url($item['image']) }}"
-                                         class="w-full h-full object-contain p-1"/>
-                                @endif
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-xs font-medium text-dark truncate">{{ $item['name'] }}</p>
-                                <p class="text-xs text-gray-400">×{{ $item['quantity'] }}</p>
-                            </div>
-                            <p class="text-xs font-bold text-dark flex-shrink-0">
-                                {{ number_format($item['price'] * $item['quantity'], 0, ',', ' ') }}
-                            </p>
-                        </div>
-                    @endforeach
-                </div>
-                <div class="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
-                    <span class="text-xs text-gray-500">Livraison</span>
-                    <span class="text-xs text-orange-500 font-medium">À confirmer</span>
-                </div>
-            </div>
-        </div>
-
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
             {{-- ── Formulaire ── --}}
@@ -228,8 +162,8 @@
                              'desc'  => 'Carte Djamo SN',          'logo' => 'djamo.png'],
                             ['value' => 'delivery', 'label' => 'À la livraison',
                              'desc'  => 'Cash à la réception',     'logo' => null],
-                            ['value' => 'virement', 'label' => 'Virement',
-                             'desc'  => 'Virement bancaire',       'logo' => null],
+                            ['value' => 'card',     'label' => 'Carte bancaire',
+                             'desc'  => 'Visa, Mastercard…',       'logo' => null],
                         ] as $pm)
                             <button type="button"
                                     @click="method = '{{ $pm['value'] }}'"
@@ -282,11 +216,11 @@
                         Nous vous contacterons pour confirmer.
                     </div>
 
-                    {{-- Info virement --}}
-                    <div x-show="method === 'virement'"
-                         class="mt-4 bg-orange-50 border border-orange-100 rounded-xl
-                                p-3 text-xs text-orange-700">
-                        🏦 Nos coordonnées bancaires vous seront envoyées
+                    {{-- Info Carte bancaire --}}
+                    <div x-show="method === 'card'"
+                         class="mt-4 bg-blue-50 border border-blue-100 rounded-xl
+                                p-3 text-xs text-blue-700">
+                        💳 Un agent vous contactera pour traiter votre paiement par carte bancaire
                         après confirmation de la commande.
                     </div>
 

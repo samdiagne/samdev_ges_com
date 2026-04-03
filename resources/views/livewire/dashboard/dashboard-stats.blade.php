@@ -1,82 +1,4 @@
 <div>
-    {{-- ── Raccourcis rapides --}}
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <a href="{{ route('caisse.pos') }}"
-           class="flex items-center gap-3 bg-primary hover:bg-primary/90
-                  text-white rounded-2xl p-4 transition-all shadow-lg
-                  shadow-primary/20 hover:-translate-y-0.5">
-            <div class="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M12 4v16m8-8H4"/>
-                </svg>
-            </div>
-            <div class="min-w-0">
-                <p class="text-xs text-white/70 leading-tight">Caisse</p>
-                <p class="text-sm font-bold leading-tight truncate">Nouvelle vente</p>
-            </div>
-        </a>
-
-        <a href="{{ route('devis.create') }}"
-           class="flex items-center gap-3 bg-white hover:bg-gray-50 border
-                  border-gray-100 rounded-2xl p-4 transition-all shadow-sm
-                  hover:-translate-y-0.5">
-            <div class="w-9 h-9 bg-secondary/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0
-                             01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-            </div>
-            <div class="min-w-0">
-                <p class="text-xs text-gray-400 leading-tight">Créer</p>
-                <p class="text-sm font-bold text-dark leading-tight truncate">Nouveau devis</p>
-            </div>
-        </a>
-
-        <a href="{{ route('factures.index') }}"
-           class="flex items-center gap-3 bg-white hover:bg-gray-50 border
-                  border-gray-100 rounded-2xl p-4 transition-all shadow-sm
-                  hover:-translate-y-0.5">
-            <div class="w-9 h-9 bg-amber-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0
-                             00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2
-                             2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
-                </svg>
-            </div>
-            <div class="min-w-0">
-                <p class="text-xs text-gray-400 leading-tight">Consulter</p>
-                <p class="text-sm font-bold text-dark leading-tight truncate">Factures</p>
-            </div>
-        </a>
-
-        <a href="{{ route('commandes.index') }}"
-           class="flex items-center gap-3 bg-white hover:bg-gray-50 border
-                  border-gray-100 rounded-2xl p-4 transition-all shadow-sm
-                  hover:-translate-y-0.5 relative">
-            <div class="w-9 h-9 bg-orange-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184
-                             1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-                </svg>
-            </div>
-            <div class="min-w-0">
-                <p class="text-xs text-gray-400 leading-tight">Gérer</p>
-                <p class="text-sm font-bold text-dark leading-tight truncate">Commandes</p>
-            </div>
-            @if($recent['pending_orders']->count() > 0)
-                <span class="absolute top-2.5 right-2.5 min-w-[18px] h-[18px] px-1
-                             bg-red-500 text-white text-[10px] font-bold rounded-full
-                             flex items-center justify-center leading-none">
-                    {{ $recent['pending_orders']->count() > 99 ? '99+' : $recent['pending_orders']->count() }}
-                </span>
-            @endif
-        </a>
-    </div>
-
     {{-- Sélecteur période --}}
     <div class="flex items-center gap-2 mb-6 bg-white rounded-2xl border
                 border-gray-100 shadow-sm p-1.5 w-fit">
@@ -200,8 +122,8 @@
             <canvas id="paymentChart" height="160"></canvas>
             <div class="space-y-2 mt-4">
                 @php
-                    $pmColors = ['cash' => '#10B981', 'wave' => '#3B82F6', 'om' => '#F97316', 'virement' => '#5a16f9'];
-                    $pmLabels = ['cash' => 'Cash', 'wave' => 'Wave', 'om' => 'Orange Money', 'virement' => 'Virement bancaire',];
+                    $pmColors = ['cash' => '#10B981', 'wave' => '#3B82F6', 'om' => '#F97316', 'visa' => '#1a1f71'];
+                    $pmLabels = ['cash' => 'Cash', 'wave' => 'Wave', 'om' => 'Orange Money', 'visa' => 'VISA',];
                     $totalPm  = array_sum($charts['payment_data']);
                 @endphp
                 @foreach($charts['payment_data'] as $method => $amount)
@@ -413,47 +335,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
     <script>
         const chartInstances = {};
-        let _lastCharts = null;
-
-        function isDark() {
-            return document.documentElement.classList.contains('dark');
-        }
 
         function theme() {
-            const dark = isDark();
+            const dark = document.documentElement.classList.contains('dark');
             return {
-                grid:        dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
-                tick:        dark ? '#64748b' : '#9ca3af',
-                tooltipBg:   dark ? '#1e293b' : '#ffffff',
-                tooltipText: dark ? '#f1f5f9' : '#111827',
-                tooltipBorder: dark ? '#334155' : '#e5e7eb',
-
-                barBg:     dark ? 'rgba(96, 165, 250, 0.20)' : 'rgba(30, 111, 191, 0.12)',
-                barBorder: dark ? '#60a5fa' : '#1E6FBF',
-                barHover:  dark ? 'rgba(96, 165, 250, 0.35)' : 'rgba(30, 111, 191, 0.25)',
-
-                lineBorder: dark ? '#818cf8' : '#1E6FBF',
-                lineFill:   dark ? 'rgba(129, 140, 248, 0.12)' : 'rgba(30, 111, 191, 0.07)',
-                linePoint:  dark ? '#818cf8' : '#1E6FBF',
-                linePointBorder: dark ? '#1e293b' : '#ffffff',
-
                 donut: dark
-                    ? { cash: '#34d399', wave: '#60a5fa', om: '#fb923c', card: '#a78bfa', virement: '#a78bfa' }
-                    : { cash: '#10b981', wave: '#3b82f6', om: '#f97316', card: '#7c3aed', virement: '#7c3aed' },
-
-                donutBorder: dark ? '#0f172a' : '#ffffff',
+                    ? { cash: '#34d399', wave: '#60a5fa', om: '#fb923c', card: '#a78bfa', visa: '#1a1f71' }
+                    : { cash: '#10b981', wave: '#3b82f6', om: '#f97316', card: '#7c3aed', visa: '#1a1f71' },
             };
         }
-
-        const tooltipPlugin = (t) => ({
-            backgroundColor: t.tooltipBg,
-            titleColor: t.tooltipText,
-            bodyColor: t.tooltipText,
-            borderColor: t.tooltipBorder,
-            borderWidth: 1,
-            padding: 10,
-            cornerRadius: 10,
-        });
 
         function destroyChart(id) {
             if (chartInstances[id]) {
@@ -466,17 +356,15 @@
             destroyChart('salesChart');
             const ctx = document.getElementById('salesChart');
             if (!ctx) return;
-            const t = theme();
             chartInstances['salesChart'] = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels,
+                    labels: labels,
                     datasets: [{
                         label: 'CA (FCFA)',
-                        data,
-                        backgroundColor: t.barBg,
-                        hoverBackgroundColor: t.barHover,
-                        borderColor: t.barBorder,
+                        data: data,
+                        backgroundColor: 'rgba(30, 111, 191, 0.15)',
+                        borderColor: '#1E6FBF',
                         borderWidth: 2,
                         borderRadius: 8,
                         borderSkipped: false,
@@ -487,24 +375,20 @@
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            ...tooltipPlugin(t),
-                            callbacks: { label: (c) => '  ' + c.raw.toLocaleString('fr-FR') + ' FCFA' }
+                            callbacks: {
+                                label: (ctx) => ' ' + ctx.raw.toLocaleString('fr-FR') + ' FCFA'
+                            }
                         }
                     },
                     scales: {
                         y: {
                             beginAtZero: true,
-                            grid: { color: t.grid },
-                            border: { dash: [4, 4], display: false },
+                            grid: { color: '#f0f0f0' },
                             ticks: {
-                                color: t.tick,
                                 callback: (v) => v >= 1000 ? (v/1000).toLocaleString('fr-FR') + 'k' : v
                             }
                         },
-                        x: {
-                            grid: { display: false },
-                            ticks: { color: t.tick }
-                        }
+                        x: { grid: { display: false } }
                     }
                 }
             });
@@ -515,31 +399,30 @@
             const ctx = document.getElementById('paymentChart');
             if (!ctx) return;
             const t = theme();
-            const labelMap = { cash: '💵 Cash', wave: 'Wave', om: 'Orange Money', card: 'Carte', virement: 'Virement' };
+            const labelMap = { cash: '💵 Cash', wave: 'Wave', om: 'Orange Money', card: 'Carte bancaire', visa: 'VISA' };
             const labels = Object.keys(data).map(k => labelMap[k] || k);
             const values = Object.values(data);
-            const colors = Object.keys(data).map(k => t.donut[k] || '#6b7280');
+            const colors = Object.keys(data).map(k => t.donut[k] || '#6B7280');
             chartInstances['paymentChart'] = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels,
+                    labels: labels,
                     datasets: [{
                         data: values,
                         backgroundColor: colors,
-                        borderColor: t.donutBorder,
-                        borderWidth: 3,
-                        hoverOffset: 6,
-                        hoverBorderWidth: 0,
+                        borderWidth: 0,
+                        hoverOffset: 4
                     }]
                 },
                 options: {
                     responsive: true,
-                    cutout: '72%',
+                    cutout: '70%',
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            ...tooltipPlugin(t),
-                            callbacks: { label: (c) => '  ' + c.raw.toLocaleString('fr-FR') + ' FCFA' }
+                            callbacks: {
+                                label: (ctx) => ' ' + ctx.raw.toLocaleString('fr-FR') + ' FCFA'
+                            }
                         }
                     }
                 }
@@ -550,23 +433,19 @@
             destroyChart('monthlyChart');
             const ctx = document.getElementById('monthlyChart');
             if (!ctx) return;
-            const t = theme();
             chartInstances['monthlyChart'] = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels,
+                    labels: labels,
                     datasets: [{
                         label: 'CA mensuel',
-                        data,
-                        borderColor: t.lineBorder,
-                        backgroundColor: t.lineFill,
+                        data: data,
+                        borderColor: '#1E6FBF',
+                        backgroundColor: 'rgba(30, 111, 191, 0.08)',
                         borderWidth: 2.5,
-                        pointBackgroundColor: t.linePoint,
-                        pointBorderColor: t.linePointBorder,
-                        pointBorderWidth: 2,
+                        pointBackgroundColor: '#1E6FBF',
                         pointRadius: 4,
-                        pointHoverRadius: 7,
-                        pointHoverBackgroundColor: t.lineBorder,
+                        pointHoverRadius: 6,
                         fill: true,
                         tension: 0.4,
                     }]
@@ -576,46 +455,34 @@
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            ...tooltipPlugin(t),
                             callbacks: {
-                                label: (c) => '  ' + c.raw.toLocaleString('fr-FR') + ' FCFA'
+                                label: (ctx) => ' ' + ctx.raw.toLocaleString('fr-FR') + ' FCFA'
                             }
                         }
                     },
                     scales: {
                         y: {
                             beginAtZero: true,
-                            grid: { color: t.grid },
-                            border: { dash: [4, 4], display: false },
+                            grid: { color: '#f0f0f0' },
                             ticks: {
-                                color: t.tick,
                                 callback: (v) =>
                                     v >= 1000000 ? (v/1000000).toFixed(1) + 'M' :
                                     v >= 1000    ? (v/1000).toFixed(0) + 'k' : v
                             }
                         },
-                        x: {
-                            grid: { display: false },
-                            ticks: { color: t.tick }
-                        }
+                        x: { grid: { display: false } }
                     }
                 }
             });
         }
 
         function initAllCharts(charts) {
-            _lastCharts = charts;
             setTimeout(() => {
                 initSalesChart(charts.daily_labels, charts.daily_sales);
                 initPaymentChart(charts.payment_data);
                 initMonthlyChart(charts.monthly_labels, charts.monthly_ca);
             }, 50);
         }
-
-        // Re-render charts when dark mode is toggled
-        new MutationObserver(() => {
-            if (_lastCharts) initAllCharts(_lastCharts);
-        }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
         document.addEventListener('DOMContentLoaded', () => {
             initAllCharts(@json($charts));

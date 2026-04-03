@@ -41,7 +41,7 @@
     'mix'      => 'Mix by Yass',
     'djamo'    => 'Djamo',
     'delivery' => 'Paiement à la livraison',
-    'virement' => 'Virement bancaire',
+    'card'     => 'Carte bancaire',
     default    => $order->payment_method,
 } }}
 
