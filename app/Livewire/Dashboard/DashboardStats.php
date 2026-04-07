@@ -14,7 +14,7 @@ use Carbon\Carbon;
 
 class DashboardStats extends Component
 {
-    public string $period = 'today';
+    public string $period = 'month';
 
     public function render()
     {
