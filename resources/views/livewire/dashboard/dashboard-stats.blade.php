@@ -147,7 +147,7 @@
         </div>
 
         {{-- Panier moyen --}}
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        {{-- <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <div class="w-10 h-10 bg-secondary/10 rounded-xl flex items-center justify-center mb-3">
                 <svg class="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -161,7 +161,7 @@
                 <span class="text-sm font-normal text-gray-400">FCFA</span>
             </p>
             <p class="text-xs text-gray-400 mt-1">par transaction</p>
-        </div>
+        </div> --}}
     </div>
 
     {{-- ── Graphiques --}}
