@@ -22,16 +22,54 @@
     @else
         <link rel="icon" href="/favicon.ico"/>
     @endif
-    {{-- Anti-flash : applique le thème avant le rendu Alpine --}}
+    {{-- Anti-flash : applique le thème + prépare l'overlay avant le rendu Alpine --}}
     <script>
-        if (localStorage.getItem('dashboard_theme') === 'dark') {
-            document.documentElement.classList.add('dark');
-        }
+        var _dark = localStorage.getItem('dashboard_theme') === 'dark';
+        if (_dark) document.documentElement.classList.add('dark');
     </script>
+    <style>
+        #page-loader {
+            position: fixed; inset: 0; z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+            transition: opacity 0.15s ease;
+        }
+        #page-loader .pl-spinner {
+            width: 28px; height: 28px; border-radius: 50%;
+            border: 3px solid rgba(30,111,191,0.2);
+            border-top-color: #1E6FBF;
+            animation: pl-spin 0.6s linear infinite;
+        }
+        @keyframes pl-spin { to { transform: rotate(360deg); } }
+        #page-loader.fade-out { opacity: 0; pointer-events: none; }
+    </style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
 <body class="bg-light font-sans antialiased">
+
+{{-- Overlay anti-FOUC : masque la page jusqu'à ce qu'Alpine ait initialisé --}}
+<div id="page-loader" style="background: {{ request()->cookie('dashboard_theme') === 'dark' ? '#0F172A' : '#F8F9FC' }};">
+    <div class="pl-spinner"></div>
+</div>
+<script>
+    // Correction immédiate de la couleur de fond selon le thème stocké
+    (function () {
+        var l = document.getElementById('page-loader');
+        if (!l) return;
+        l.style.background = _dark ? '#0F172A' : '#F8F9FC';
+
+        // Disparaît dès qu'Alpine a tout initialisé
+        document.addEventListener('alpine:initialized', function () {
+            l.classList.add('fade-out');
+            setTimeout(function () { l.remove(); }, 160);
+        });
+
+        // Filet de sécurité : retire l'overlay au bout de 3s quoi qu'il arrive
+        setTimeout(function () {
+            if (l.parentNode) { l.classList.add('fade-out'); setTimeout(function () { l.remove(); }, 160); }
+        }, 3000);
+    })();
+</script>
 
 <div class="flex h-screen overflow-hidden"
 style="height: 100dvh;">
