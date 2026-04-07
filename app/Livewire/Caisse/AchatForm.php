@@ -25,9 +25,9 @@ class AchatForm extends Component
     public ?float $amount_paid    = 0;
     public string $notes          = '';
 
-    // Recherche produit
-    public string $searchProduct  = '';
-    public array  $searchResults  = [];
+    // Recherche / grille produits
+    public string $searchProduct = '';
+    public array  $products      = [];
 
     // Lignes d'achat
     public array $items = [];
@@ -59,12 +59,37 @@ class AchatForm extends Component
     public function mount(?int $purchaseId = null): void
     {
         $this->purchase_date = now()->format('Y-m-d');
+        $this->loadProducts();
 
         if ($purchaseId) {
             $this->isEditing  = true;
             $this->purchaseId = $purchaseId;
             $this->loadPurchase($purchaseId);
         }
+    }
+
+    public function loadProducts(): void
+    {
+        $this->products = Product::where('is_active', true)
+            ->with('category')
+            ->when($this->searchProduct, fn($q) =>
+                $q->where(fn($q2) =>
+                    $q2->where('name', 'like', '%' . $this->searchProduct . '%')
+                       ->orWhere('sku',  'like', '%' . $this->searchProduct . '%')
+                )
+            )
+            ->orderBy('name')
+            ->get()
+            ->map(fn($p) => [
+                'id'             => $p->id,
+                'name'           => $p->name,
+                'sku'            => $p->sku,
+                'purchase_price' => (float) $p->purchase_price,
+                'stock_quantity' => $p->stock_quantity,
+                'image'          => $p->main_image,
+                'category'       => $p->category?->name,
+            ])
+            ->toArray();
     }
 
     private function loadPurchase(int $id): void
@@ -93,37 +118,15 @@ class AchatForm extends Component
     // ── Recherche produit ─────────────────────────
     public function updatedSearchProduct(): void
     {
-        if (strlen($this->searchProduct) < 2) {
-            $this->searchResults = [];
-            return;
-        }
-
-        $this->searchResults = Product::where('is_active', true)
-            ->where(fn($q) =>
-                $q->where('name', 'like', '%' . $this->searchProduct . '%')
-                  ->orWhere('sku', 'like', '%' . $this->searchProduct . '%')
-            )
-            ->limit(6)
-            ->get()
-            ->map(fn($p) => [
-                'id'             => $p->id,
-                'name'           => $p->name,
-                'sku'            => $p->sku,
-                'purchase_price' => (float) $p->purchase_price,
-                'stock_quantity' => $p->stock_quantity,
-            ])
-            ->toArray();
+        $this->loadProducts();
     }
 
-    // ── Ajouter produit ───────────────────────────
-    public function addItem(int $productId): void
+    // ── Ajouter / retirer produit (toggle) ────────
+    public function toggleItem(int $productId): void
     {
-        // Vérifier si déjà dans la liste
-        foreach ($this->items as $item) {
+        foreach ($this->items as $index => $item) {
             if ($item['product_id'] === $productId) {
-                session()->flash('form_error', 'Produit déjà ajouté !');
-                $this->searchProduct = '';
-                $this->searchResults = [];
+                $this->removeItem($index);
                 return;
             }
         }
@@ -138,8 +141,6 @@ class AchatForm extends Component
             'total_price'  => (float) $product->purchase_price,
         ];
 
-        $this->searchProduct = '';
-        $this->searchResults = [];
         $this->recalculateTotals();
     }
 
