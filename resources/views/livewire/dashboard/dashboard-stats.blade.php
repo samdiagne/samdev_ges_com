@@ -1,24 +1,4 @@
 <div>
-    {{-- Sélecteur période --}}
-    <div class="flex items-center gap-2 mb-6 bg-white rounded-2xl border
-                border-gray-100 shadow-sm p-1.5 w-fit">
-        @foreach([
-            'today' => "Aujourd'hui",
-            'week'  => 'Cette semaine',
-            'month' => 'Ce mois',
-            'year'  => 'Cette année',
-        ] as $value => $label)
-            <button wire:click="$set('period', '{{ $value }}')"
-                    @class([
-                        'px-4 py-2 rounded-xl text-sm font-medium transition-all',
-                        'bg-primary text-white shadow-lg shadow-primary/25' => $period === $value,
-                        'text-gray-500 hover:text-dark hover:bg-gray-50' => $period !== $value,
-                    ])>
-                {{ $label }}
-            </button>
-        @endforeach
-    </div>
-
     {{-- ── Actions rapides --}}
     <div class="flex flex-wrap gap-2 mb-6">
         <a href="{{ route('caisse.pos') }}"
@@ -79,6 +59,26 @@
             </svg>
             Nouveau produit
         </a>
+    </div>
+
+    {{-- Sélecteur période --}}
+    <div class="flex items-center gap-2 mb-6 bg-white rounded-2xl border
+                border-gray-100 shadow-sm p-1.5 w-fit">
+        @foreach([
+            'today' => "Aujourd'hui",
+            'week'  => 'Cette semaine',
+            'month' => 'Ce mois',
+            'year'  => 'Cette année',
+        ] as $value => $label)
+            <button wire:click="$set('period', '{{ $value }}')"
+                    @class([
+                        'px-4 py-2 rounded-xl text-sm font-medium transition-all',
+                        'bg-primary text-white shadow-lg shadow-primary/25' => $period === $value,
+                        'text-gray-500 hover:text-dark hover:bg-gray-50' => $period !== $value,
+                    ])>
+                {{ $label }}
+            </button>
+        @endforeach
     </div>
 
     {{-- ── KPI Cards --}}
