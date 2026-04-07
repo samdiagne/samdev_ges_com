@@ -67,7 +67,7 @@
                         <span style="color: #F5A800;">à Dakar</span>
                     </h2>
                     <p class="text-sm leading-relaxed" style="color: #94a3b8;">
-                        Smartphones, ordinateurs et accessoires.
+                        Ordinateurs portables et accessoires informatiques.
                         Qualité garantie, livraison rapide.
                     </p>
                 </div>

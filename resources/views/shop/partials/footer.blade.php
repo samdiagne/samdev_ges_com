@@ -20,8 +20,8 @@
                 </div>
 
                 <p class="text-sm leading-relaxed mb-5" style="color: #94a3b8;">
-                    Votre spécialiste en smartphones, ordinateurs et accessoires
-                    à Dakar. Qualité garantie, livraison rapide.
+                    Votre spécialiste en ordinateurs portables et accessoires
+                    informatiques à Dakar. Qualité garantie, livraison rapide.
                 </p>
 
                 {{-- Badges confiance --}}

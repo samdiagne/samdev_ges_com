@@ -1,7 +1,7 @@
 @extends('layouts.shop')
 
-@section('title', $settings->name . ' — Smartphones & Informatique Dakar')
-@section('description', 'Achetez vos smartphones, ordinateurs et accessoires tech à Dakar. Livraison rapide, qualité garantie.')
+@section('title', $settings->name . ' — Ordinateurs Portables & Accessoires Informatique Dakar')
+@section('description', 'Achetez vos ordinateurs portables et accessoires informatiques à Dakar. Livraison rapide, qualité garantie.')
 
 @section('content')
 
@@ -33,7 +33,7 @@
                 </h1>
 
                 <p class="text-white/75 text-base sm:text-lg mb-8 leading-relaxed max-w-md mx-auto lg:mx-0">
-                    Smartphones, ordinateurs, accessoires —
+                    Ordinateurs portables, accessoires informatiques —
                     qualité garantie, prix compétitifs, livraison rapide à Dakar.
                 </p>
 
@@ -366,7 +366,7 @@
                  'r' => 'Oui, le retrait en boutique est gratuit et disponible dès que votre commande est prête, généralement sous quelques heures. Vous serez contacté par téléphone dès que c\'est prêt.',
                  'icon' => '🏪'],
                 ['q' => 'Les produits sont-ils garantis et originaux ?',
-                 'r' => 'Absolument. Nous ne vendons que des produits 100 % originaux provenant de fournisseurs certifiés. Les smartphones et ordinateurs sont garantis 12 mois, les accessoires 3 à 6 mois selon le type.',
+                 'r' => 'Absolument. Nous ne vendons que des produits 100 % originaux provenant de fournisseurs certifiés. Les ordinateurs portables sont garantis 12 mois, les accessoires 3 à 6 mois selon le type.',
                  'icon' => '✅'],
                 ['q' => 'Puis-je modifier ou annuler ma commande ?',
                  'r' => 'Les modifications sont possibles tant que votre commande est au statut "En attente". Contactez-nous rapidement par WhatsApp ou par téléphone. Une fois confirmée et en préparation, il n\'est plus possible de la modifier.',

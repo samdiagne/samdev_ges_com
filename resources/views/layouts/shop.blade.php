@@ -9,7 +9,7 @@
         $settings    = App\Models\CompanySetting::getSettings();
         $siteName    = $settings->name ?? 'Al-Adab Tech Store';
         $siteUrl     = config('app.url');
-        $defaultDesc = 'Achetez vos smartphones, ordinateurs et accessoires tech à Dakar. Livraison rapide, qualité garantie — ' . $siteName;
+        $defaultDesc = 'Achetez vos ordinateurs portables et accessoires informatiques à Dakar. Livraison rapide, qualité garantie — ' . $siteName;
         $metaTitle   = (trim(strip_tags($__env->yieldContent('title')))
             ? trim(strip_tags($__env->yieldContent('title'))) . ' — '
             : '') . $siteName;
@@ -30,7 +30,7 @@
     @endif
 
     {{-- SEO de base --}}
-    <title>{{ $metaTitle }}</title>
+    <title>{!! $metaTitle !!}</title>
     <meta name="description" content="{{ Str::limit($metaDesc, 160) }}"/>
     <meta name="robots" content="index, follow"/>
     <link rel="canonical" href="{{ $metaUrl }}"/>
