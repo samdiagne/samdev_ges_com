@@ -13,7 +13,7 @@ class Product extends Model
 
     protected $fillable = [
         'category_id', 'supplier_id', 'name', 'slug', 'sku',
-        'description', 'short_description', 'purchase_price',
+        'description', 'short_description', 'specifications', 'purchase_price',
         'selling_price', 'selling_price_ttc', 'old_price', 'stock_quantity',
         'stock_alert_threshold', 'unit', 'brand', 'model',
         'is_active', 'is_featured', 'has_tva', 'main_image',
@@ -22,6 +22,7 @@ class Product extends Model
     protected function casts(): array
     {
         return [
+            'specifications'        => 'array',
             'purchase_price'       => 'decimal:2',
             'selling_price'        => 'decimal:2',
             'selling_price_ttc'    => 'decimal:2',

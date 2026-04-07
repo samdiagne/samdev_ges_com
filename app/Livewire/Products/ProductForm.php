@@ -46,6 +46,9 @@ class ProductForm extends Component
     public bool $is_active   = true;
     public bool $is_featured = false;
 
+    // Spécifications techniques
+    public array $specifications = [];
+
     // Images
     public        $mainImage        = null;
     public ?string $currentMainImage = null;
@@ -69,8 +72,11 @@ class ProductForm extends Component
             'old_price'            => 'nullable|numeric|min:0',
             'stock_quantity'       => 'required|integer|min:0',
             'stock_alert_threshold'=> 'required|integer|min:0',
-            'mainImage'            => 'nullable|image|max:3072',
-            'galleryImages.*'      => 'nullable|image|max:3072',
+            'specifications'          => 'nullable|array',
+            'specifications.*.label' => 'required_with:specifications.*.value|string|max:100',
+            'specifications.*.value' => 'nullable|string|max:255',
+            'mainImage'              => 'nullable|image|max:3072',
+            'galleryImages.*'        => 'nullable|image|max:3072',
         ];
     }
 
@@ -137,6 +143,19 @@ class ProductForm extends Component
         $this->is_active          = $product->is_active;
         $this->is_featured        = $product->is_featured;
         $this->currentMainImage   = $product->main_image;
+        $this->specifications     = $product->specifications ?? [];
+    }
+
+    // ── Gestion specs ─────────────────────────────
+    public function addSpec(string $label = ''): void
+    {
+        $this->specifications[] = ['label' => $label, 'value' => ''];
+    }
+
+    public function removeSpec(int $index): void
+    {
+        array_splice($this->specifications, $index, 1);
+        $this->specifications = array_values($this->specifications);
     }
 
     public function removeGalleryImage(int $id): void
@@ -187,6 +206,10 @@ class ProductForm extends Component
             'is_active'            => $this->is_active,
             'is_featured'          => $this->is_featured,
             'main_image'           => $mainImagePath,
+            'specifications'       => array_values(array_filter(
+                $this->specifications,
+                fn($s) => !empty(trim($s['label'] ?? ''))
+            )),
         ];
 
         if ($this->isEditing) {

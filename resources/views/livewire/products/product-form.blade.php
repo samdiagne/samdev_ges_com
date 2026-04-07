@@ -105,11 +105,99 @@
                     </div>
                 </div>
 
+                {{-- Caractéristiques techniques --}}
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                    <h3 class="text-sm font-bold text-dark mb-4 flex items-center gap-2">
+                        <span class="w-6 h-6 bg-blue-100 rounded-lg flex items-center
+                                     justify-center text-blue-600 text-xs">2</span>
+                        Caractéristiques techniques
+                    </h3>
+
+                    {{-- Suggestions rapides --}}
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <p class="w-full text-xs text-gray-400 mb-1">Ajout rapide :</p>
+                        @foreach(['Processeur', 'RAM', 'Stockage', 'Écran', 'Carte graphique', 'Système d\'exploitation', 'Batterie', 'Poids', 'Connectivité', 'Couleur', 'Garantie'] as $suggestion)
+                            @php $alreadyAdded = collect($specifications)->pluck('label')->contains($suggestion); @endphp
+                            <button type="button"
+                                    wire:click="addSpec('{{ $suggestion }}')"
+                                    @class([
+                                        'px-3 py-1 rounded-full text-xs font-medium border transition-colors',
+                                        'bg-primary/10 text-primary border-primary/20 cursor-default opacity-50'
+                                            => $alreadyAdded,
+                                        'bg-gray-50 text-gray-600 border-gray-200 hover:bg-primary/5 hover:border-primary/30 hover:text-primary'
+                                            => !$alreadyAdded,
+                                    ])
+                                    {{ $alreadyAdded ? 'disabled' : '' }}>
+                                + {{ $suggestion }}
+                            </button>
+                        @endforeach
+                    </div>
+
+                    {{-- Liste des specs --}}
+                    @if(count($specifications) > 0)
+                        <div class="space-y-2 mb-3">
+                            @foreach($specifications as $index => $spec)
+                                <div class="flex items-center gap-2">
+                                    <input type="text"
+                                           wire:model="specifications.{{ $index }}.label"
+                                           placeholder="Caractéristique"
+                                           class="w-2/5 px-3 py-2 border border-gray-200 rounded-xl
+                                                  text-sm bg-gray-50 focus:outline-none
+                                                  focus:border-primary focus:bg-white transition-colors"/>
+                                    <span class="text-gray-300">:</span>
+                                    <input type="text"
+                                           wire:model="specifications.{{ $index }}.value"
+                                           placeholder="Valeur"
+                                           class="flex-1 px-3 py-2 border border-gray-200 rounded-xl
+                                                  text-sm bg-gray-50 focus:outline-none
+                                                  focus:border-primary focus:bg-white transition-colors"/>
+                                    <button type="button"
+                                            wire:click="removeSpec({{ $index }})"
+                                            class="w-8 h-8 flex items-center justify-center
+                                                   text-gray-300 hover:text-red-500 hover:bg-red-50
+                                                   rounded-lg transition-colors flex-shrink-0">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                  stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="border-2 border-dashed border-gray-200 rounded-xl px-4 py-4
+                                    flex items-center gap-3 text-gray-400 mb-3">
+                            <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center
+                                        justify-center flex-shrink-0">
+                                <svg class="w-4 h-4 text-gray-300" fill="none"
+                                     stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                </svg>
+                            </div>
+                            <p class="text-sm text-gray-400">
+                                Aucune caractéristique — cliquez sur un tag ci-dessus
+                            </p>
+                        </div>
+                    @endif
+
+                    <button type="button"
+                            wire:click="addSpec('')"
+                            class="inline-flex items-center gap-1.5 text-xs font-medium
+                                   text-primary hover:text-primary/80 transition-colors">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  stroke-width="2" d="M12 4v16M4 12h16"/>
+                        </svg>
+                        Ajouter une ligne personnalisée
+                    </button>
+                </div>
+
                 {{-- Prix --}}
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
                     <h3 class="text-sm font-bold text-dark mb-4 flex items-center gap-2">
                         <span class="w-6 h-6 bg-secondary/10 rounded-lg flex items-center
-                                     justify-center text-secondary text-xs">2</span>
+                                     justify-center text-secondary text-xs">3</span>
                         Prix & TVA
                     </h3>
                     <div class="space-y-4">
