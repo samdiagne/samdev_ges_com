@@ -19,6 +19,68 @@
         @endforeach
     </div>
 
+    {{-- ── Actions rapides --}}
+    <div class="flex flex-wrap gap-2 mb-6">
+        <a href="{{ route('caisse.pos') }}"
+           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold
+                  text-white shadow-lg shadow-primary/25 hover:brightness-110
+                  transition-all hover:-translate-y-0.5"
+           style="background-color: #1E6FBF;">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184
+                         1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+            Nouvelle vente
+        </a>
+
+        <a href="{{ route('caisse.achats.create') }}"
+           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold
+                  bg-white border border-gray-200 text-dark hover:bg-gray-50 hover:border-gray-300
+                  transition-all hover:-translate-y-0.5 shadow-sm">
+            <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10"/>
+            </svg>
+            Nouvel achat
+        </a>
+
+        <a href="{{ route('caisse.depenses.index') }}"
+           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold
+                  bg-white border border-gray-200 text-dark hover:bg-gray-50 hover:border-gray-300
+                  transition-all hover:-translate-y-0.5 shadow-sm">
+            <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2
+                         2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+            Nouvelle dépense
+        </a>
+
+        <a href="{{ route('devis.create') }}"
+           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold
+                  bg-white border border-gray-200 text-dark hover:bg-gray-50 hover:border-gray-300
+                  transition-all hover:-translate-y-0.5 shadow-sm">
+            <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0
+                         01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            Nouveau devis
+        </a>
+
+        <a href="{{ route('produits.create') }}"
+           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold
+                  bg-white border border-gray-200 text-dark hover:bg-gray-50 hover:border-gray-300
+                  transition-all hover:-translate-y-0.5 shadow-sm">
+            <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 4v16M4 12h16"/>
+            </svg>
+            Nouveau produit
+        </a>
+    </div>
+
     {{-- ── KPI Cards --}}
     <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
 
