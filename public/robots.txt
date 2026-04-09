@@ -1,11 +1,16 @@
 User-agent: *
+
+# Pages publiques autorisées
 Allow: /shop/
 Allow: /shop/catalogue
 Allow: /shop/produit/
 Allow: /shop/faq
 Allow: /shop/contact
 Allow: /shop/cgv
+Allow: /sitemap.xml
+Allow: /robots.txt
 
+# Back-office — interdit aux robots
 Disallow: /dashboard
 Disallow: /caisse/
 Disallow: /produits/
@@ -19,8 +24,25 @@ Disallow: /rapports/
 Disallow: /etats/
 Disallow: /parametres/
 Disallow: /utilisateurs/
+Disallow: /avis/
+Disallow: /profile/
+
+# Auth — interdit aux robots
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
 Disallow: /compte/connexion
 Disallow: /compte/inscription
-Disallow: /admin/
+Disallow: /compte/deconnexion
+Disallow: /compte/mes-commandes
+Disallow: /compte/commande/
+Disallow: /compte/profil
+
+# Panier & checkout — interdit aux robots
+Disallow: /shop/panier
+Disallow: /shop/checkout
+Disallow: /shop/confirmation/
+Disallow: /shop/payment/
 
 Sitemap: https://aladab-tech.com/sitemap.xml
