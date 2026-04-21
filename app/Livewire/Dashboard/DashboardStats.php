@@ -55,8 +55,8 @@ class DashboardStats extends Component
         ]);
         $depensesTotal = $depensesQuery->sum('amount');
 
-        // Bénéfice brut = CA - Achats - Dépenses
-        $benefice = $caHt - $achatsTotal - $depensesTotal;
+        // Bénéfice brut = CA TTC - Achats - Dépenses
+        $benefice = $ca - $achatsTotal - $depensesTotal;
 
         // Comparaison période précédente
         [$prevFrom, $prevTo] = $this->getPreviousDateRange();

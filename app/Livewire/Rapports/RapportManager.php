@@ -145,7 +145,7 @@ class RapportManager extends Component
                 ->whereMonth('purchase_date', $m)->sum('total_amount');
             $depenses = Expense::whereYear('expense_date', $year)
                 ->whereMonth('expense_date', $m)->sum('amount');
-            $benefice = $caHt - $achats - $depenses;
+            $benefice = $ca - $achats - $depenses;
 
             $monthly[] = [
                 'mois'     => Carbon::create($year, $m, 1)->translatedFormat('F'),

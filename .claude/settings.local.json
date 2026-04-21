@@ -18,7 +18,8 @@
       "Bash(ls C:/xampp/htdocs/al-adab-tech/vite.config.*)",
       "Bash(git checkout:*)",
       "Bash(grep -n \"specs\\\\|attributes\\\\|specifications\\\\|features\\\\|tags\" C:/xampp/htdocs/al-adab-tech/database/migrations/*.php)",
-      "Bash(php -r \"require 'vendor/autoload.php'; echo 'OK';\")"
+      "Bash(php -r \"require 'vendor/autoload.php'; echo 'OK';\")",
+      "PowerShell(Copy-Item *)"
     ]
   }
 }
