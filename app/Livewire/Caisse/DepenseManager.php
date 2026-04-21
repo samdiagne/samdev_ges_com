@@ -36,6 +36,9 @@ class DepenseManager extends Component
     public bool $showDeleteModal = false;
     public ?int $deletingId      = null;
 
+    // Verrouillage montant
+    public bool $amountLocked = false;
+
     protected function rules(): array
     {
         return [
@@ -79,6 +82,7 @@ class DepenseManager extends Component
         $this->resetForm();
         $this->isEditing            = true;
         $this->editingId            = $id;
+        $this->amountLocked         = !$expense->isDeletable();
         $this->expense_category_id  = $expense->expense_category_id;
         $this->description          = $expense->description;
         $this->amount               = (float) $expense->amount;
@@ -102,7 +106,7 @@ class DepenseManager extends Component
             'expense_category_id' => $this->expense_category_id,
             'user_id'             => Auth::id(),
             'description'         => $this->description,
-            'amount' => (float) $this->amount,
+            'amount'              => (float) $this->amount,
             'expense_date'        => $this->expense_date,
             'payment_method'      => $this->payment_method,
             'notes'               => $this->notes ?: null,
@@ -110,7 +114,11 @@ class DepenseManager extends Component
         ];
 
         if ($this->isEditing) {
-            Expense::findOrFail($this->editingId)->update($data);
+            $expense = Expense::findOrFail($this->editingId);
+            if (!$expense->isDeletable()) {
+                unset($data['amount']);
+            }
+            $expense->update($data);
             session()->flash('success', 'Dépense modifiée avec succès !');
         } else {
             Expense::create($data);
@@ -123,13 +131,29 @@ class DepenseManager extends Component
 
     public function confirmDelete(int $id): void
     {
+        $expense = Expense::findOrFail($id);
+
+        if (!$expense->isDeletable()) {
+            session()->flash('error', 'Cette dépense ne peut plus être supprimée (plus de 24h).');
+            return;
+        }
+
         $this->deletingId      = $id;
         $this->showDeleteModal = true;
     }
 
     public function delete(): void
     {
-        Expense::findOrFail($this->deletingId)->delete();
+        $expense = Expense::findOrFail($this->deletingId);
+
+        if (!$expense->isDeletable()) {
+            session()->flash('error', 'Cette dépense ne peut plus être supprimée (plus de 24h).');
+            $this->showDeleteModal = false;
+            $this->deletingId      = null;
+            return;
+        }
+
+        $expense->delete();
         session()->flash('success', 'Dépense supprimée avec succès !');
         $this->showDeleteModal = false;
         $this->deletingId      = null;
@@ -153,6 +177,7 @@ class DepenseManager extends Component
         $this->receipt             = null;
         $this->currentReceipt      = null;
         $this->editingId           = null;
+        $this->amountLocked        = false;
         $this->resetErrorBag();
     }
 

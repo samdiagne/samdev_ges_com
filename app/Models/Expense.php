@@ -32,4 +32,9 @@ class Expense extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function isDeletable(): bool
+    {
+        return $this->created_at->diffInHours(now()) < 24;
+    }
 }

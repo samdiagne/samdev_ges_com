@@ -111,6 +111,21 @@
         </div>
     @endif
 
+    @if(session('error'))
+        <div x-data="{ show: true }" x-show="show"
+             x-init="setTimeout(() => show = false, 4000)"
+             class="mb-4 flex items-center gap-3 bg-red-50 border border-red-200
+                    text-red-800 px-4 py-3 rounded-xl text-sm font-medium">
+            <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor"
+                 viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0
+                         001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            </svg>
+            {{ session('error') }}
+        </div>
+    @endif
+
     {{-- Table --}}
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
@@ -216,6 +231,7 @@
                                                      15H9v-2.828l8.586-8.586z"/>
                                         </svg>
                                     </button>
+                                    @if($expense->isDeletable())
                                     <button wire:click="confirmDelete({{ $expense->id }})"
                                             class="w-8 h-8 flex items-center justify-center
                                                    rounded-lg text-gray-400 hover:text-red-500
@@ -229,6 +245,20 @@
                                                      1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                         </svg>
                                     </button>
+                                    @else
+                                    <span title="Suppression impossible après 24h"
+                                          class="w-8 h-8 flex items-center justify-center
+                                                 rounded-lg text-gray-300 cursor-not-allowed">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                             viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                  stroke-width="2"
+                                                  d="M12 15v2m0 0v2m0-2h2m-2 0H10m2-6V7a4 4 0
+                                                     10-8 0v4H3a1 1 0 00-1 1v7a2 2 0 002 2h12a2 2
+                                                     0 002-2v-7a1 1 0 00-1-1h-1z"/>
+                                        </svg>
+                                    </span>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -341,17 +371,47 @@
                             <div class="relative">
                                 <input wire:model="amount" type="number"
                                        min="1" placeholder="0"
+                                       @if($amountLocked) readonly @endif
                                        class="w-full px-3 py-2.5 pr-14 border rounded-xl text-sm
                                               focus:outline-none transition-colors
-                                              {{ $errors->has('amount')
-                                                 ? 'border-red-400 bg-red-50'
-                                                 : 'border-gray-200 bg-gray-50 focus:border-primary focus:bg-white' }}"/>
+                                              {{ $amountLocked
+                                                 ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                 : ($errors->has('amount')
+                                                    ? 'border-red-400 bg-red-50'
+                                                    : 'border-gray-200 bg-gray-50 focus:border-primary focus:bg-white') }}"/>
                                 <span class="absolute right-3 top-1/2 -translate-y-1/2
-                                             text-xs text-gray-400">FCFA</span>
+                                             text-xs text-gray-400">
+                                    @if($amountLocked)
+                                        <svg class="w-3.5 h-3.5 text-gray-400" fill="none"
+                                             stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                  stroke-width="2"
+                                                  d="M12 15v2m0 0v2m0-2h2m-2 0H10m2-6V7a4 4 0
+                                                     10-8 0v4H3a1 1 0 00-1 1v7a2 2 0 002 2h12a2 2
+                                                     0 002-2v-7a1 1 0 00-1-1h-1z"/>
+                                        </svg>
+                                    @else
+                                        FCFA
+                                    @endif
+                                </span>
                             </div>
-                            @error('amount')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
+                            @if($amountLocked)
+                                <p class="text-amber-600 text-xs mt-1 flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                              d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58
+                                                 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53
+                                                 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0
+                                                 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0
+                                                 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Montant verrouillé après 24h
+                                </p>
+                            @else
+                                @error('amount')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            @endif
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-dark mb-1.5">
@@ -467,7 +527,9 @@
                  wire:click="$set('showDeleteModal', false)"></div>
             <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
                 <h3 class="text-base font-bold text-dark mb-2">Supprimer la dépense</h3>
-                <p class="text-sm text-gray-500 mb-6">Cette action est irréversible.</p>
+                <p class="text-sm text-gray-500 mb-6">
+                    Cette action est irréversible. Les dépenses de plus de 24h ne peuvent pas être supprimées.
+                </p>
                 <div class="flex gap-3">
                     <button wire:click="$set('showDeleteModal', false)"
                             class="flex-1 py-2 text-sm font-medium text-gray-600
