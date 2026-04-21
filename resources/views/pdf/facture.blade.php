@@ -216,7 +216,7 @@
             <div class="company-info">
                 @if($settings->address) Adresse : {{ $settings->address }}<br/>@endif
                 @if($settings->phone)   Tél : {{ $settings->phone }}<br/>@endif
-                @if($settings->email)   ✉ {{ $settings->email }}<br/>@endif
+                @if($settings->email)   Email : {{ $settings->email }}<br/>@endif
                 @if($settings->ninea)   NINEA : {{ $settings->ninea }}<br/>@endif
                 @if($settings->rc)      RC : {{ $settings->rc }}@endif
             </div>
@@ -325,8 +325,7 @@
         </div>
     </div>
 
-    {{-- ── Footer : masqué temporairement ── --}}
-    @if(false)
+    {{-- ── Footer ── --}}
     <div class="footer">
         <div class="footer-legal">
             <strong>{{ $settings->name }}</strong><br/>
@@ -340,6 +339,15 @@
         <div class="footer-signs">
             <div class="signs-inner">
 
+                {{-- Cachet (masqué si vide) --}}
+                @if($stampPath && file_exists($stampPath))
+                <div class="sign-block">
+                    <img src="{{ $stampPath }}"
+                         style="height:65px; object-fit:contain; opacity:0.88; margin-bottom:3px;"/>
+                    <div class="sign-line">Cachet officiel</div>
+                </div>
+                @endif
+
                 {{-- Signature --}}
                 <div class="sign-block">
                     @if($signaturePath && file_exists($signaturePath))
@@ -351,22 +359,9 @@
                     <div class="sign-line">Signature</div>
                 </div>
 
-                {{-- Cachet --}}
-                <div class="sign-block">
-                    @if($stampPath && file_exists($stampPath))
-                        <img src="{{ $stampPath }}"
-                             style="height:65px; object-fit:contain; opacity:0.88; margin-bottom:3px;"/>
-                    @else
-                        <div style="width:65px; height:65px; border:2px dashed #1E6FBF;
-                                    border-radius:50%; margin-bottom:3px;"></div>
-                    @endif
-                    <div class="sign-line">Cachet officiel</div>
-                </div>
-
             </div>
         </div>
     </div>
-    @endif
 
 </div>
 </body>

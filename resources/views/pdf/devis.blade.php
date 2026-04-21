@@ -114,7 +114,7 @@
             <div class="company-info">
                 @if($settings->address) Adresse : {{ $settings->address }}<br/>@endif
                 @if($settings->phone)   Tél : {{ $settings->phone }}<br/>@endif
-                @if($settings->email)   ✉ {{ $settings->email }}<br/>@endif
+                @if($settings->email)   Email : {{ $settings->email }}<br/>@endif
                 @if($settings->ninea)   NINEA : {{ $settings->ninea }}<br/>@endif
                 @if($settings->rc)      RC : {{ $settings->rc }}@endif
             </div>
@@ -123,17 +123,6 @@
             <div class="quote-title">DEVIS</div>
             <div class="quote-number">{{ $quote->reference }}</div>
             <div class="quote-date">Date : {{ $quote->quote_date->format('d/m/Y') }}</div>
-            <div>
-                <span class="badge-status badge-{{ $quote->status }}">
-                    @switch($quote->status)
-                        @case('draft')    Brouillon @break
-                        @case('sent')     Envoyé @break
-                        @case('accepted') Accepté @break
-                        @case('refused')  Refusé @break
-                        @default {{ $quote->status }}
-                    @endswitch
-                </span>
-            </div>
         </div>
     </div>
 
@@ -209,13 +198,12 @@
                 Pour accepter ce devis, veuillez nous contacter :<br/>
                 @if($settings->phone)   Tél : {{ $settings->phone }}<br/>@endif
                 @if($settings->whatsapp)WhatshApp : {{ $settings->whatsapp }}<br/>@endif
-                @if($settings->email)   ✉ {{ $settings->email }}@endif
+                @if($settings->email)   Email : {{ $settings->email }}@endif
             </div>
         </div>
     </div>
 
     {{-- Footer --}}
-    @if(false)
     <div class="footer">
         <div class="footer-legal">
             <strong>{{ $settings->name }}</strong><br/>
@@ -226,6 +214,17 @@
             </span>
         </div>
         <div class="footer-signs">
+
+            {{-- Cachet (masqué si vide) --}}
+            @if($stampPath && file_exists($stampPath))
+            <div class="sign-block">
+                <img src="{{ $stampPath }}"
+                     style="height:65px; object-fit:contain; opacity:0.88; margin-bottom:3px;"/>
+                <div class="sign-line">Cachet officiel</div>
+            </div>
+            @endif
+
+            {{-- Signature --}}
             <div class="sign-block">
                 @if($signaturePath && file_exists($signaturePath))
                     <img src="{{ $signaturePath }}"
@@ -235,19 +234,9 @@
                 @endif
                 <div class="sign-line">Signature</div>
             </div>
-            <div class="sign-block">
-                @if($stampPath && file_exists($stampPath))
-                    <img src="{{ $stampPath }}"
-                         style="height:65px; object-fit:contain; opacity:0.88; margin-bottom:3px;"/>
-                @else
-                    <div style="width:65px; height:65px; border:2px dashed #F5A800;
-                                border-radius:50%; margin-bottom:3px;"></div>
-                @endif
-                <div class="sign-line">Cachet officiel</div>
-            </div>
+
         </div>
     </div>
-    @endif
 
 </div>
 </body>
