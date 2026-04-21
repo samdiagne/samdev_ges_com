@@ -140,93 +140,45 @@
                 </div>
 
                 {{-- Paiement --}}
-                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6"
-                     x-data="{ method: '{{ old('payment_method', 'delivery') }}' }">
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
                     <h2 class="text-sm font-bold text-dark mb-5 flex items-center gap-2">
                         <span class="w-6 h-6 bg-primary/10 rounded-lg flex items-center
                                      justify-center text-primary text-xs font-bold">3</span>
-                        Mode de paiement
+                        Moyens de paiement acceptés
                     </h2>
 
-                    <input type="hidden" name="payment_method" :value="method"/>
-
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
                         @foreach([
-                            ['value' => 'wave',     'label' => 'Wave',
-                             'desc'  => 'Paiement mobile Wave',    'logo' => 'wave.png'],
-                            ['value' => 'om',       'label' => 'Orange Money',
-                             'desc'  => 'Paiement mobile OM',      'logo' => 'om.png'],
-                            ['value' => 'mix',      'label' => 'Mix by Yass',
-                             'desc'  => 'Ex Free Money',           'logo' => 'mby.png'],
-                            ['value' => 'djamo',    'label' => 'Djamo',
-                             'desc'  => 'Carte Djamo SN',          'logo' => 'djamo.png'],
-                            ['value' => 'delivery', 'label' => 'À la livraison',
-                             'desc'  => 'Cash à la réception',     'logo' => null],
-                            ['value' => 'card',     'label' => 'Carte bancaire',
-                             'desc'  => 'Visa, Mastercard…',       'logo' => null],
+                            ['label' => 'Wave',        'logo' => 'wave.png'],
+                            ['label' => 'Orange Money','logo' => 'om.png'],
+                            ['label' => 'Mix by Yass', 'logo' => 'mby.png'],
+                            ['label' => 'Visa',        'logo' => 'visa.webp'],
+                            ['label' => 'Mastercard',  'logo' => 'mastercard.webp'],
                         ] as $pm)
-                            <button type="button"
-                                    @click="method = '{{ $pm['value'] }}'"
-                                    :class="method === '{{ $pm['value'] }}'
-                                        ? 'border-primary bg-primary/5 shadow-md'
-                                        : 'border-gray-200 bg-gray-50 hover:border-gray-300'"
-                                    class="flex items-start gap-3 p-4 rounded-2xl
-                                           border-2 transition-all text-left">
-                                @if($pm['logo'])
-                                    <img src="{{ asset('images/payment/' . $pm['logo']) }}"
-                                         alt="{{ $pm['label'] }}"
-                                         class="w-8 h-8 object-contain flex-shrink-0"/>
-                                @else
-                                    <span class="text-2xl">{{ $pm['value'] === 'delivery' ? '🚚' : '💳' }}</span>
-                                @endif
-                                <div>
-                                    <p :class="method === '{{ $pm['value'] }}'
-                                               ? 'text-primary' : 'text-dark'"
-                                       class="text-sm font-semibold">
-                                        {{ $pm['label'] }}
-                                    </p>
-                                    <p class="text-xs text-gray-400 mt-0.5">
-                                        {{ $pm['desc'] }}
-                                    </p>
-                                </div>
-                                <div :class="method === '{{ $pm['value'] }}'
-                                             ? 'border-primary bg-primary' : 'border-gray-300'"
-                                     class="w-4 h-4 rounded-full border-2 flex items-center
-                                            justify-center ml-auto flex-shrink-0 mt-0.5">
-                                    <div x-show="method === '{{ $pm['value'] }}'"
-                                         class="w-2 h-2 rounded-full bg-white"></div>
-                                </div>
-                            </button>
+                            <div class="flex flex-col items-center gap-2 p-3 rounded-2xl
+                                        border border-gray-100 bg-gray-50">
+                                <img src="{{ asset('images/payment/' . $pm['logo']) }}"
+                                     alt="{{ $pm['label'] }}"
+                                     class="w-10 h-10 object-contain"/>
+                                <span class="text-xs font-medium text-gray-600">
+                                    {{ $pm['label'] }}
+                                </span>
+                            </div>
                         @endforeach
                     </div>
 
-                    {{-- Info Wave/OM/Mix/Wizall --}}
-                    <div x-show="method === 'wave' || method === 'om' || method === 'mix' || method === 'djamo'"
-                         class="mt-4 bg-blue-50 border border-blue-100 rounded-xl
-                                p-3 text-xs text-blue-700">
-                        💡 Vous serez redirigé vers la page de paiement PayDunya
-                        pour finaliser votre transaction en toute sécurité.
+                    <div class="mt-4 bg-blue-50 border border-blue-100 rounded-xl
+                                p-3 text-xs text-blue-700 flex items-start gap-2">
+                        <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none"
+                             stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  stroke-width="2"
+                                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0"/>
+                        </svg>
+                        Après confirmation, vous serez redirigé vers la page de paiement
+                        sécurisée PayDunya pour choisir votre moyen de paiement et
+                        finaliser votre transaction.
                     </div>
-
-                    {{-- Info livraison --}}
-                    <div x-show="method === 'delivery'"
-                         class="mt-4 bg-green-50 border border-green-100 rounded-xl
-                                p-3 text-xs text-green-700">
-                        🚚 Payez en cash lors de la livraison.
-                        Nous vous contacterons pour confirmer.
-                    </div>
-
-                    {{-- Info Carte bancaire --}}
-                    <div x-show="method === 'card'"
-                         class="mt-4 bg-blue-50 border border-blue-100 rounded-xl
-                                p-3 text-xs text-blue-700">
-                        💳 Un agent vous contactera pour traiter votre paiement par carte bancaire
-                        après confirmation de la commande.
-                    </div>
-
-                    @error('payment_method')
-                        <p class="text-red-500 text-xs mt-2">{{ $message }}</p>
-                    @enderror
                 </div>
             </div>
 

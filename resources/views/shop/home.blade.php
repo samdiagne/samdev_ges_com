@@ -357,7 +357,7 @@
                  'r' => 'Ajoutez les articles souhaités dans votre panier depuis le catalogue, puis cliquez sur "Commander". Renseignez vos coordonnées, choisissez votre mode de paiement et confirmez. Vous recevrez une confirmation avec le numéro de votre commande.',
                  'icon' => '🛒'],
                 ['q' => 'Quels modes de paiement acceptez-vous ?',
-                 'r' => 'Nous acceptons Wave, Orange Money, Mix by Yass, Djamo, le paiement à la livraison (cash) et le virement bancaire. Choisissez le mode qui vous convient lors du checkout.',
+                 'r' => 'Nous acceptons Wave, Orange Money, Mix by Yass, Visa et Mastercard. Le choix du mode de paiement se fait directement sur la page de paiement sécurisée PayDunya après confirmation de votre commande.',
                  'icon' => '💳'],
                 ['q' => 'Quelles sont les zones et délais de livraison ?',
                  'r' => 'Nous livrons dans tout Dakar et ses environs sous 24 à 48h après confirmation. Pour les banlieues (Pikine, Guédiawaye, Rufisque, Thiès) et autres régions, comptez 2 à 5 jours ouvrables.',

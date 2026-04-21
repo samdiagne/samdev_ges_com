@@ -47,13 +47,11 @@ class CheckoutController extends Controller
             'customer_email'   => 'nullable|email|max:255',
             'delivery_address' => 'required|string|min:5|max:500',
             'city'             => 'required|string|max:100',
-            'payment_method'   => 'required|in:wave,om,mix,djamo,delivery,card',
             'notes'            => 'nullable|string|max:500',
         ], [
             'customer_name.required'    => 'Votre nom est obligatoire.',
             'customer_phone.required'   => 'Votre téléphone est obligatoire.',
             'delivery_address.required' => 'L\'adresse de livraison est obligatoire.',
-            'payment_method.required'   => 'Choisissez un mode de paiement.',
         ]);
 
         $subtotal = collect($cart)->sum(fn($i) => $i['price'] * $i['quantity']);
@@ -71,7 +69,7 @@ class CheckoutController extends Controller
                 'subtotal'         => $subtotal,
                 'delivery_fee'     => 0,
                 'total'            => $subtotal,
-                'payment_method'   => $request->payment_method,
+                'payment_method'   => 'paydunya',
                 'payment_status'   => 'pending',
                 'status'           => 'pending',
             ]);
@@ -90,16 +88,7 @@ class CheckoutController extends Controller
             return $order;
         });
 
-        // Paiement mobile → redirection PayDunya
-        if (in_array($request->payment_method, ['wave', 'om', 'mix', 'djamo'])) {
-            return $this->initiatePaydunya($order);
-        }
-
-        // Paiement à la livraison ou carte bancaire
-        session()->forget('cart');
-        $this->sendOrderEmails($order);
-        return redirect()->route('shop.confirmation', $order->reference)
-            ->with('success', 'Commande passée avec succès !');
+        return $this->initiatePaydunya($order);
     }
 
     // ── Envoi des emails de confirmation ────────────────────────────────────

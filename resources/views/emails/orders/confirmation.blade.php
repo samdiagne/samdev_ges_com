@@ -22,13 +22,16 @@ Votre commande a bien été reçue et est en cours de traitement.
 
 **Mode de paiement :**
 {{ match($order->payment_method) {
-    'wave'     => 'Wave',
-    'om'       => 'Orange Money',
-    'mix'      => 'Mix by Yass',
-    'djamo'    => 'Djamo',
-    'delivery' => 'Paiement à la livraison',
-    'card'     => 'Carte bancaire',
-    default    => $order->payment_method,
+    'wave'       => 'Wave',
+    'om'         => 'Orange Money',
+    'mix'        => 'Mix by Yass',
+    'visa'       => 'Visa',
+    'mastercard' => 'Mastercard',
+    'paydunya'   => 'Paiement en ligne (PayDunya)',
+    'djamo'      => 'Djamo',
+    'delivery'   => 'Paiement à la livraison',
+    'card'       => 'Carte bancaire',
+    default      => $order->payment_method,
 } }}
 
 **Livraison à :** {{ $order->city }}

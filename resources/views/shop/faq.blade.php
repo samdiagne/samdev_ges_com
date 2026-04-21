@@ -50,7 +50,7 @@
             'border'=> 'border-secondary/20',
             'faqs'  => [
                 ['q' => 'Quels modes de paiement acceptez-vous ?',
-                 'r' => 'Nous acceptons Wave, Orange Money, Mix by Yass, Djamo, le paiement à la livraison (cash) et le virement bancaire. Choisissez le mode qui vous convient lors du checkout.'],
+                 'r' => 'Nous acceptons Wave, Orange Money, Mix by Yass, Visa et Mastercard. Le choix du mode de paiement se fait directement sur la page de paiement sécurisée PayDunya après confirmation de votre commande.'],
                 ['q' => 'Le paiement en ligne est-il sécurisé ?',
                  'r' => 'Oui, tous nos paiements en ligne sont traités par Paydunya, une plateforme de paiement certifiée. Vos données bancaires ne sont jamais stockées sur notre serveur.'],
                 ['q' => 'Est-il possible de payer en plusieurs fois ?',

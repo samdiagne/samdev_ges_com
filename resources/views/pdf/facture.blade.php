@@ -259,7 +259,8 @@
                         @case('wave')  Wave @break
                         @case('om')    Orange Money @break
                         @case('mix')   Mixx by Yass @break
-                        @case('djamo') Djamo @break
+                        @case('visa')  Visa @break
+                        @case('mastercard') Mastercard @break
                         @case('card')  Carte bancaire @break
                         @default {{ ucfirst($sale->payment_method) }}
                     @endswitch
@@ -313,7 +314,8 @@
                         @case('wave')  Wave @break
                         @case('om')    Orange Money @break
                         @case('mix')   Mixx by Yass @break
-                        @case('djamo') Djamo @break
+                        @case('visa')  Visa @break
+                        @case('mastercard') Mastercard @break
                         @case('card')  carte bancaire @break
                         @default {{ $sale->payment_method }}
                     @endswitch

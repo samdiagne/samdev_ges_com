@@ -509,7 +509,6 @@
                                 ['value' => 'wave',  'label' => 'Wave'],
                                 ['value' => 'om',    'label' => 'Orange Money'],
                                 ['value' => 'mix',   'label' => 'Mixx by Yass'],
-                                ['value' => 'djamo', 'label' => 'Djamo'],
                                 ['value' => 'card',  'label' => 'Carte bancaire'],
                             ] as $method)
                                 <button type="button"

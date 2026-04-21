@@ -64,7 +64,6 @@
                 <option value="wave">Wave</option>
                 <option value="om">Orange Money</option>
                 <option value="mix">Mixx by Yass</option>
-                <option value="djamo">Djamo</option>
                 <option value="card">Carte bancaire</option>
             </select>
             <select wire:model.live="filterSource"
@@ -138,7 +137,6 @@
                                         'wave'  => 'bg-blue-100 text-blue-700',
                                         'om'    => 'bg-orange-100 text-orange-700',
                                         'mix'   => 'bg-yellow-100 text-yellow-700',
-                                        'djamo' => 'bg-pink-100 text-pink-700',
                                         'card'  => 'bg-purple-100 text-purple-700',
                                     ];
                                     $paymentLabels = [
@@ -146,7 +144,6 @@
                                         'wave'  => 'Wave',
                                         'om'    => 'OM',
                                         'mix'   => 'Mixx by Yass',
-                                        'djamo' => 'Djamo',
                                         'card'  => '💳 Carte',
                                     ];
                                 @endphp
