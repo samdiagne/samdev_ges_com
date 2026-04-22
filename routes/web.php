@@ -6,6 +6,7 @@ use App\Http\Controllers\FactureController;
 use App\Http\Controllers\DevisController;
 use App\Http\Controllers\EtatController;
 use App\Http\Controllers\AvisController;
+use App\Http\Controllers\ImportController;
 
 // Redirect racine
 Route::get('/', fn() => redirect()->route('shop.home'));
@@ -129,6 +130,10 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/etats/depenses',   [EtatController::class, 'etatDepenses'])->name('etats.depenses');
     Route::get('/etats/tresorerie', [EtatController::class, 'etatTresorerie'])->name('etats.tresorerie');
     Route::get('/etats/stocks',     [EtatController::class, 'bilanStocks'])->name('etats.stocks');
+
+    // ── Import de données ─────────────────────────
+    Route::get('/import',                fn() => view('import.index'))->name('import.index');
+    Route::get('/import/template/{type}', [ImportController::class, 'template'])->name('import.template');
 
     // ── Admin only ────────────────────────────────
     Route::middleware('admin')->group(function () {

@@ -20,7 +20,9 @@
       "Bash(grep -n \"specs\\\\|attributes\\\\|specifications\\\\|features\\\\|tags\" C:/xampp/htdocs/al-adab-tech/database/migrations/*.php)",
       "Bash(php -r \"require 'vendor/autoload.php'; echo 'OK';\")",
       "PowerShell(Copy-Item *)",
-      "Bash(git log *)"
+      "Bash(git log *)",
+      "Bash(composer show *)",
+      "Bash(composer require *)"
     ]
   }
 }

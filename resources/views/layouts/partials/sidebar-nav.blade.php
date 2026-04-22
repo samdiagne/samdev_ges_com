@@ -101,6 +101,12 @@
                     'icon'  => 'document-text',
                     'roles' => ['admin', 'gestionnaire'],
                 ],
+                [
+                    'label' => 'Import données',
+                    'route' => 'import.index',
+                    'icon'  => 'upload',
+                    'roles' => ['admin', 'gestionnaire'],
+                ],
             ],
         ],
         [
