@@ -152,7 +152,7 @@
                             </td>
                             <td class="px-4 py-3">
                                 <p class="text-sm font-medium text-dark">
-                                    {{ $purchase->supplier->name }}
+                                    {{ $purchase->supplier?->name ?? 'Aucun fournisseur' }}
                                 </p>
                             </td>
                             <td class="px-4 py-3 hidden md:table-cell">
@@ -262,7 +262,7 @@
                         </h3>
                         <p class="text-xs text-gray-400">
                             {{ $viewingPurchase->purchase_date->format('d/m/Y') }}
-                            · {{ $viewingPurchase->supplier->name }}
+                            · @if($viewingPurchase->supplier)· {{ $viewingPurchase->supplier->name }}@endif
                         </p>
                     </div>
                     <button wire:click="$set('showDetailModal', false)"
@@ -278,26 +278,33 @@
                     {{-- Articles --}}
                     <div>
                         <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                            Produits ({{ $viewingPurchase->items->count() }})
+                            Lignes ({{ $viewingPurchase->items->count() }})
                         </p>
-                        <div class="space-y-2">
+
+                        <div class="overflow-hidden rounded-xl border border-gray-100">
+
+                            <div class="grid grid-cols-12 bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-500 uppercase">
+                                <div class="col-span-7">Description</div>
+                                <div class="col-span-2 text-center">Qté</div>
+                                <div class="col-span-3 text-right">Montant</div>
+                            </div>
+
                             @foreach($viewingPurchase->items as $item)
-                                <div class="flex items-center justify-between p-3
-                                            bg-gray-50 rounded-xl">
-                                    <div>
-                                        <p class="text-sm font-medium text-dark">
-                                            {{ $item->product_name }}
-                                        </p>
-                                        <p class="text-xs text-gray-400">
-                                            {{ number_format($item->unit_price, 0, ',', ' ') }}
-                                            FCFA × {{ $item->quantity }}
-                                        </p>
+                                <div class="grid grid-cols-12 px-3 py-3 border-t border-gray-100 bg-white">
+                                    <div class="col-span-7 text-sm text-dark">
+                                        {{ $item->description }}
                                     </div>
-                                    <p class="text-sm font-bold text-dark">
+
+                                    <div class="col-span-2 text-center text-sm text-dark">
+                                        {{ $item->quantity }}
+                                    </div>
+
+                                    <div class="col-span-3 text-right text-sm font-bold text-primary">
                                         {{ number_format($item->total_price, 0, ',', ' ') }} FCFA
-                                    </p>
+                                    </div>
                                 </div>
                             @endforeach
+
                         </div>
                     </div>
                     {{-- Totaux --}}

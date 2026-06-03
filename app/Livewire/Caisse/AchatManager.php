@@ -88,8 +88,8 @@ class AchatManager extends Component
             ->orderBy('name')->get(['id', 'name']);
 
         $viewingPurchase = $this->viewingPurchaseId
-            ? Purchase::with(['supplier', 'user', 'items.product'])
-                      ->find($this->viewingPurchaseId)
+            ? Purchase::with(['supplier', 'user', 'items'])
+                    ->find($this->viewingPurchaseId)
             : null;
 
         return view('livewire.caisse.achat-manager',

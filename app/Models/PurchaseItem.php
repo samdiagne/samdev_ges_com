@@ -3,32 +3,26 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PurchaseItem extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
-        'purchase_id', 'product_id', 'product_name',
-        'unit_price', 'quantity', 'total_price',
+        'purchase_id',
+        'description',   // texte libre (ex: "Cartons d'emballage")
+        'quantity',
+        'unit_price',
+        'total_price',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'unit_price'  => 'decimal:2',
-            'total_price' => 'decimal:2',
-        ];
-    }
+    protected $casts = [
+        'unit_price'  => 'float',
+        'total_price' => 'float',
+        'quantity'    => 'integer',
+    ];
 
-    public function purchase()
+    public function purchase(): BelongsTo
     {
         return $this->belongsTo(Purchase::class);
-    }
-
-    public function product()
-    {
-        return $this->belongsTo(Product::class);
     }
 }
