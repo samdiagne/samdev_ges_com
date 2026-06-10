@@ -40,15 +40,15 @@
 
                     {{-- Lignes --}}
                     <div class="space-y-2">
-                        @forelse($items as $index => $item)
+                        @forelse($lignes as $index => $ligne)
                             <div class="grid grid-cols-12 gap-2 items-center bg-gray-50 rounded-xl px-3 py-2.5 group">
 
                                 {{-- Description --}}
                                 <div class="col-span-12 sm:col-span-5">
                                     <input
                                         type="text"
-                                        wire:change="updateItem({{ $index }}, 'description', $event.target.value)"
-                                        value="{{ $item['description'] }}"
+                                        wire:change="updateLine({{ $index }}, 'description', $event.target.value)"
+                                        value="{{ $ligne['description'] }}"
                                         placeholder="Ex: Cartons d'emballage..."
                                         class="w-full px-2.5 py-1.5 text-sm border border-gray-200
                                             rounded-lg bg-white focus:outline-none focus:border-primary
@@ -63,8 +63,8 @@
                                 <div class="col-span-4 sm:col-span-2">
                                     <input
                                         type="number"
-                                        wire:change="updateItem({{ $index }}, 'quantity', $event.target.value)"
-                                        value="{{ $item['quantity'] }}"
+                                        wire:change="updateLine({{ $index }}, 'quantity', $event.target.value)"
+                                        value="{{ $ligne['quantity'] }}"
                                         min="1"
                                         class="w-full px-2 py-1.5 text-sm text-center border border-gray-200
                                             rounded-lg bg-white focus:outline-none focus:border-primary
@@ -75,8 +75,8 @@
                                 <div class="col-span-7 sm:col-span-4 relative">
                                     <input
                                         type="number"
-                                        wire:change="updateItem({{ $index }}, 'unit_price', $event.target.value)"
-                                        value="{{ $item['unit_price'] }}"
+                                        wire:change="updateLine({{ $index }}, 'unit_price', $event.target.value)"
+                                        value="{{ $ligne['unit_price'] }}"
                                         min="0"
                                         step="100"
                                         placeholder="0"
@@ -91,10 +91,10 @@
 
                                 {{-- Supprimer --}}
                                 <div class="col-span-1 flex justify-end">
-                                    @if(count($items) > 1)
+                                    @if(count($lignes) > 1)
                                         <button
                                             type="button"
-                                            wire:click="removeItem({{ $index }})"
+                                            wire:click="removeLine({{ $index }})"
                                             class="w-6 h-6 flex items-center justify-center
                                                 text-gray-300 hover:text-red-500
                                                 hover:bg-red-50 rounded-lg transition-colors
@@ -124,7 +124,7 @@
 
                     {{-- Bouton ajouter ligne --}}
                     <button type="button"
-                            wire:click="addItem"
+                            wire:click="addLine"
                             class="mt-3 w-full flex items-center justify-center gap-2 py-2.5
                                    border-2 border-dashed border-gray-200 rounded-xl text-sm
                                    text-gray-400 hover:border-primary hover:text-primary
@@ -157,13 +157,13 @@
                                 Fournisseur
                                 <span class="text-xs font-normal text-gray-400 ml-1">— optionnel</span>
                             </label>
-                            <select wire:model="supplier_id"
+                            <select wire:model="fournisseur_id"
                                     class="w-full px-3 py-2.5 border border-gray-200 rounded-xl
                                            text-sm bg-gray-50 focus:outline-none focus:border-primary
                                            transition-colors">
                                 <option value="">Aucun fournisseur</option>
-                                @foreach($suppliers as $sup)
-                                    <option value="{{ $sup->id }}">{{ $sup->name }}</option>
+                                @foreach($fournisseurs as $sup)
+                                    <option value="{{ $sup->id }}">{{ $sup->nom }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -173,11 +173,11 @@
                             <label class="block text-sm font-medium text-dark mb-1.5">
                                 Date d'achat <span class="text-red-500">*</span>
                             </label>
-                            <input wire:model="purchase_date" type="date"
+                            <input wire:model="date_achat" type="date"
                                    class="w-full px-3 py-2.5 border border-gray-200 rounded-xl
                                           text-sm bg-gray-50 focus:outline-none focus:border-primary
                                           transition-colors"/>
-                            @error('purchase_date')
+                            @error('date_achat')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
@@ -185,14 +185,14 @@
                         {{-- Statut --}}
                         <div>
                             <label class="block text-sm font-medium text-dark mb-1.5">Statut</label>
-                            <select wire:model="status"
+                            <select wire:model="statut"
                                     class="w-full px-3 py-2.5 border border-gray-200 rounded-xl
                                            text-sm bg-gray-50 focus:outline-none focus:border-primary
                                            transition-colors">
-                                <option value="received">✅ Reçu</option>
-                                <option value="ordered">📦 Commandé</option>
-                                <option value="partial">⏳ Partiel</option>
-                                <option value="cancelled">❌ Annulé</option>
+                                <option value="recu">✅ Reçu</option>
+                                <option value="commande">📦 Commandé</option>
+                                <option value="partiel">⏳ Partiel</option>
+                                <option value="annule">❌ Annulé</option>
                             </select>
                         </div>
                     </div>
@@ -211,7 +211,7 @@
                             <label class="block text-sm font-medium text-dark mb-1.5">
                                 Mode de paiement
                             </label>
-                            <select wire:model="payment_method"
+                            <select wire:model="mode_paiement"
                                     class="w-full px-3 py-2.5 border border-gray-200 rounded-xl
                                            text-sm bg-gray-50 focus:outline-none focus:border-primary
                                            transition-colors">
@@ -228,7 +228,7 @@
                                 Montant payé
                             </label>
                             <div class="relative">
-                                <input wire:model.live="amount_paid"
+                                <input wire:model.live="montant_paye"
                                        type="number" min="0" step="100"
                                        placeholder="0"
                                        class="w-full px-3 py-2.5 pr-16 border border-gray-200
@@ -240,12 +240,12 @@
                         </div>
 
                         {{-- Résumé paiement --}}
-                        @if($totalAmount > 0)
-                            @if($amountDue > 0)
+                        @if($montantTotal > 0)
+                            @if($montantDu > 0)
                                 <div class="p-3 bg-red-50 rounded-xl">
                                     <p class="text-xs text-red-500 font-medium">Restant dû</p>
                                     <p class="text-lg font-bold text-red-600">
-                                        {{ number_format($amountDue, 0, ',', ' ') }}
+                                        {{ number_format($montantDu, 0, ',', ' ') }}
                                         <span class="text-sm font-normal">FCFA</span>
                                     </p>
                                 </div>

@@ -10,7 +10,7 @@
                   padding-bottom:12px; border-bottom:3px solid #EF4444; }
         .header-left  { display:table-cell; width:60%; vertical-align:middle; }
         .header-right { display:table-cell; width:40%; vertical-align:middle; text-align:right; }
-        .company-name { font-size:16px; font-weight:bold; color:#1E6FBF; }
+        .company-name { font-size:16px; font-weight:bold; color:#F27B20; }
         .company-info { font-size:9px; color:#666; line-height:1.6; margin-top:3px; }
         .doc-title  { font-size:18px; font-weight:bold; color:#EF4444; }
         .doc-period { font-size:10px; color:#666; margin-top:3px; }
@@ -52,9 +52,9 @@
                 <img src="{{ $logoBase64 }}" 
                     style="height:95px; width:auto; max-width:220px;"/>
             @endif
-            <div class="company-name">{{ $settings->name }}</div>
+            <div class="company-name">{{ $parametres->nom }}</div>
             <div class="company-info">
-                @if($settings->ninea) NINEA : {{ $settings->ninea }}@endif
+                @if($parametres->ninea) NINEA : {{ $parametres->ninea }}@endif
             </div>
         </div>
         <div class="header-right">
@@ -113,14 +113,14 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($expenses as $expense)
+            @forelse($depenses as $depense)
                 <tr>
-                    <td>{{ $expense->expense_date->format('d/m/Y') }}</td>
-                    <td>{{ $expense->category?->name ?? '—' }}</td>
-                    <td>{{ $expense->description }}</td>
-                    <td style="text-transform:uppercase;">{{ $expense->payment_method }}</td>
+                    <td>{{ \Carbon\Carbon::parse($depense->date_depense)->format('d/m/Y') }}</td>
+                    <td>{{ $depense->categorie?->nom ?? '—' }}</td>
+                    <td>{{ $depense->description }}</td>
+                    <td style="text-transform:uppercase;">{{ $depense->mode_paiement }}</td>
                     <td class="right">
-                        <strong>{{ number_format($expense->amount, 0, ',', ' ') }}</strong>
+                        <strong>{{ number_format($depense->montant, 0, ',', ' ') }}</strong>
                     </td>
                 </tr>
             @empty
@@ -131,7 +131,7 @@
                 </tr>
             @endforelse
         </tbody>
-        @if($expenses->count() > 0)
+        @if($depenses->count() > 0)
             <tfoot>
                 <tr>
                     <td colspan="4">TOTAL — {{ $stats['count'] }} dépense(s)</td>
@@ -142,8 +142,8 @@
     </table>
 
     <div class="footer">
-        {{ $settings->name }}
-        @if($settings->ninea) · NINEA : {{ $settings->ninea }}@endif
+        {{ $parametres->nom }}
+        @if($parametres->ninea) · NINEA : {{ $parametres->ninea }}@endif
         · Document généré le {{ now()->format('d/m/Y à H:i') }}
     </div>
 </div>

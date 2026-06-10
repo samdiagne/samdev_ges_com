@@ -77,18 +77,18 @@
         ],
         [
             'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>',
-            'label' => 'Garanties & SAV',
+            'label' => 'Qualité & Satisfaction',
             'color' => 'bg-secondary/10 text-secondary',
             'border'=> 'border-secondary/20',
             'faqs'  => [
-                ['q' => 'Quelle est la garantie sur les produits ?',
-                 'r' => 'Tous nos produits bénéficient d\'une garantie constructeur. Les smartphones et ordinateurs sont garantis 12 mois minimum. Les accessoires sont garantis 3 à 6 mois selon le type de produit.'],
-                ['q' => 'Comment activer le service après-vente ?',
-                 'r' => 'En cas de panne ou de défaut, rapportez le produit en boutique avec votre preuve d\'achat. Notre technicien évaluera le problème et vous proposera une réparation, un échange ou un remboursement selon le cas.'],
-                ['q' => 'Les produits sont-ils originaux ?',
-                 'r' => 'Absolument. Nous ne vendons que des produits 100% originaux provenant de fournisseurs certifiés. Chaque produit dispose de son numéro IMEI ou de série vérifiable.'],
-                ['q' => 'Puis-je retourner un produit ?',
-                 'r' => 'Les retours sont acceptés sous 7 jours si le produit est dans son emballage d\'origine, non utilisé et accompagné de la facture. Hors ce délai, seules les pannes couvertes par la garantie sont prises en charge.'],
+                ['q' => 'D\'où proviennent vos ingrédients ?',
+                 'r' => 'Nous travaillons avec des fournisseurs locaux sélectionnés pour la fraîcheur et la qualité de leurs produits. Nos viandes, poissons et légumes sont achetés quotidiennement pour garantir une fraîcheur optimale.'],
+                ['q' => 'Proposez-vous des plats pour les régimes spéciaux ?',
+                 'r' => 'Contactez-nous par WhatsApp ou téléphone pour nous informer de vos allergies ou restrictions alimentaires. Nous ferons notre possible pour adapter nos plats à vos besoins.'],
+                ['q' => 'Que faire si ma commande ne me satisfait pas ?',
+                 'r' => 'Votre satisfaction est notre priorité. Si un plat ne correspond pas à vos attentes, contactez-nous immédiatement par WhatsApp ou téléphone. Nous vous proposerons un remplacement ou un avoir.'],
+                ['q' => 'Les portions sont-elles généreuses ?',
+                 'r' => 'Nos plats sont préparés avec générosité dans la tradition sénégalaise. Chaque portion est pensée pour un repas complet et satisfaisant.'],
             ],
         ],
     ];
@@ -171,15 +171,15 @@
                     Envoyer un message
                 </a>
                 @php
-                    $settings = App\Models\CompanySetting::getSettings();
+                    $settings = App\Models\Parametre::first();
                     $wa = preg_replace('/[^0-9]/', '', $settings->whatsapp ?? '');
                     $sujets = [
-                        ['label' => '🛒 Passer une commande',        'msg' => "Bonjour *{$settings->name}* 👋\nJe souhaite passer une commande. Pouvez-vous m'aider ?"],
-                        ['label' => '📦 Disponibilité d\'un produit', 'msg' => "Bonjour *{$settings->name}* 👋\nJe voudrais savoir si un produit est disponible en stock."],
-                        ['label' => '💰 Demande de prix',             'msg' => "Bonjour *{$settings->name}* 👋\nJe souhaite avoir des informations sur vos tarifs."],
-                        ['label' => '🚚 Infos livraison',             'msg' => "Bonjour *{$settings->name}* 👋\nJe voudrais des informations sur vos délais et frais de livraison."],
-                        ['label' => '🔧 Service après-vente',         'msg' => "Bonjour *{$settings->name}* 👋\nJ'ai besoin d'assistance pour un produit acheté."],
-                        ['label' => '❓ Autre question',               'msg' => "Bonjour *{$settings->name}* 👋\nJ'ai une question à vous poser."],
+                        ['label' => '🛒 Passer une commande',        'msg' => "Bonjour *{$settings->nom}* 👋\nJe souhaite passer une commande. Pouvez-vous m'aider ?"],
+                        ['label' => '📦 Disponibilité d\'un plat',    'msg' => "Bonjour *{$settings->nom}* 👋\nJe voudrais savoir si un plat est disponible."],
+                        ['label' => '💰 Demande de prix',             'msg' => "Bonjour *{$settings->nom}* 👋\nJe souhaite avoir des informations sur vos tarifs."],
+                        ['label' => '🚚 Infos livraison',             'msg' => "Bonjour *{$settings->nom}* 👋\nJe voudrais des informations sur vos délais et frais de livraison."],
+                        ['label' => '🔧 Réclamation',                 'msg' => "Bonjour *{$settings->nom}* 👋\nJ'ai besoin d'assistance concernant ma commande."],
+                        ['label' => '❓ Autre question',               'msg' => "Bonjour *{$settings->nom}* 👋\nJ'ai une question à vous poser."],
                     ];
                 @endphp
                 @if($settings->whatsapp)

@@ -3,7 +3,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
             <h3 class="text-lg font-bold text-dark">Fournisseurs</h3>
-            <p class="text-sm text-gray-400">{{ $suppliers->total() }} fournisseur(s)</p>
+            <p class="text-sm text-gray-400">{{ $fournisseurs->total() }} fournisseur(s)</p>
         </div>
         <button wire:click="openCreateModal"
                 class="inline-flex items-center gap-2 bg-primary hover:bg-primary/90
@@ -32,7 +32,7 @@
                        class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl
                               text-sm focus:outline-none focus:border-primary bg-gray-50"/>
             </div>
-            <select wire:model.live="filterStatus"
+            <select wire:model.live="filtreStatut"
                     class="px-3 py-2 border border-gray-200 rounded-xl text-sm
                            focus:outline-none focus:border-primary bg-gray-50">
                 <option value="">Tous les statuts</option>
@@ -77,10 +77,6 @@
                                    uppercase tracking-wider px-4 py-3 hidden md:table-cell">
                             Contact
                         </th>
-                        <th class="text-left text-xs font-semibold text-gray-500
-                                   uppercase tracking-wider px-4 py-3 hidden lg:table-cell">
-                            NINEA
-                        </th>
                         <th class="text-center text-xs font-semibold text-gray-500
                                    uppercase tracking-wider px-4 py-3">Achats</th>
                         <th class="text-center text-xs font-semibold text-gray-500
@@ -90,7 +86,7 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
-                    @forelse($suppliers as $supplier)
+                    @forelse($fournisseurs as $fournisseur)
                         <tr class="hover:bg-gray-50/50 transition-colors">
                             {{-- Nom --}}
                             <td class="px-4 py-3">
@@ -98,16 +94,16 @@
                                     <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center
                                                 justify-center flex-shrink-0">
                                         <span class="text-primary font-bold text-sm">
-                                            {{ strtoupper(substr($supplier->name, 0, 2)) }}
+                                            {{ strtoupper(substr($fournisseur->nom, 0, 2)) }}
                                         </span>
                                     </div>
                                     <div>
                                         <p class="text-sm font-semibold text-dark">
-                                            {{ $supplier->name }}
+                                            {{ $fournisseur->nom }}
                                         </p>
-                                        @if($supplier->contact_person)
+                                        @if($fournisseur->adresse)
                                             <p class="text-xs text-gray-400">
-                                                {{ $supplier->contact_person }}
+                                                {{ $fournisseur->adresse }}
                                             </p>
                                         @endif
                                     </div>
@@ -117,7 +113,7 @@
                             {{-- Contact --}}
                             <td class="px-4 py-3 hidden md:table-cell">
                                 <div class="space-y-0.5">
-                                    @if($supplier->phone)
+                                    @if($fournisseur->telephone)
                                         <p class="text-sm text-dark flex items-center gap-1.5">
                                             <svg class="w-3.5 h-3.5 text-gray-400" fill="none"
                                                  stroke="currentColor" viewBox="0 0 24 24">
@@ -129,49 +125,42 @@
                                                          011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2
                                                          2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                                             </svg>
-                                            {{ $supplier->phone }}
+                                            {{ $fournisseur->telephone }}
                                         </p>
                                     @endif
-                                    @if($supplier->email)
-                                        <p class="text-xs text-gray-400">{{ $supplier->email }}</p>
+                                    @if($fournisseur->email)
+                                        <p class="text-xs text-gray-400">{{ $fournisseur->email }}</p>
                                     @endif
                                 </div>
-                            </td>
-
-                            {{-- NINEA --}}
-                            <td class="px-4 py-3 hidden lg:table-cell">
-                                <p class="text-sm text-gray-500">
-                                    {{ $supplier->ninea ?: '—' }}
-                                </p>
                             </td>
 
                             {{-- Nb achats --}}
                             <td class="px-4 py-3 text-center">
                                 <span class="inline-flex items-center justify-center w-7 h-7
                                              bg-accent/10 text-primary text-xs font-bold rounded-lg">
-                                    {{ $supplier->purchases_count }}
+                                    {{ $fournisseur->achats_count }}
                                 </span>
                             </td>
 
                             {{-- Statut --}}
                             <td class="px-4 py-3 text-center">
-                                <button wire:click="toggleStatus({{ $supplier->id }})"
+                                <button wire:click="toggleStatus({{ $fournisseur->id }})"
                                         class="inline-flex items-center gap-1.5 px-2.5 py-1
                                                rounded-full text-xs font-medium transition-all
-                                               {{ $supplier->is_active
+                                               {{ $fournisseur->est_actif
                                                   ? 'bg-green-100 text-green-700 hover:bg-green-200'
                                                   : 'bg-gray-100 text-gray-500 hover:bg-gray-200' }}">
                                     <span class="w-1.5 h-1.5 rounded-full
-                                                 {{ $supplier->is_active
+                                                 {{ $fournisseur->est_actif
                                                     ? 'bg-green-500' : 'bg-gray-400' }}"></span>
-                                    {{ $supplier->is_active ? 'Actif' : 'Inactif' }}
+                                    {{ $fournisseur->est_actif ? 'Actif' : 'Inactif' }}
                                 </button>
                             </td>
 
                             {{-- Actions --}}
                             <td class="px-4 py-3 sticky right-0 bg-white border-l border-gray-100">
                                 <div class="flex items-center justify-end gap-1">
-                                    <button wire:click="openEditModal({{ $supplier->id }})"
+                                    <button wire:click="openEditModal({{ $fournisseur->id }})"
                                             class="w-8 h-8 flex items-center justify-center
                                                    rounded-lg text-gray-400 hover:text-primary
                                                    hover:bg-primary/10 transition-colors">
@@ -184,7 +173,7 @@
                                                      15H9v-2.828l8.586-8.586z"/>
                                         </svg>
                                     </button>
-                                    <button wire:click="confirmDelete({{ $supplier->id }})"
+                                    <button wire:click="confirmDelete({{ $fournisseur->id }})"
                                             class="w-8 h-8 flex items-center justify-center
                                                    rounded-lg text-gray-400 hover:text-red-500
                                                    hover:bg-red-50 transition-colors">
@@ -230,9 +219,9 @@
             </table>
         </div>
 
-        @if($suppliers->hasPages())
+        @if($fournisseurs->hasPages())
             <div class="px-4 py-3 border-t border-gray-100">
-                {{ $suppliers->links() }}
+                {{ $fournisseurs->links() }}
             </div>
         @endif
     </div>
@@ -240,7 +229,7 @@
     {{-- ══════════════════════════════════════
          MODAL Créer / Modifier
     ══════════════════════════════════════ --}}
-    @if($showModal)
+    @if($afficherModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
                  wire:click="closeModal"></div>
@@ -269,49 +258,25 @@
                         <label class="block text-sm font-medium text-dark mb-1.5">
                             Nom <span class="text-red-500">*</span>
                         </label>
-                        <input wire:model="name" type="text"
+                        <input wire:model="nom" type="text"
                                placeholder="Nom du fournisseur"
                                class="w-full px-3 py-2.5 border rounded-xl text-sm
                                       focus:outline-none transition-colors
-                                      {{ $errors->has('name')
+                                      {{ $errors->has('nom')
                                          ? 'border-red-400 bg-red-50'
                                          : 'border-gray-200 bg-gray-50 focus:border-primary focus:bg-white' }}"/>
-                        @error('name')
+                        @error('nom')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    {{-- Contact + Téléphone --}}
+                    {{-- Téléphone + Email --}}
                     <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-dark mb-1.5">
-                                Personne contact
-                            </label>
-                            <input wire:model="contact_person" type="text"
-                                   placeholder="Nom du contact"
-                                   class="w-full px-3 py-2.5 border border-gray-200 rounded-xl
-                                          text-sm bg-gray-50 focus:outline-none
-                                          focus:border-primary focus:bg-white transition-colors"/>
-                        </div>
                         <div>
                             <label class="block text-sm font-medium text-dark mb-1.5">
                                 Téléphone
                             </label>
-                            <input wire:model="phone" type="text"
-                                   placeholder="+221 XX XXX XX XX"
-                                   class="w-full px-3 py-2.5 border border-gray-200 rounded-xl
-                                          text-sm bg-gray-50 focus:outline-none
-                                          focus:border-primary focus:bg-white transition-colors"/>
-                        </div>
-                    </div>
-
-                    {{-- WhatsApp + Email --}}
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-dark mb-1.5">
-                                WhatsApp
-                            </label>
-                            <input wire:model="whatsapp" type="text"
+                            <input wire:model="telephone" type="text"
                                    placeholder="+221 XX XXX XX XX"
                                    class="w-full px-3 py-2.5 border border-gray-200 rounded-xl
                                           text-sm bg-gray-50 focus:outline-none
@@ -334,28 +299,16 @@
                         </div>
                     </div>
 
-                    {{-- NINEA + Adresse --}}
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-dark mb-1.5">
-                                NINEA
-                            </label>
-                            <input wire:model="ninea" type="text"
-                                   placeholder="Numéro NINEA"
-                                   class="w-full px-3 py-2.5 border border-gray-200 rounded-xl
-                                          text-sm bg-gray-50 focus:outline-none
-                                          focus:border-primary focus:bg-white transition-colors"/>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-dark mb-1.5">
-                                Adresse
-                            </label>
-                            <input wire:model="address" type="text"
-                                   placeholder="Adresse"
-                                   class="w-full px-3 py-2.5 border border-gray-200 rounded-xl
-                                          text-sm bg-gray-50 focus:outline-none
-                                          focus:border-primary focus:bg-white transition-colors"/>
-                        </div>
+                    {{-- Adresse --}}
+                    <div>
+                        <label class="block text-sm font-medium text-dark mb-1.5">
+                            Adresse
+                        </label>
+                        <input wire:model="adresse" type="text"
+                               placeholder="Adresse"
+                               class="w-full px-3 py-2.5 border border-gray-200 rounded-xl
+                                      text-sm bg-gray-50 focus:outline-none
+                                      focus:border-primary focus:bg-white transition-colors"/>
                     </div>
 
                     {{-- Notes --}}
@@ -377,13 +330,13 @@
                                 Disponible pour les commandes
                             </p>
                         </div>
-                        <button type="button" wire:click="$toggle('is_active')"
+                        <button type="button" wire:click="$toggle('est_actif')"
                                 class="relative inline-flex h-6 w-11 items-center rounded-full
                                        transition-colors duration-200
-                                       {{ $is_active ? 'bg-primary' : 'bg-gray-300' }}">
+                                       {{ $est_actif ? 'bg-primary' : 'bg-gray-300' }}">
                             <span class="inline-block h-4 w-4 transform rounded-full bg-white
                                          shadow transition-transform duration-200
-                                         {{ $is_active ? 'translate-x-6' : 'translate-x-1' }}">
+                                         {{ $est_actif ? 'translate-x-6' : 'translate-x-1' }}">
                             </span>
                         </button>
                     </div>
@@ -415,10 +368,10 @@
     @endif
 
     {{-- Modal suppression --}}
-    @if($showDeleteModal)
+    @if($afficherModalSuppression)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
-                 wire:click="$set('showDeleteModal', false)"></div>
+                 wire:click="$set('afficherModalSuppression', false)"></div>
             <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
                 <div class="flex items-center gap-4 mb-4">
                     <div class="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center">
@@ -436,7 +389,7 @@
                     </div>
                 </div>
                 <div class="flex gap-3">
-                    <button wire:click="$set('showDeleteModal', false)"
+                    <button wire:click="$set('afficherModalSuppression', false)"
                             class="flex-1 py-2 text-sm font-medium text-gray-600
                                    hover:bg-gray-100 rounded-xl transition-colors">
                         Annuler

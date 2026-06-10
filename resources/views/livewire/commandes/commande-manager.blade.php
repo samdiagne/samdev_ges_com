@@ -2,10 +2,10 @@
     {{-- Stats --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         @foreach([
-            ['label' => 'Total',      'value' => $stats['total'],     'color' => 'text-dark'],
-            ['label' => 'En attente', 'value' => $stats['pending'],   'color' => 'text-yellow-600'],
-            ['label' => 'Confirmées', 'value' => $stats['confirmed'], 'color' => 'text-blue-600'],
-            ['label' => 'Livrées',    'value' => $stats['delivered'], 'color' => 'text-green-600'],
+            ['label' => 'Total',      'value' => $stats['total'],      'color' => 'text-dark'],
+            ['label' => 'En attente', 'value' => $stats['en_attente'], 'color' => 'text-yellow-600'],
+            ['label' => 'Confirmées', 'value' => $stats['confirmee'],  'color' => 'text-blue-600'],
+            ['label' => 'Livrées',    'value' => $stats['livree'],     'color' => 'text-green-600'],
         ] as $stat)
             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
                 <p class="text-xs text-gray-400 uppercase tracking-wider">
@@ -50,16 +50,16 @@
                        class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl
                               text-sm focus:outline-none focus:border-primary bg-gray-50"/>
             </div>
-            <select wire:model.live="filterStatus"
+            <select wire:model.live="filtreStatut"
                     class="px-3 py-2 border border-gray-200 rounded-xl text-sm
                            focus:outline-none focus:border-primary bg-gray-50">
                 <option value="">Tous statuts</option>
-                <option value="pending">En attente</option>
-                <option value="confirmed">Confirmée</option>
-                <option value="processing">En préparation</option>
-                <option value="shipped">Expédiée</option>
-                <option value="delivered">Livrée</option>
-                <option value="cancelled">Annulée</option>
+                <option value="en_attente">En attente</option>
+                <option value="confirmee">Confirmée</option>
+                <option value="en_preparation">En préparation</option>
+                <option value="expediee">Expédiée</option>
+                <option value="livree">Livrée</option>
+                <option value="annulee">Annulée</option>
             </select>
         </div>
     </div>
@@ -92,71 +92,79 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
-                    @forelse($orders as $order)
+                    @forelse($commandes as $commande)
                         <tr class="hover:bg-gray-50/50 transition-colors">
                             <td class="px-4 py-3">
                                 <p class="text-sm font-bold text-dark">
-                                    {{ $order->reference }}
+                                    {{ $commande->reference }}
                                 </p>
                                 <p class="text-xs text-gray-400">
-                                    {{ $order->created_at->format('d/m/Y H:i') }}
+                                    {{ $commande->created_at->format('d/m/Y H:i') }}
                                 </p>
                             </td>
                             <td class="px-4 py-3">
                                 <p class="text-sm font-medium text-dark">
-                                    {{ $order->customer_name }}
+                                    {{ $commande->nom_client }}
                                 </p>
                                 <p class="text-xs text-gray-400">
-                                    {{ $order->customer_phone }}
+                                    {{ $commande->telephone_client }}
                                 </p>
                             </td>
                             {{-- Mode de paiement --}}
                             <td class="px-4 py-3 hidden lg:table-cell">
-                                <p class="text-xs text-gray-600">{{ $order->payment_label }}</p>
+                                <p class="text-xs text-gray-600">{{ $commande->mode_paiement }}</p>
                             </td>
 
                             {{-- Statut paiement modifiable --}}
                             <td class="px-4 py-3 hidden lg:table-cell">
-                                <select wire:change="updatePaymentStatus({{ $order->id }}, $event.target.value)"
+                                <select wire:change="updatePaymentStatus({{ $commande->id }}, $event.target.value)"
                                         class="text-xs font-medium px-2 py-1 rounded-lg
                                                border-0 cursor-pointer focus:outline-none
-                                               {{ $order->payment_status === 'paid'
+                                               {{ $commande->statut_paiement === 'paye'
                                                   ? 'bg-green-100 text-green-700'
-                                                  : ($order->payment_status === 'failed'
+                                                  : ($commande->statut_paiement === 'echoue'
                                                      ? 'bg-red-100 text-red-700'
                                                      : 'bg-yellow-100 text-yellow-700') }}">
-                                    <option value="pending"  {{ $order->payment_status === 'pending'  ? 'selected' : '' }}>En attente</option>
-                                    <option value="paid"     {{ $order->payment_status === 'paid'     ? 'selected' : '' }}>Payé</option>
-                                    <option value="failed"   {{ $order->payment_status === 'failed'   ? 'selected' : '' }}>Échoué</option>
+                                    <option value="en_attente" {{ $commande->statut_paiement === 'en_attente' ? 'selected' : '' }}>En attente</option>
+                                    <option value="paye"       {{ $commande->statut_paiement === 'paye'       ? 'selected' : '' }}>Payé</option>
+                                    <option value="echoue"     {{ $commande->statut_paiement === 'echoue'     ? 'selected' : '' }}>Échoué</option>
                                 </select>
                             </td>
                             <td class="px-4 py-3 hidden lg:table-cell">
                                 <p class="text-xs text-gray-600">
-                                    {{ $order->delivery_type === 'delivery'
+                                    {{ $commande->adresse_livraison
                                        ? '🚚 Livraison'
                                        : '🏪 Retrait' }}
                                 </p>
-                                @if($order->delivery_city)
+                                @if($commande->ville)
                                     <p class="text-xs text-gray-400">
-                                        {{ $order->delivery_city }}
+                                        {{ $commande->ville }}
                                     </p>
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <select wire:change="updateStatus({{ $order->id }}, $event.target.value)"
+                                <select wire:change="updateStatus({{ $commande->id }}, $event.target.value)"
                                         class="text-xs font-medium px-2 py-1 rounded-lg
                                                border-0 cursor-pointer focus:outline-none
-                                               {{ $order->status_color }}">
+                                               {{ match($commande->statut) {
+                                                    'en_attente' => 'bg-yellow-100 text-yellow-700',
+                                                    'confirmee' => 'bg-blue-100 text-blue-700',
+                                                    'en_preparation' => 'bg-indigo-100 text-indigo-700',
+                                                    'expediee' => 'bg-purple-100 text-purple-700',
+                                                    'livree' => 'bg-green-100 text-green-700',
+                                                    'annulee' => 'bg-red-100 text-red-700',
+                                                    default => 'bg-gray-100 text-gray-600',
+                                               } }}">
                                     @foreach([
-                                        'pending'    => 'En attente',
-                                        'confirmed'  => 'Confirmée',
-                                        'processing' => 'En préparation',
-                                        'shipped'    => 'Expédiée',
-                                        'delivered'  => 'Livrée',
-                                        'cancelled'  => 'Annulée',
+                                        'en_attente'     => 'En attente',
+                                        'confirmee'      => 'Confirmée',
+                                        'en_preparation' => 'En préparation',
+                                        'expediee'       => 'Expédiée',
+                                        'livree'         => 'Livrée',
+                                        'annulee'        => 'Annulée',
                                     ] as $val => $lbl)
                                         <option value="{{ $val }}"
-                                                {{ $order->status === $val
+                                                {{ $commande->statut === $val
                                                    ? 'selected' : '' }}>
                                             {{ $lbl }}
                                         </option>
@@ -165,14 +173,14 @@
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <p class="text-sm font-bold text-dark">
-                                    {{ number_format($order->total, 0, ',', ' ') }}
+                                    {{ number_format($commande->total, 0, ',', ' ') }}
                                     <span class="text-xs font-normal text-gray-400">
                                         FCFA
                                     </span>
                                 </p>
                             </td>
                             <td class="px-4 py-3 text-right sticky right-0 bg-white border-l border-gray-100">
-                                <button wire:click="view({{ $order->id }})"
+                                <button wire:click="view({{ $commande->id }})"
                                         class="w-8 h-8 flex items-center justify-center
                                                rounded-lg text-gray-400 hover:text-primary
                                                hover:bg-primary/10 transition-colors ml-auto">
@@ -201,31 +209,31 @@
                 </tbody>
             </table>
         </div>
-        @if($orders->hasPages())
+        @if($commandes->hasPages())
             <div class="px-4 py-3 border-t border-gray-100">
-                {{ $orders->links() }}
+                {{ $commandes->links() }}
             </div>
         @endif
     </div>
 
     {{-- Modal détail commande --}}
-    @if($viewing)
+    @if($voir)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
-                 wire:click="$set('viewingId', null)"></div>
+                 wire:click="$set('voirId', null)"></div>
             <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg
                         max-h-[90vh] overflow-y-auto">
                 <div class="flex items-center justify-between px-6 py-4
                             border-b border-gray-100">
                     <div>
                         <h3 class="text-base font-bold text-dark">
-                            {{ $viewing->reference }}
+                            {{ $voir->reference }}
                         </h3>
                         <p class="text-xs text-gray-400">
-                            {{ $viewing->created_at->format('d/m/Y à H:i') }}
+                            {{ $voir->created_at->format('d/m/Y à H:i') }}
                         </p>
                     </div>
-                    <button wire:click="$set('viewingId', null)"
+                    <button wire:click="$set('voirId', null)"
                             class="w-8 h-8 flex items-center justify-center
                                    rounded-lg text-gray-400 hover:bg-gray-100">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor"
@@ -242,14 +250,14 @@
                         <p class="text-xs font-bold text-gray-400 uppercase
                                   tracking-wider mb-2">Client</p>
                         <p class="text-sm font-semibold text-dark">
-                            {{ $viewing->customer_name }}
+                            {{ $voir->nom_client }}
                         </p>
                         <p class="text-sm text-gray-500">
-                            {{ $viewing->customer_phone }}
+                            {{ $voir->telephone_client }}
                         </p>
-                        @if($viewing->customer_email)
+                        @if($voir->email_client)
                             <p class="text-sm text-gray-500">
-                                {{ $viewing->customer_email }}
+                                {{ $voir->email_client }}
                             </p>
                         @endif
                     </div>
@@ -259,14 +267,14 @@
                         <p class="text-xs font-bold text-gray-400 uppercase
                                   tracking-wider mb-2">Livraison</p>
                         <p class="text-sm text-dark">
-                            {{ $viewing->delivery_type === 'delivery'
+                            {{ $voir->adresse_livraison
                                ? '🚚 Livraison à domicile'
                                : '🏪 Retrait en boutique' }}
                         </p>
-                        @if($viewing->delivery_address)
+                        @if($voir->adresse_livraison)
                             <p class="text-sm text-gray-500">
-                                {{ $viewing->delivery_address }},
-                                {{ $viewing->delivery_city }}
+                                {{ $voir->adresse_livraison }},
+                                {{ $voir->ville }}
                             </p>
                         @endif
                     </div>
@@ -276,12 +284,12 @@
                         <p class="text-xs font-bold text-gray-400 uppercase
                                   tracking-wider mb-2">Articles</p>
                         <div class="space-y-2">
-                            @foreach($viewing->items as $item)
+                            @foreach($voir->lignes as $item)
                                 <div class="flex justify-between text-sm">
                                     <span class="text-gray-600">
-                                        {{ $item->product_name }}
+                                        {{ $item->nom_plat }}
                                         <span class="text-gray-400">
-                                            x{{ $item->quantity }}
+                                            x{{ $item->quantite }}
                                         </span>
                                     </span>
                                     <span class="font-medium text-dark">
@@ -298,15 +306,15 @@
                         <div class="flex justify-between text-sm text-gray-500">
                             <span>Sous-total</span>
                             <span>
-                                {{ number_format($viewing->subtotal, 0, ',', ' ') }}
+                                {{ number_format($voir->sous_total, 0, ',', ' ') }}
                                 FCFA
                             </span>
                         </div>
-                        @if($viewing->delivery_fee > 0)
+                        @if($voir->frais_livraison > 0)
                             <div class="flex justify-between text-sm text-gray-500">
                                 <span>Livraison</span>
                                 <span>
-                                    {{ number_format($viewing->delivery_fee, 0, ',', ' ') }}
+                                    {{ number_format($voir->frais_livraison, 0, ',', ' ') }}
                                     FCFA
                                 </span>
                             </div>
@@ -315,18 +323,18 @@
                                     border-t border-gray-200 pt-2">
                             <span>Total</span>
                             <span class="text-primary">
-                                {{ number_format($viewing->total, 0, ',', ' ') }} FCFA
+                                {{ number_format($voir->total, 0, ',', ' ') }} FCFA
                             </span>
                         </div>
                     </div>
 
                     {{-- Notes --}}
-                    @if($viewing->notes)
+                    @if($voir->notes)
                         <div>
                             <p class="text-xs font-bold text-gray-400 uppercase
                                       tracking-wider mb-2">Notes</p>
                             <p class="text-sm text-gray-600 bg-yellow-50 rounded-xl p-3">
-                                {{ $viewing->notes }}
+                                {{ $voir->notes }}
                             </p>
                         </div>
                     @endif
@@ -334,14 +342,14 @@
                     {{-- Actions vente / facture --}}
                     <div class="border-t border-gray-100 pt-4 space-y-3">
 
-                        @if($viewing->sale_id)
+                        @if($voir->vente_id)
                             {{-- Vente déjà créée --}}
                             <div class="bg-green-50 border border-green-200 rounded-xl
                                         p-3 text-xs text-green-700 font-medium">
-                                ✅ Convertie en vente {{ $viewing->sale->reference }}
+                                ✅ Convertie en vente {{ $voir->vente->reference }}
                             </div>
-                            @if($viewing->sale->invoice)
-                                <a href="{{ route('factures.download', $viewing->sale) }}"
+                            @if($voir->vente->facture)
+                                <a href="{{ route('factures.download', $voir->vente) }}"
                                    target="_blank"
                                    class="flex items-center justify-center gap-2 w-full
                                           py-2.5 bg-primary text-white text-sm font-semibold
@@ -354,13 +362,13 @@
                                 </a>
                             @endif
 
-                        @elseif($viewing->status === 'delivered' && $viewing->payment_status === 'paid')
+                        @elseif($voir->statut === 'livree' && $voir->statut_paiement === 'paye')
                             {{-- Éligible à la conversion --}}
                             <div class="bg-blue-50 border border-blue-200 rounded-xl
                                         p-3 text-xs text-blue-700">
                                 🎯 Commande livrée et payée — prête à être convertie en vente.
                             </div>
-                            <button wire:click="convertToSale({{ $viewing->id }})"
+                            <button wire:click="convertToSale({{ $voir->id }})"
                                     wire:loading.attr="disabled"
                                     class="flex items-center justify-center gap-2 w-full
                                            py-2.5 bg-green-600 text-white text-sm font-semibold

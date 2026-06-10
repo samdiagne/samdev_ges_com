@@ -2,86 +2,86 @@
 
 namespace App\Services;
 
-use App\Models\Product;
-use App\Models\StockMovement;
+use App\Models\Plat;
+use App\Models\MouvementStock;
 use Illuminate\Support\Facades\Auth;
 
 class StockService
 {
-    public function decrementStock(
-        Product $product,
-        int $quantity,
-        string $source,
-        int $sourceId,
-        ?string $reason = null
+    public function decrementerStock(
+        Plat    $plat,
+        int     $quantite,
+        string  $source,
+        ?int    $sourceId = null,
+        ?string $motif    = null
     ): void {
-        $before = $product->stock_quantity;
-        $after  = $before - $quantity;
+        $avant = $plat->stock;
+        $apres = $avant - $quantite;
 
-        $product->update(['stock_quantity' => $after]);
+        $plat->update(['stock' => $apres]);
 
-        StockMovement::create([
-            'product_id'      => $product->id,
-            'user_id'         => Auth::id(),
-            'type'            => 'out',
-            'source'          => $source,
-            'source_id'       => $sourceId,
-            'quantity_before' => $before,
-            'quantity_change' => $quantity,
-            'quantity_after'  => $after,
-            'reason'          => $reason ?? 'Vente',
-            'moved_at'        => now(),
+        MouvementStock::create([
+            'plat_id'             => $plat->id,
+            'user_id'      => Auth::id(),
+            'type'                => 'sortie',
+            'source'              => $source,
+            'source_id'           => $sourceId,
+            'stock_avant'         => $avant,
+            'quantite_changement' => $quantite,
+            'stock_apres'         => $apres,
+            'motif'               => $motif ?? 'Vente',
+            'effectue_le'         => now(),
         ]);
     }
 
-    public function incrementStock(
-        Product $product,
-        int $quantity,
-        string $source,
-        int $sourceId,
-        ?string $reason = null
+    public function incrementerStock(
+        Plat    $plat,
+        int     $quantite,
+        string  $source,
+        ?int    $sourceId = null,
+        ?string $motif    = null
     ): void {
-        $before = $product->stock_quantity;
-        $after  = $before + $quantity;
+        $avant = $plat->stock;
+        $apres = $avant + $quantite;
 
-        $product->update(['stock_quantity' => $after]);
+        $plat->update(['stock' => $apres]);
 
-        StockMovement::create([
-            'product_id'      => $product->id,
-            'user_id'         => Auth::id(),
-            'type'            => 'in',
-            'source'          => $source,
-            'source_id'       => $sourceId,
-            'quantity_before' => $before,
-            'quantity_change' => $quantity,
-            'quantity_after'  => $after,
-            'reason'          => $reason ?? 'Achat',
-            'moved_at'        => now(),
+        MouvementStock::create([
+            'plat_id'             => $plat->id,
+            'user_id'      => Auth::id(),
+            'type'                => 'entree',
+            'source'              => $source,
+            'source_id'           => $sourceId,
+            'stock_avant'         => $avant,
+            'quantite_changement' => $quantite,
+            'stock_apres'         => $apres,
+            'motif'               => $motif ?? 'Approvisionnement',
+            'effectue_le'         => now(),
         ]);
     }
 
-    public function adjustStock(
-        Product $product,
-        int $newQuantity,
-        ?string $reason = null
+    public function ajusterStock(
+        Plat    $plat,
+        int     $nouvelleQuantite,
+        ?string $motif = null
     ): void {
-        $before = $product->stock_quantity;
-        $change = abs($newQuantity - $before);
-        $type   = $newQuantity > $before ? 'in' : 'out';
+        $avant    = $plat->stock;
+        $diff     = abs($nouvelleQuantite - $avant);
+        $type     = $nouvelleQuantite > $avant ? 'entree' : 'sortie';
 
-        $product->update(['stock_quantity' => $newQuantity]);
+        $plat->update(['stock' => $nouvelleQuantite]);
 
-        StockMovement::create([
-            'product_id'      => $product->id,
-            'user_id'         => Auth::id(),
-            'type'            => $type,
-            'source'          => 'adjustment',
-            'source_id'       => null,
-            'quantity_before' => $before,
-            'quantity_change' => $change,
-            'quantity_after'  => $newQuantity,
-            'reason'          => $reason ?? 'Ajustement manuel',
-            'moved_at'        => now(),
+        MouvementStock::create([
+            'plat_id'             => $plat->id,
+            'user_id'      => Auth::id(),
+            'type'                => $type,
+            'source'              => 'ajustement',
+            'source_id'           => null,
+            'stock_avant'         => $avant,
+            'quantite_changement' => $diff,
+            'stock_apres'         => $nouvelleQuantite,
+            'motif'               => $motif ?? 'Ajustement manuel',
+            'effectue_le'         => now(),
         ]);
     }
 }

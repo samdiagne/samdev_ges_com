@@ -5,7 +5,7 @@
            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold
                   text-white shadow-lg shadow-primary/25 hover:brightness-110
                   transition-all hover:-translate-y-0.5"
-           style="background-color: #1E6FBF;">
+           style="background-color: #F27B20;">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184
@@ -37,27 +37,15 @@
             Nouvelle dépense
         </a>
 
-        <a href="{{ route('devis.create') }}"
-           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold
-                  bg-white border border-gray-200 text-dark hover:bg-gray-50 hover:border-gray-300
-                  transition-all hover:-translate-y-0.5 shadow-sm">
-            <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0
-                         01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            Nouveau devis
-        </a>
-
-        <a href="{{ route('produits.create') }}"
-           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold
-                  bg-white border border-gray-200 text-dark hover:bg-gray-50 hover:border-gray-300
-                  transition-all hover:-translate-y-0.5 shadow-sm">
+        <a href="{{ route('plats.create') }}"
+        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold
+                bg-white border border-gray-200 text-dark hover:bg-gray-50 hover:border-gray-300
+                transition-all hover:-translate-y-0.5 shadow-sm">
             <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 4v16M4 12h16"/>
+                    d="M12 4v16M4 12h16"/>
             </svg>
-            Nouveau produit
+            Nouveau plat
         </a>
     </div>
 
@@ -65,16 +53,16 @@
     <div class="flex items-center gap-2 mb-6 bg-white rounded-2xl border
                 border-gray-100 shadow-sm p-1.5 w-fit">
         @foreach([
-            'today' => "Aujourd'hui",
-            'week'  => 'Cette semaine',
-            'month' => 'Ce mois',
-            'year'  => 'Cette année',
+            'aujourd_hui' => "Aujourd'hui",
+            'semaine'     => 'Cette semaine',
+            'mois'        => 'Ce mois',
+            'annee'       => 'Cette année',
         ] as $value => $label)
-            <button wire:click="$set('period', '{{ $value }}')"
+            <button wire:click="$set('periode', '{{ $value }}')"
                     @class([
                         'px-4 py-2 rounded-xl text-sm font-medium transition-all',
-                        'bg-primary text-white shadow-lg shadow-primary/25' => $period === $value,
-                        'text-gray-500 hover:text-dark hover:bg-gray-50' => $period !== $value,
+                        'bg-primary text-white shadow-lg shadow-primary/25' => $periode === $value,
+                        'text-gray-500 hover:text-dark hover:bg-gray-50' => $periode !== $value,
                     ])>
                 {{ $label }}
             </button>
@@ -84,7 +72,7 @@
     {{-- ── KPI Cards --}}
     <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
 
-        {{-- CA TTC --}}
+        {{-- CA --}}
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <div class="flex items-center justify-between mb-3">
                 <div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
@@ -95,13 +83,13 @@
                                  12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                 </div>
-                @if($stats['ca_evolution'] != 0)
+                @if($stats['evolution_ca'] != 0)
                     <span @class([
                         'text-xs font-bold px-2 py-1 rounded-full',
-                        'bg-green-100 text-green-700' => $stats['ca_evolution'] > 0,
-                        'bg-red-100 text-red-700'     => $stats['ca_evolution'] < 0,
+                        'bg-green-100 text-green-700' => $stats['evolution_ca'] > 0,
+                        'bg-red-100 text-red-700'     => $stats['evolution_ca'] < 0,
                     ])>
-                        {{ $stats['ca_evolution'] > 0 ? '+' : '' }}{{ $stats['ca_evolution'] }}%
+                        {{ $stats['evolution_ca'] > 0 ? '+' : '' }}{{ $stats['evolution_ca'] }}%
                     </span>
                 @endif
             </div>
@@ -110,7 +98,7 @@
                 {{ number_format($stats['ca'], 0, ',', ' ') }}
                 <span class="text-sm font-normal text-gray-400">FCFA</span>
             </p>
-            <p class="text-xs text-gray-400 mt-1">{{ $stats['sales_count'] }} vente(s)</p>
+            <p class="text-xs text-gray-400 mt-1">{{ $stats['nb_ventes'] }} vente(s)</p>
         </div>
 
         {{-- Bénéfice --}}
@@ -157,7 +145,7 @@
             </div>
             <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Panier moyen</p>
             <p class="text-2xl font-bold text-secondary mt-1">
-                {{ number_format($stats['avg_basket'], 0, ',', ' ') }}
+                {{ number_format($stats['panier_moyen'], 0, ',', ' ') }}
                 <span class="text-sm font-normal text-gray-400">FCFA</span>
             </p>
             <p class="text-xs text-gray-400 mt-1">par transaction</p>
@@ -184,11 +172,11 @@
             <canvas id="paymentChart" height="160"></canvas>
             <div class="space-y-2 mt-4">
                 @php
-                    $pmColors = ['cash' => '#10B981', 'wave' => '#3B82F6', 'om' => '#F97316', 'visa' => '#1a1f71'];
-                    $pmLabels = ['cash' => 'Cash', 'wave' => 'Wave', 'om' => 'Orange Money', 'visa' => 'VISA',];
-                    $totalPm  = array_sum($charts['payment_data']);
+                    $pmColors = ['cash' => '#10B981', 'wave' => '#3B82F6', 'om' => '#F97316', 'carte' => '#7c3aed'];
+                    $pmLabels = ['cash' => 'Cash', 'wave' => 'Wave', 'om' => 'Orange Money', 'carte' => 'Carte bancaire'];
+                    $totalPm  = array_sum($charts['paiements']);
                 @endphp
-                @foreach($charts['payment_data'] as $method => $amount)
+                @foreach($charts['paiements'] as $method => $amount)
                     <div class="flex items-center justify-between text-xs">
                         <div class="flex items-center gap-2">
                             <div class="w-2.5 h-2.5 rounded-full"
@@ -216,14 +204,14 @@
     </div>
 
     {{-- ── Commandes en attente --}}
-    @if($recent['pending_orders']->count() > 0)
+    @if($recent['commandes_en_attente']->count() > 0)
     <div class="bg-white rounded-2xl border border-orange-100 shadow-sm p-5 mb-6">
         <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-2">
                 <h3 class="text-sm font-bold text-dark">Commandes en attente</h3>
                 <span class="min-w-[22px] h-5 px-1.5 bg-red-500 text-white text-xs font-bold
                              rounded-full flex items-center justify-center leading-none">
-                    {{ $recent['pending_orders']->count() }}
+                    {{ $recent['commandes_en_attente']->count() }}
                 </span>
             </div>
             <a href="{{ route('commandes.index') }}"
@@ -232,12 +220,12 @@
             </a>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            @foreach($recent['pending_orders'] as $order)
+            @foreach($recent['commandes_en_attente'] as $order)
                 <div class="flex items-start gap-3 p-3 rounded-xl border transition-colors
-                            {{ $order->status === 'pending' ? 'border-orange-200 bg-orange-50' : 'border-blue-100 bg-blue-50' }}">
+                            {{ $order->statut === 'en_attente' ? 'border-orange-200 bg-orange-50' : 'border-blue-100 bg-blue-50' }}">
                     <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0
-                                {{ $order->status === 'pending' ? 'bg-orange-200' : 'bg-blue-200' }}">
-                        <svg class="w-4 h-4 {{ $order->status === 'pending' ? 'text-orange-700' : 'text-blue-700' }}"
+                                {{ $order->statut === 'en_attente' ? 'bg-orange-200' : 'bg-blue-200' }}">
+                        <svg class="w-4 h-4 {{ $order->statut === 'en_attente' ? 'text-orange-700' : 'text-blue-700' }}"
                              fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
@@ -247,11 +235,11 @@
                         <div class="flex items-center justify-between gap-1">
                             <p class="text-xs font-bold text-dark truncate">{{ $order->reference }}</p>
                             <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0
-                                         {{ $order->status === 'pending' ? 'bg-orange-200 text-orange-800' : 'bg-blue-200 text-blue-800' }}">
-                                {{ $order->status === 'pending' ? 'En attente' : 'Confirmée' }}
+                                         {{ $order->statut === 'en_attente' ? 'bg-orange-200 text-orange-800' : 'bg-blue-200 text-blue-800' }}">
+                                {{ $order->statut === 'en_attente' ? 'En attente' : ucfirst(str_replace('_', ' ', $order->statut)) }}
                             </span>
                         </div>
-                        <p class="text-xs text-gray-600 mt-0.5 truncate">{{ $order->customer_name }}</p>
+                        <p class="text-xs text-gray-600 mt-0.5 truncate">{{ $order->nom_client }}</p>
                         <p class="text-xs font-semibold text-dark mt-0.5">
                             {{ number_format($order->total, 0, ',', ' ') }} FCFA
                         </p>
@@ -272,45 +260,45 @@
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-sm font-bold text-dark">Alertes stock</h3>
-                @if($stats['stock_low'] > 0 || $stats['stock_out'] > 0)
+                @if($stats['stock_faible'] > 0 || $stats['stock_rupture'] > 0)
                     <span class="w-5 h-5 bg-red-500 rounded-full text-white text-xs
                                  flex items-center justify-center font-bold">
-                        {{ $stats['stock_low'] + $stats['stock_out'] }}
+                        {{ $stats['stock_faible'] + $stats['stock_rupture'] }}
                     </span>
                 @endif
             </div>
 
-            @if($alerts['out_stock']->count() > 0)
+            @if($alertes['stock_faible']->count() > 0)
                 <p class="text-xs font-semibold text-red-500 uppercase tracking-wider mb-2">
                     🔴 Rupture
                 </p>
                 <div class="space-y-2 mb-3">
-                    @foreach($alerts['out_stock'] as $product)
+                    @foreach($alertes['stock_rupture'] as $plat)
                         <div class="flex items-center justify-between p-2 bg-red-50 rounded-xl">
-                            <p class="text-xs font-medium text-dark truncate">{{ $product->name }}</p>
+                            <p class="text-xs font-medium text-dark truncate">{{ $plat->nom }}</p>
                             <span class="text-xs font-bold text-red-600 ml-2">0</span>
                         </div>
                     @endforeach
                 </div>
             @endif
 
-            @if($alerts['low_stock']->count() > 0)
+            @if($alertes['stock_faible']->count() > 0)
                 <p class="text-xs font-semibold text-orange-500 uppercase tracking-wider mb-2">
                     🟠 Stock bas
                 </p>
                 <div class="space-y-2">
-                    @foreach($alerts['low_stock'] as $product)
+                    @foreach($alertes['stock_faible'] as $plat)
                         <div class="flex items-center justify-between p-2 bg-orange-50 rounded-xl">
-                            <p class="text-xs font-medium text-dark truncate">{{ $product->name }}</p>
+                            <p class="text-xs font-medium text-dark truncate">{{ $plat->nom }}</p>
                             <span class="text-xs font-bold text-orange-600 ml-2">
-                                {{ $product->stock_quantity }}
+                                {{ $plat->stock }}
                             </span>
                         </div>
                     @endforeach
                 </div>
             @endif
 
-            @if($alerts['out_stock']->count() === 0 && $alerts['low_stock']->count() === 0)
+            @if($alertes['stock_rupture']->count() === 0 && $alertes['stock_faible']->count() === 0)
                 <div class="text-center py-6">
                     <p class="text-2xl mb-2">✅</p>
                     <p class="text-sm text-gray-400">Stock OK</p>
@@ -326,7 +314,7 @@
                    class="text-xs text-primary hover:underline">Voir tout</a>
             </div>
             <div class="space-y-3">
-                @forelse($recent['sales'] as $sale)
+                @forelse($recent['ventes'] as $vente)
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2 min-w-0">
                             <div class="w-8 h-8 bg-primary/10 rounded-xl flex items-center
@@ -342,15 +330,15 @@
                             </div>
                             <div class="min-w-0">
                                 <p class="text-xs font-semibold text-dark truncate">
-                                    {{ $sale->customer?->name ?? 'Anonyme' }}
+                                    {{ $vente->client?->nom ?? 'Anonyme' }}
                                 </p>
                                 <p class="text-xs text-gray-400">
-                                    {{ $sale->sold_at->diffForHumans() }}
+                                    {{ $vente->vendu_le->diffForHumans() }}
                                 </p>
                             </div>
                         </div>
                         <p class="text-xs font-bold text-primary flex-shrink-0 ml-2">
-                            {{ number_format($sale->total_ttc, 0, ',', ' ') }} FCFA
+                            {{ number_format($vente->total, 0, ',', ' ') }} FCFA
                         </p>
                     </div>
                 @empty
@@ -359,14 +347,14 @@
             </div>
         </div>
 
-        {{-- Top produits --}}
+        {{-- Top plats --}}
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-bold text-dark">Top produits</h3>
+                <h3 class="text-sm font-bold text-dark">Top plats</h3>
                 <span class="text-xs text-gray-400">ce mois</span>
             </div>
             <div class="space-y-3">
-                @forelse($recent['top_products'] as $index => $item)
+                @forelse($recent['top_plats'] as $index => $item)
                     <div class="flex items-center gap-3">
                         <span class="w-6 h-6 rounded-lg flex items-center justify-center
                                      text-xs font-bold flex-shrink-0
@@ -377,7 +365,7 @@
                         </span>
                         <div class="flex-1 min-w-0">
                             <p class="text-xs font-semibold text-dark truncate">
-                                {{ $item->product_name }}
+                                {{ $item->nom_plat }}
                             </p>
                             <p class="text-xs text-gray-400">{{ $item->total_qty }} vendu(s)</p>
                         </div>
@@ -402,8 +390,8 @@
             const dark = document.documentElement.classList.contains('dark');
             return {
                 donut: dark
-                    ? { cash: '#34d399', wave: '#60a5fa', om: '#fb923c', card: '#a78bfa', visa: '#1a1f71' }
-                    : { cash: '#10b981', wave: '#3b82f6', om: '#f97316', card: '#7c3aed', visa: '#1a1f71' },
+                    ? { cash: '#34d399', wave: '#60a5fa', om: '#fb923c', carte: '#a78bfa' }
+                    : { cash: '#10b981', wave: '#3b82f6', om: '#f97316', carte: '#7c3aed' },
             };
         }
 
@@ -426,7 +414,7 @@
                         label: 'CA (FCFA)',
                         data: data,
                         backgroundColor: 'rgba(30, 111, 191, 0.15)',
-                        borderColor: '#1E6FBF',
+                        borderColor: '#F27B20',
                         borderWidth: 2,
                         borderRadius: 8,
                         borderSkipped: false,
@@ -461,7 +449,7 @@
             const ctx = document.getElementById('paymentChart');
             if (!ctx) return;
             const t = theme();
-            const labelMap = { cash: '💵 Cash', wave: 'Wave', om: 'Orange Money', card: 'Carte bancaire', visa: 'VISA' };
+            const labelMap = { cash: '💵 Cash', wave: 'Wave', om: 'Orange Money', carte: 'Carte bancaire' };
             const labels = Object.keys(data).map(k => labelMap[k] || k);
             const values = Object.values(data);
             const colors = Object.keys(data).map(k => t.donut[k] || '#6B7280');
@@ -502,10 +490,10 @@
                     datasets: [{
                         label: 'CA mensuel',
                         data: data,
-                        borderColor: '#1E6FBF',
+                        borderColor: '#F27B20',
                         backgroundColor: 'rgba(30, 111, 191, 0.08)',
                         borderWidth: 2.5,
-                        pointBackgroundColor: '#1E6FBF',
+                        pointBackgroundColor: '#F27B20',
                         pointRadius: 4,
                         pointHoverRadius: 6,
                         fill: true,
@@ -540,9 +528,9 @@
 
         function initAllCharts(charts) {
             setTimeout(() => {
-                initSalesChart(charts.daily_labels, charts.daily_sales);
-                initPaymentChart(charts.payment_data);
-                initMonthlyChart(charts.monthly_labels, charts.monthly_ca);
+                initSalesChart(charts.labels_jours, charts.ventes_jours);
+                initPaymentChart(charts.paiements);
+                initMonthlyChart(charts.labels_mois, charts.ca_par_mois);
             }, 50);
         }
 

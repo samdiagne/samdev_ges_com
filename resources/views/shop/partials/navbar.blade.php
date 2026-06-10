@@ -1,7 +1,7 @@
 @php
-    $settings = App\Models\CompanySetting::getSettings();
+    $settings = App\Models\Parametre::first();
     $logo     = $settings->logo;
-    $wa       = preg_replace('/[^0-9]/', '', $settings->whatsapp ?? $settings->phone ?? '');
+    $wa       = preg_replace('/[^0-9]/', '', $settings->whatsapp ?? $settings->telephone ?? '');
 @endphp
 
 <nav class="bg-white border-b border-gray-100 sticky top-0 z-40"
@@ -25,9 +25,9 @@
                 @endif
                 <div class="hidden sm:block">
                     <p class="font-bold text-sm text-dark leading-tight">
-                        {{ $settings->name }}
+                        {{ $settings->nom }}
                     </p>
-                    <p class="text-xs leading-tight" style="color: #F5A800;">
+                    <p class="text-xs leading-tight" style="color: #2DB667;">
                         Dakar, Sénégal
                     </p>
                 </div>
@@ -50,7 +50,7 @@
                         </svg>
                         <input type="text" name="q"
                                value="{{ request('q') }}"
-                               placeholder="Rechercher un produit..."
+                               placeholder="Rechercher un plat..."
                                class="flex-1 bg-transparent text-sm text-dark
                                       placeholder-gray-400 focus:outline-none"/>
                         <button type="submit"
@@ -161,7 +161,7 @@
                               transition-all">
                         Connexion
                     </a>
-                    <a href="{{ route('register') }}"
+                    <a href="{{ route('compte.register') }}"
                        class="flex items-center h-9 px-4 bg-primary rounded-full
                               text-sm font-semibold text-white hover:bg-primary/90
                               transition-all shadow-lg shadow-primary/20">
@@ -218,14 +218,14 @@
                         Tout le catalogue
                     </a>
 
-                    @foreach(App\Models\Category::where('is_active', true)->limit(6)->get() as $cat)
+                    @foreach(App\Models\Categorie::where('est_active', true)->orderBy('ordre')->limit(6)->get() as $cat)
                         <a href="{{ route('shop.catalogue', ['categorie' => $cat->slug]) }}"
                            @class([
                                'flex-shrink-0 inline-flex items-center h-7 px-4 rounded-full text-xs font-semibold transition-all',
                                'bg-primary text-white' => request('categorie') === $cat->slug,
                                'text-gray-500 hover:text-dark hover:bg-gray-100' => request('categorie') !== $cat->slug,
                            ])>
-                            {{ $cat->name }}
+                            {{ $cat->nom }}
                         </a>
                     @endforeach
 
@@ -238,7 +238,7 @@
                               text-xs font-semibold transition-all flex-shrink-0"
                        style="background: #FFF8E7; color: #92400e;">
                         <span class="w-1.5 h-1.5 rounded-full"
-                              style="background: #F5A800;"></span>
+                              style="background: #2DB667;"></span>
                         Nouveautés
                     </a>
                 </div>
@@ -296,12 +296,12 @@
                 Catalogue
             </a>
 
-            @foreach(App\Models\Category::where('is_active', true)->limit(6)->get() as $cat)
+            @foreach(App\Models\Categorie::where('est_active', true)->orderBy('ordre')->limit(6)->get() as $cat)
                 <a href="{{ route('shop.catalogue', ['categorie' => $cat->slug]) }}"
                    @click="mobileMenu = false"
                    class="flex items-center h-10 px-4 rounded-xl text-sm
                           text-gray-500 hover:bg-gray-50 transition-colors">
-                    {{ $cat->name }}
+                    {{ $cat->nom }}
                 </a>
             @endforeach
 

@@ -4,57 +4,55 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Quote extends Model
 {
-    use HasFactory, SoftDeletes;
+    use SoftDeletes;
 
     protected $fillable = [
-        'reference', 'customer_id', 'user_id', 'status',
-        'customer_name', 'customer_phone',
-        'subtotal_ht', 'tva_amount', 'total_ttc',
-        'discount', 'tva_rate', 'notes',
-        'valid_until', 'sent_whatsapp', 'quote_date',
+        'reference', 'client_id', 'user_id', 'status',
+        'client_nom', 'client_telephone',
+        'sous_total', 'remise', 'total',
+        'notes', 'valide_jusqua', 'envoye_whatsapp', 'date_devis',
     ];
 
     protected function casts(): array
     {
         return [
-            'subtotal_ht'   => 'decimal:2',
-            'tva_amount'    => 'decimal:2',
-            'total_ttc'     => 'decimal:2',
-            'discount'      => 'decimal:2',
-            'tva_rate'      => 'decimal:2',
-            'sent_whatsapp' => 'boolean',
-            'valid_until'   => 'date',
-            'quote_date'    => 'datetime',
+            'sous_total'       => 'decimal:2',
+            'remise'           => 'decimal:2',
+            'total'            => 'decimal:2',
+            'envoye_whatsapp'  => 'boolean',
+            'valide_jusqua'    => 'date',
+            'date_devis'       => 'datetime',
         ];
     }
 
-    public function customer()
+    public function client(): BelongsTo
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(Client::class);
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function items()
+    public function items(): HasMany
     {
         return $this->hasMany(QuoteItem::class);
     }
 
-    public function getClientNameAttribute(): string
+    public function getNomClientAttribute(): string
     {
-        return $this->customer?->name ?? $this->customer_name ?? 'Client anonyme';
+        return $this->client?->nom ?? $this->client_nom ?? 'Client anonyme';
     }
 
     public function isExpired(): bool
     {
-        return $this->valid_until && $this->valid_until->isPast()
+        return $this->valide_jusqua && $this->valide_jusqua->isPast()
             && !in_array($this->status, ['accepted', 'refused']);
     }
 

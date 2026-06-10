@@ -3,84 +3,74 @@
 namespace App\Livewire\Profile;
 
 use Livewire\Component;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
 class ProfileManager extends Component
 {
-    // Infos
     public string $name     = '';
     public string $email    = '';
     public string $phone    = '';
+    public string $whatsapp = '';
 
-    // Mot de passe
-    public string $current_password  = '';
-    public string $new_password      = '';
-    public string $confirm_password  = '';
+    public string $current_password      = '';
+    public string $password              = '';
+    public string $password_confirmation = '';
 
-    // UI
-    public bool $savedInfo     = false;
-    public bool $savedPassword = false;
+    public string $ongletActif = 'infos';
+    public bool   $sauvegarde  = false;
 
     public function mount(): void
     {
-        $user        = Auth::user();
-        $this->name  = $user->name;
-        $this->email = $user->email;
-        $this->phone = $user->phone ?? '';
+        $user = auth()->user();
+        $this->name     = $user->name;
+        $this->email    = $user->email;
+        $this->phone    = $user->phone ?? '';
+        $this->whatsapp = $user->whatsapp ?? '';
     }
 
-    public function saveInfo(): void
+    public function saveInfos(): void
     {
         $this->validate([
-            'name'  => 'required|string|min:2|max:255',
-            'email' => 'required|email|unique:users,email,' . Auth::id(),
-            'phone' => 'nullable|string|max:20',
-        ], [
-            'name.required'  => 'Le nom est obligatoire.',
-            'email.required' => 'L\'email est obligatoire.',
-            'email.unique'   => 'Cet email est déjà utilisé.',
+            'name'     => 'required|string|min:2|max:255',
+            'email'    => 'required|email|unique:users,email,' . auth()->id(),
+            'phone'    => 'nullable|string|max:100',
+            'whatsapp' => 'nullable|string|max:100',
         ]);
 
-        Auth::user()->update([
-            'name'  => $this->name,
-            'email' => $this->email,
-            'phone' => $this->phone ?: null,
+        auth()->user()->update([
+            'name'     => $this->name,
+            'email'    => $this->email,
+            'phone'    => $this->phone ?: null,
+            'whatsapp' => $this->whatsapp ?: null,
         ]);
 
-        $this->savedInfo = true;
-        $this->dispatch('info-saved');
+        $this->showSaved();
     }
 
     public function savePassword(): void
     {
         $this->validate([
-            'current_password' => 'required',
-            'new_password'     => ['required', 'min:8', Password::defaults()],
-            'confirm_password' => 'required|same:new_password',
+            'current_password'      => 'required|current_password',
+            'password'              => ['required', 'confirmed', Password::min(8)],
         ], [
-            'current_password.required' => 'Le mot de passe actuel est obligatoire.',
-            'new_password.required'     => 'Le nouveau mot de passe est obligatoire.',
-            'new_password.min'          => 'Le mot de passe doit faire au moins 8 caractères.',
-            'confirm_password.same'     => 'Les mots de passe ne correspondent pas.',
+            'current_password.current_password' => 'Le mot de passe actuel est incorrect.',
+            'password.confirmed'                => 'Les mots de passe ne correspondent pas.',
+            'password.min'                      => 'Le nouveau mot de passe doit faire au moins 8 caractères.',
         ]);
 
-        // Vérifier le mot de passe actuel
-        if (!Hash::check($this->current_password, Auth::user()->password)) {
-            $this->addError('current_password', 'Mot de passe actuel incorrect.');
-            return;
-        }
-
-        Auth::user()->update([
-            'password' => Hash::make($this->new_password),
+        auth()->user()->update([
+            'password' => Hash::make($this->password),
         ]);
 
-        $this->current_password = '';
-        $this->new_password     = '';
-        $this->confirm_password = '';
-        $this->savedPassword    = true;
-        $this->dispatch('password-saved');
+        $this->reset(['current_password', 'password', 'password_confirmation']);
+        $this->showSaved();
+    }
+
+    private function showSaved(): void
+    {
+        $this->sauvegarde = true;
+        $this->dispatch('flash-saved');
     }
 
     public function render()

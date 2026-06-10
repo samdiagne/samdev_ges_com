@@ -11,11 +11,11 @@
             <p class="text-2xl font-bold text-gray-500 mt-1">{{ $stats['draft'] }}</p>
         </div>
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Envoyés</p>
+            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Envoyes</p>
             <p class="text-2xl font-bold text-blue-500 mt-1">{{ $stats['sent'] }}</p>
         </div>
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Acceptés</p>
+            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Acceptes</p>
             <p class="text-2xl font-bold text-green-600 mt-1">{{ $stats['accepted'] }}</p>
             <p class="text-xs text-gray-400 mt-1">
                 {{ number_format($stats['ca'], 0, ',', ' ') }} FCFA
@@ -51,7 +51,7 @@
                           d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
                 </svg>
                 <input wire:model.live.debounce.300ms="search"
-                       type="text" placeholder="Référence, client..."
+                       type="text" placeholder="Reference, client..."
                        class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl
                               text-sm focus:outline-none focus:border-primary bg-gray-50"/>
             </div>
@@ -63,10 +63,10 @@
                            focus:outline-none focus:border-primary bg-gray-50">
                 <option value="">Tous statuts</option>
                 <option value="draft">Brouillon</option>
-                <option value="sent">Envoyé</option>
-                <option value="accepted">Accepté</option>
-                <option value="refused">Refusé</option>
-                <option value="expired">Expiré</option>
+                <option value="sent">Envoye</option>
+                <option value="accepted">Accepte</option>
+                <option value="refused">Refuse</option>
+                <option value="expired">Expire</option>
             </select>
         </div>
     </div>
@@ -77,7 +77,7 @@
              x-init="setTimeout(() => show = false, 3000)"
              class="mb-4 flex items-center gap-3 bg-green-50 border border-green-200
                     text-green-800 px-4 py-3 rounded-xl text-sm font-medium">
-            ✅ {{ session('success') }}
+            {{ session('success') }}
         </div>
     @endif
 
@@ -88,7 +88,7 @@
                 <thead>
                     <tr class="bg-gray-50 border-b border-gray-100">
                         <th class="text-left text-xs font-semibold text-gray-500
-                                   uppercase tracking-wider px-4 py-3">Référence</th>
+                                   uppercase tracking-wider px-4 py-3">Reference</th>
                         <th class="text-left text-xs font-semibold text-gray-500
                                    uppercase tracking-wider px-4 py-3">Client</th>
                         <th class="text-left text-xs font-semibold text-gray-500
@@ -97,7 +97,7 @@
                         </th>
                         <th class="text-left text-xs font-semibold text-gray-500
                                    uppercase tracking-wider px-4 py-3 hidden lg:table-cell">
-                            Validité
+                            Validite
                         </th>
                         <th class="text-center text-xs font-semibold text-gray-500
                                    uppercase tracking-wider px-4 py-3">Statut</th>
@@ -118,11 +118,11 @@
                                 'expired'  => 'bg-orange-100 text-orange-700',
                             ];
                             $statusLabels = [
-                                'draft'    => '📝 Brouillon',
-                                'sent'     => '📤 Envoyé',
-                                'accepted' => '✅ Accepté',
-                                'refused'  => '❌ Refusé',
-                                'expired'  => '⏰ Expiré',
+                                'draft'    => 'Brouillon',
+                                'sent'     => 'Envoye',
+                                'accepted' => 'Accepte',
+                                'refused'  => 'Refuse',
+                                'expired'  => 'Expire',
                             ];
                         @endphp
                         <tr class="hover:bg-gray-50/50 transition-colors">
@@ -133,20 +133,20 @@
                                 </p>
                             </td>
                             <td class="px-4 py-3">
-                                <p class="text-sm text-dark">{{ $quote->client_name }}</p>
+                                <p class="text-sm text-dark">{{ $quote->nom_client }}</p>
                             </td>
                             <td class="px-4 py-3 hidden lg:table-cell">
                                 <p class="text-sm text-dark">
-                                    {{ $quote->quote_date->format('d/m/Y') }}
+                                    {{ $quote->date_devis->format('d/m/Y') }}
                                 </p>
                             </td>
                             <td class="px-4 py-3 hidden lg:table-cell">
-                                @if($quote->valid_until)
+                                @if($quote->valide_jusqua)
                                     <p class="text-sm {{ $quote->isExpired() ? 'text-red-500' : 'text-dark' }}">
-                                        {{ $quote->valid_until->format('d/m/Y') }}
+                                        {{ $quote->valide_jusqua->format('d/m/Y') }}
                                     </p>
                                 @else
-                                    <p class="text-xs text-gray-400">—</p>
+                                    <p class="text-xs text-gray-400">&mdash;</p>
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-center">
@@ -158,42 +158,42 @@
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <p class="text-sm font-bold text-dark">
-                                    {{ number_format($quote->total_ttc, 0, ',', ' ') }}
+                                    {{ number_format($quote->total, 0, ',', ' ') }}
                                     <span class="text-xs font-normal text-gray-400">FCFA</span>
                                 </p>
                             </td>
                             <td class="px-4 py-3 sticky right-0 bg-white border-l border-gray-100">
                                 @php
-                                    $clientPhone = $quote->customer?->phone ?? $quote->customer_phone ?? '';
+                                    $clientPhone = $quote->client?->telephone ?? $quote->client_telephone ?? '';
                                     $waPhone = preg_replace('/[^0-9]/', '', $clientPhone);
                                     if ($waPhone && !str_starts_with($waPhone, '221')) {
                                         $waPhone = '221' . ltrim($waPhone, '0');
                                     }
-                                    $clientEmail = $quote->customer?->email ?? '';
+                                    $clientEmail = $quote->client?->email ?? '';
                                     $waText = urlencode(
-                                        "Bonjour " . $quote->client_name . ",\n\n" .
+                                        "Bonjour " . $quote->nom_client . ",\n\n" .
                                         "Veuillez trouver ci-joint votre devis *" . $quote->reference . "* " .
-                                        "d'un montant de *" . number_format($quote->total_ttc, 0, ',', ' ') . " FCFA*" .
-                                        ($quote->valid_until ? ", valable jusqu'au " . $quote->valid_until->format('d/m/Y') : '') .
+                                        "d'un montant de *" . number_format($quote->total, 0, ',', ' ') . " FCFA*" .
+                                        ($quote->valide_jusqua ? ", valable jusqu'au " . $quote->valide_jusqua->format('d/m/Y') : '') .
                                         ".\n\nMerci pour votre confiance."
                                     );
                                     $mailSubject = urlencode("Devis " . $quote->reference);
                                     $mailBody = urlencode(
-                                        "Bonjour " . $quote->client_name . ",\n\n" .
+                                        "Bonjour " . $quote->nom_client . ",\n\n" .
                                         "Veuillez trouver ci-joint votre devis " . $quote->reference .
-                                        " d'un montant de " . number_format($quote->total_ttc, 0, ',', ' ') . " FCFA" .
-                                        ($quote->valid_until ? ", valable jusqu'au " . $quote->valid_until->format('d/m/Y') : '') .
+                                        " d'un montant de " . number_format($quote->total, 0, ',', ' ') . " FCFA" .
+                                        ($quote->valide_jusqua ? ", valable jusqu'au " . $quote->valide_jusqua->format('d/m/Y') : '') .
                                         ".\n\nCordialement."
                                     );
                                 @endphp
                                 <div class="flex items-center justify-end gap-1">
 
-                                    {{-- Télécharger PDF --}}
+                                    {{-- Telecharger PDF --}}
                                     <a href="{{ route('devis.download', $quote->id) }}"
                                        target="_blank"
                                        class="w-8 h-8 flex items-center justify-center rounded-lg
                                               text-gray-400 hover:text-primary hover:bg-primary/10
-                                              transition-colors" title="Télécharger PDF">
+                                              transition-colors" title="Telecharger PDF">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                              viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -288,7 +288,7 @@
                     @empty
                         <tr>
                             <td colspan="7" class="px-4 py-12 text-center">
-                                <p class="text-sm text-gray-400">Aucun devis trouvé</p>
+                                <p class="text-sm text-gray-400">Aucun devis trouve</p>
                             </td>
                         </tr>
                     @endforelse
@@ -310,7 +310,7 @@
                     Convertir en vente
                 </h3>
                 <p class="text-sm text-gray-500 mb-4">
-                    Le devis sera marqué comme accepté et une vente sera créée.
+                    Le devis sera marque comme accepte et une vente sera creee.
                 </p>
                 <div class="space-y-4">
                     <div>
@@ -322,7 +322,7 @@
                                 ['value' => 'cash', 'label' => 'Cash'],
                                 ['value' => 'wave', 'label' => 'Wave'],
                                 ['value' => 'om',   'label' => 'OM'],
-                                ['value' => 'card',   'label' => 'Carte bancaire'],
+                                ['value' => 'card', 'label' => 'Carte bancaire'],
                             ] as $method)
                                 <button type="button"
                                         wire:click="$set('paymentMethod', '{{ $method['value'] }}')"
@@ -341,7 +341,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-dark mb-1.5">
-                            Montant reçu
+                            Montant recu
                         </label>
                         <div class="relative">
                             <input wire:model.live="amountPaid"
@@ -366,7 +366,7 @@
                     <button wire:click="convertToSale"
                             class="flex-1 py-2 bg-green-600 hover:bg-green-700 text-white
                                    text-sm font-medium rounded-xl transition-colors">
-                        ✅ Confirmer la vente
+                        Confirmer la vente
                     </button>
                 </div>
             </div>
@@ -380,7 +380,7 @@
                  wire:click="$set('showDeleteModal', false)"></div>
             <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
                 <h3 class="text-base font-bold text-dark mb-2">Supprimer le devis</h3>
-                <p class="text-sm text-gray-500 mb-6">Cette action est irréversible.</p>
+                <p class="text-sm text-gray-500 mb-6">Cette action est irreversible.</p>
                 <div class="flex gap-3">
                     <button wire:click="$set('showDeleteModal', false)"
                             class="flex-1 py-2 text-sm font-medium text-gray-600

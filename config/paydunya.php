@@ -7,7 +7,7 @@ return [
     'token'       => env('PAYDUNYA_TOKEN'),
     'mode'        => env('PAYDUNYA_MODE', 'test'),
     'store'       => [
-        'name'        => env('PAYDUNYA_STORE_NAME', 'Al-Adab Tech Store'),
+        'name'        => env('PAYDUNYA_STORE_NAME', 'Maffood'),
         'tagline'     => env('PAYDUNYA_STORE_TAGLINE', ''),
         'phone'       => env('APP_PHONE', ''),
         'postal_addr' => env('APP_ADDRESS', 'Dakar, Sénégal'),

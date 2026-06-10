@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Avis clients')
 @section('page-title', 'Avis clients')
-@section('page-subtitle', 'Modération des avis produits')
+@section('page-subtitle', 'Modération des avis clients')
 
 @section('content')
 <div class="space-y-6">
@@ -10,25 +10,25 @@
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
             <h3 class="text-sm font-bold text-dark">En attente de modération</h3>
-            @if($pending->count() > 0)
+            @if($enAttente->count() > 0)
                 <span class="bg-orange-100 text-orange-700 text-xs font-bold
                              px-2 py-0.5 rounded-full">
-                    {{ $pending->count() }}
+                    {{ $enAttente->count() }}
                 </span>
             @endif
         </div>
-        @forelse($pending as $review)
+        @forelse($enAttente as $avis)
             <div class="px-5 py-4 border-b border-gray-50 last:border-0">
                 <div class="flex items-start justify-between gap-4">
                     <div class="flex-1">
                         <div class="flex items-center gap-3 mb-2">
                             <p class="text-sm font-semibold text-dark">
-                                {{ $review->author_name }}
+                                {{ $avis->nom_auteur }}
                             </p>
                             <div class="flex items-center gap-0.5">
                                 @for($i = 1; $i <= 5; $i++)
                                     <svg class="w-3.5 h-3.5
-                                                {{ $i <= $review->rating
+                                                {{ $i <= $avis->note
                                                    ? 'text-yellow-400'
                                                    : 'text-gray-200' }}"
                                          fill="currentColor" viewBox="0 0 20 20">
@@ -47,16 +47,16 @@
                                 @endfor
                             </div>
                             <span class="text-xs text-gray-400">
-                                {{ $review->created_at->diffForHumans() }}
+                                {{ $avis->created_at->diffForHumans() }}
                             </span>
                         </div>
                         <p class="text-xs text-primary mb-1">
-                            {{ $review->product->name }}
+                            {{ $avis->plat->nom }}
                         </p>
-                        <p class="text-sm text-gray-600">{{ $review->comment }}</p>
+                        <p class="text-sm text-gray-600">{{ $avis->commentaire }}</p>
                     </div>
                     <div class="flex gap-2 flex-shrink-0">
-                        <form action="{{ route('avis.approve', $review->id) }}"
+                        <form action="{{ route('avis.approve', $avis->id) }}"
                               method="POST">
                             @csrf
                             <button type="submit"
@@ -66,7 +66,7 @@
                                 Approuver
                             </button>
                         </form>
-                        <form action="{{ route('avis.destroy', $review->id) }}"
+                        <form action="{{ route('avis.destroy', $avis->id) }}"
                               method="POST">
                             @csrf @method('DELETE')
                             <button type="submit"
@@ -81,7 +81,7 @@
             </div>
         @empty
             <div class="px-5 py-8 text-center text-sm text-gray-400">
-                Aucun avis en attente ✅
+                Aucun avis en attente
             </div>
         @endforelse
     </div>
@@ -91,26 +91,26 @@
         <div class="px-5 py-4 border-b border-gray-100">
             <h3 class="text-sm font-bold text-dark">Avis approuvés récents</h3>
         </div>
-        @forelse($approved as $review)
+        @forelse($approuves as $avis)
             <div class="px-5 py-4 border-b border-gray-50 last:border-0
                         flex items-start justify-between gap-4">
                 <div class="flex-1">
                     <div class="flex items-center gap-3 mb-1">
                         <p class="text-sm font-semibold text-dark">
-                            {{ $review->author_name }}
+                            {{ $avis->nom_auteur }}
                         </p>
                         <span class="text-xs text-gray-400">
-                            {{ $review->created_at->diffForHumans() }}
+                            {{ $avis->created_at->diffForHumans() }}
                         </span>
                     </div>
                     <p class="text-xs text-primary mb-1">
-                        {{ $review->product->name }}
+                        {{ $avis->plat->nom }}
                     </p>
                     <p class="text-sm text-gray-600 line-clamp-2">
-                        {{ $review->comment }}
+                        {{ $avis->commentaire }}
                     </p>
                 </div>
-                <form action="{{ route('avis.destroy', $review->id) }}"
+                <form action="{{ route('avis.destroy', $avis->id) }}"
                       method="POST">
                     @csrf @method('DELETE')
                     <button type="submit"

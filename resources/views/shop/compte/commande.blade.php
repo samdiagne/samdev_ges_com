@@ -1,5 +1,5 @@
 @extends('layouts.shop')
-@section('title', 'Commande ' . $order->reference)
+@section('title', 'Commande ' . $commande->reference)
 
 @section('content')
 <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -17,20 +17,20 @@
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
         <div class="flex items-start justify-between gap-4 flex-wrap">
             <div>
-                <h1 class="text-xl font-bold text-dark mb-1">{{ $order->reference }}</h1>
+                <h1 class="text-xl font-bold text-dark mb-1">{{ $commande->reference }}</h1>
                 <p class="text-sm text-gray-400">
-                    Passée le {{ $order->created_at->format('d/m/Y à H:i') }}
+                    Passée le {{ $commande->created_at->format('d/m/Y à H:i') }}
                 </p>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
-                <span class="px-3 py-1.5 rounded-full text-sm font-medium {{ $order->status_color }}">
-                    {{ $order->status_label }}
+                <span class="px-3 py-1.5 rounded-full text-sm font-medium {{ $commande->statut_color }}">
+                    {{ $commande->statut_label }}
                 </span>
-                @if($order->payment_status === 'paid')
+                @if($commande->statut_paiement === 'paye')
                     <span class="px-3 py-1.5 rounded-full text-sm font-medium bg-green-100 text-green-700">
                         Paiement reçu
                     </span>
-                @elseif($order->payment_status === 'pending')
+                @elseif($commande->statut_paiement === 'en_attente')
                     <span class="px-3 py-1.5 rounded-full text-sm font-medium bg-secondary/10 text-secondary">
                         Paiement en attente
                     </span>
@@ -40,19 +40,18 @@
     </div>
 
     {{-- Suivi de livraison --}}
-    @if($order->status !== 'cancelled')
+    @if($commande->statut !== 'annulee')
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
             <h2 class="text-sm font-bold text-dark mb-6">Suivi de votre commande</h2>
             @php
                 $steps = [
-                    ['key' => 'pending',    'label' => 'Commande reçue',    'desc' => 'Votre commande a été enregistrée'],
-                    ['key' => 'confirmed',  'label' => 'Confirmée',          'desc' => 'Votre commande a été confirmée par notre équipe'],
-                    ['key' => 'processing', 'label' => 'En préparation',     'desc' => 'Votre commande est en cours de préparation'],
-                    ['key' => 'shipped',    'label' => 'En livraison',       'desc' => 'Votre commande est en route'],
-                    ['key' => 'delivered',  'label' => 'Livrée',             'desc' => 'Votre commande a été livrée'],
+                    ['key' => 'en_attente', 'label' => 'Commande reçue',    'desc' => 'Votre commande a été enregistrée'],
+                    ['key' => 'confirmee',  'label' => 'Confirmée',          'desc' => 'Votre commande a été confirmée par notre équipe'],
+                    ['key' => 'expediee',   'label' => 'En livraison',       'desc' => 'Votre commande est en route'],
+                    ['key' => 'livree',     'label' => 'Livrée',             'desc' => 'Votre commande a été livrée'],
                 ];
                 $keys = array_column($steps, 'key');
-                $currentStep = array_search($order->status, $keys);
+                $currentStep = array_search($commande->statut, $keys);
             @endphp
             <div class="space-y-4">
                 @foreach($steps as $i => $step)
@@ -98,32 +97,32 @@
         </div>
     @endif
 
-    {{-- Produits commandés --}}
+    {{-- Plats commandés --}}
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
         <h2 class="text-sm font-bold text-dark mb-4">Articles commandés</h2>
         <div class="space-y-4">
-            @foreach($order->items as $item)
+            @foreach($commande->lignes as $ligne)
                 <div class="flex items-center justify-between gap-4">
                     <div class="flex items-center gap-3 min-w-0">
-                        {{-- Image produit --}}
-                        @if($item->product?->main_image)
-                            <img src="{{ Storage::url($item->product->main_image) }}"
-                                 alt="{{ $item->product_name }}"
+                        {{-- Image plat --}}
+                        @if($ligne->plat?->image_principale)
+                            <img src="{{ Storage::url($ligne->plat->image_principale) }}"
+                                 alt="{{ $ligne->nom_plat }}"
                                  class="w-14 h-14 rounded-xl object-contain bg-gray-50 border border-gray-100 shrink-0 p-1"/>
                         @else
                             <div class="w-14 h-14 rounded-xl bg-gray-100 shrink-0 flex items-center
                                         justify-center text-gray-400 text-xs font-bold">
-                                {{ $item->quantity }}×
+                                {{ $ligne->quantite }}×
                             </div>
                         @endif
 
                         <div class="min-w-0">
-                            {{-- Nom avec lien si le produit existe encore --}}
-                            @if($item->product?->slug)
-                                <a href="{{ route('shop.produit', $item->product->slug) }}"
+                            {{-- Nom avec lien si le plat existe encore --}}
+                            @if($ligne->plat?->slug)
+                                <a href="{{ route('shop.plat', $ligne->plat->slug) }}"
                                    class="text-sm font-medium text-dark hover:text-primary transition-colors
                                           truncate block group">
-                                    {{ $item->product_name }}
+                                    {{ $ligne->nom_plat }}
                                     <svg class="w-3 h-3 inline-block ml-1 opacity-0 group-hover:opacity-100
                                                 transition-opacity -mt-0.5 text-primary"
                                          fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -132,16 +131,16 @@
                                     </svg>
                                 </a>
                             @else
-                                <p class="text-sm font-medium text-dark truncate">{{ $item->product_name }}</p>
+                                <p class="text-sm font-medium text-dark truncate">{{ $ligne->nom_plat }}</p>
                             @endif
 
                             <p class="text-xs text-gray-400 mt-0.5">
-                                {{ $item->quantity }} × {{ number_format($item->unit_price, 0, ',', ' ') }} FCFA
+                                {{ $ligne->quantite }} × {{ number_format($ligne->prix_unitaire, 0, ',', ' ') }} FCFA
                             </p>
 
                             {{-- Lien laisser un avis --}}
-                            @if($item->product?->slug && $order->status === 'delivered')
-                                <a href="{{ route('shop.produit', $item->product->slug) }}#avis"
+                            @if($ligne->plat?->slug && $commande->statut === 'livree')
+                                <a href="{{ route('shop.plat', $ligne->plat->slug) }}#avis"
                                    class="inline-flex items-center gap-1 text-[11px] text-yellow-600
                                           hover:text-yellow-700 font-medium mt-1 transition-colors">
                                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -153,7 +152,7 @@
                         </div>
                     </div>
                     <span class="text-sm font-semibold text-dark shrink-0">
-                        {{ number_format($item->total, 0, ',', ' ') }} FCFA
+                        {{ number_format($ligne->total, 0, ',', ' ') }} FCFA
                     </span>
                 </div>
             @endforeach
@@ -162,17 +161,17 @@
         <div class="border-t border-gray-100 mt-6 pt-4 space-y-2">
             <div class="flex justify-between text-sm text-gray-500">
                 <span>Sous-total</span>
-                <span>{{ number_format($order->subtotal, 0, ',', ' ') }} FCFA</span>
+                <span>{{ number_format($commande->sous_total, 0, ',', ' ') }} FCFA</span>
             </div>
-            @if($order->delivery_fee > 0)
+            @if($commande->frais_livraison > 0)
                 <div class="flex justify-between text-sm text-gray-500">
                     <span>Frais de livraison</span>
-                    <span>{{ number_format($order->delivery_fee, 0, ',', ' ') }} FCFA</span>
+                    <span>{{ number_format($commande->frais_livraison, 0, ',', ' ') }} FCFA</span>
                 </div>
             @endif
             <div class="flex justify-between text-base font-bold text-dark pt-2 border-t border-gray-100">
                 <span>Total</span>
-                <span>{{ number_format($order->total, 0, ',', ' ') }} FCFA</span>
+                <span>{{ number_format($commande->total, 0, ',', ' ') }} FCFA</span>
             </div>
         </div>
     </div>
@@ -181,36 +180,41 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Livraison</h3>
-            <p class="text-sm font-semibold text-dark">{{ $order->customer_name }}</p>
-            <p class="text-sm text-gray-500 mt-1">{{ $order->customer_phone }}</p>
-            @if($order->delivery_address)
-                <p class="text-sm text-gray-500 mt-1">{{ $order->delivery_address }}</p>
+            <p class="text-sm font-semibold text-dark">{{ $commande->nom_client }}</p>
+            <p class="text-sm text-gray-500 mt-1">{{ $commande->telephone_client }}</p>
+            @if($commande->adresse_livraison)
+                <p class="text-sm text-gray-500 mt-1">{{ $commande->adresse_livraison }}</p>
             @endif
-            @if($order->city)
-                <p class="text-sm text-gray-500">{{ $order->city }}</p>
+            @if($commande->ville)
+                <p class="text-sm text-gray-500">{{ $commande->ville }}</p>
             @endif
         </div>
 
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Paiement</h3>
-            <p class="text-sm font-semibold text-dark">{{ $order->payment_label }}</p>
+            <p class="text-sm font-semibold text-dark">{{ $commande->paiement_label }}</p>
             <div class="flex items-center gap-2 mt-2">
                 <span class="inline-flex px-2.5 py-1 rounded-lg text-xs font-medium
-                             {{ $order->payment_status === 'paid'
+                             {{ $commande->statut_paiement === 'paye'
                                 ? 'bg-green-100 text-green-700'
-                                : ($order->payment_status === 'failed'
+                                : ($commande->statut_paiement === 'echoue'
                                    ? 'bg-red-100 text-red-700'
                                    : 'bg-secondary/10 text-secondary') }}">
-                    {{ $order->payment_status_label }}
+                    {{ match($commande->statut_paiement) {
+                        'paye' => 'Payé',
+                        'echoue' => 'Échoué',
+                        'en_attente' => 'En attente',
+                        default => ucfirst($commande->statut_paiement ?? '—'),
+                    } }}
                 </span>
             </div>
         </div>
     </div>
 
-    @if($order->notes)
+    @if($commande->notes)
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mt-4">
             <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Note</h3>
-            <p class="text-sm text-gray-600">{{ $order->notes }}</p>
+            <p class="text-sm text-gray-600">{{ $commande->notes }}</p>
         </div>
     @endif
 

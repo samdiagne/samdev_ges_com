@@ -5,7 +5,7 @@
         <div>
             <h1 class="text-2xl font-bold text-dark">Catalogue</h1>
             <p class="text-sm text-gray-400 mt-1">
-                {{ $totalProducts }} produit(s) trouvé(s)
+                {{ $plats->total() }} plat(s) trouvé(s)
                 @if($search)
                     pour "<span class="text-primary font-medium">{{ $search }}</span>"
                 @endif
@@ -43,7 +43,7 @@
     <div class="flex gap-6">
 
         {{-- ── Sidebar filtres ── --}}
-        <aside class="{{ $showFilters ? 'block' : 'hidden' }} sm:block
+        <aside class="sm:block
                        w-full sm:w-64 flex-shrink-0">
             <div class="bg-white rounded-2xl border border-gray-100
                         shadow-sm p-5 space-y-6 sticky top-20">
@@ -83,7 +83,7 @@
                             <span>Toutes</span>
                             <span class="{{ $categorie === '' ? 'bg-white/20' : 'bg-gray-100' }}
                                         text-xs px-2 py-0.5 rounded-full">
-                                {{ $categories->sum('active_products_count') }}
+                                {{ $categories->sum('plats_actifs_count') }}
                             </span>
                         </button>
                         @foreach($categories as $cat)
@@ -96,13 +96,13 @@
                                         'text-gray-600 hover:bg-gray-50'
                                             => $categorie !== $cat->slug,
                                     ])>
-                                <span>{{ $cat->name }}</span>
+                                <span>{{ $cat->nom }}</span>
                                 <span @class([
                                     'text-xs px-2 py-0.5 rounded-full',
                                     'bg-white/20' => $categorie === $cat->slug,
                                     'bg-gray-100' => $categorie !== $cat->slug,
                                 ])>
-                                    {{ $cat->active_products_count }}
+                                    {{ $cat->plats_actifs_count }}
                                 </span>
                             </button>
                         @endforeach
@@ -159,7 +159,7 @@
             </div>
         </aside>
 
-        {{-- ── Grille produits ── --}}
+        {{-- ── Grille plats ── --}}
         <div class="flex-1 min-w-0">
 
             {{-- Loading --}}
@@ -178,18 +178,18 @@
             </div>
 
             <div wire:loading.remove>
-                @if($products->count() > 0)
+                @if($plats->count() > 0)
                     <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                        @foreach($products as $product)
-                            @include('shop.partials.product-card',
-                                compact('product'))
+                        @foreach($plats as $plat)
+                            @include('shop.partials.plat-card',
+                                compact('plat'))
                         @endforeach
                     </div>
 
                     {{-- Pagination --}}
-                    @if($products->hasPages())
+                    @if($plats->hasPages())
                         <div class="mt-8 flex justify-center">
-                            {{ $products->links() }}
+                            {{ $plats->links() }}
                         </div>
                     @endif
                 @else
@@ -205,7 +205,7 @@
                             </svg>
                         </div>
                         <p class="text-lg font-semibold text-dark mb-2">
-                            Aucun produit trouvé
+                            Aucun plat trouvé
                         </p>
                         <p class="text-sm text-gray-400 mb-6">
                             Essayez de modifier vos filtres
@@ -214,7 +214,7 @@
                                 class="px-6 py-2.5 bg-primary text-white text-sm
                                        font-medium rounded-xl hover:bg-primary/90
                                        transition-colors">
-                            Voir tous les produits
+                            Voir tout le menu
                         </button>
                     </div>
                 @endif

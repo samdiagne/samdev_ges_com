@@ -18,11 +18,11 @@
             <p class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">
                 Répartition
             </p>
-            @if($stats['by_category']->isEmpty())
+            @if($stats['par_categorie']->isEmpty())
                 <p class="text-sm text-gray-400">Aucune dépense ce mois</p>
             @else
                 <div class="flex flex-wrap gap-2">
-                    @foreach($stats['by_category'] as $cat)
+                    @foreach($stats['par_categorie'] as $cat)
                         <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl
                                     bg-gray-50 border border-gray-100">
                             <span class="text-sm">
@@ -37,9 +37,9 @@
                                     @default 💸
                                 @endswitch
                             </span>
-                            <span class="text-xs font-medium text-dark">{{ $cat->name }}</span>
+                            <span class="text-xs font-medium text-dark">{{ $cat->nom }}</span>
                             <span class="text-xs font-bold text-primary">
-                                {{ number_format($cat->expenses_sum_amount, 0, ',', ' ') }}
+                                {{ number_format($cat->depenses_sum_montant, 0, ',', ' ') }}
                                 FCFA
                             </span>
                         </div>
@@ -53,7 +53,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
         <div>
             <h3 class="text-lg font-bold text-dark">Dépenses</h3>
-            <p class="text-sm text-gray-400">{{ $expenses->total() }} dépense(s)</p>
+            <p class="text-sm text-gray-400">{{ $depenses->total() }} dépense(s)</p>
         </div>
         <button wire:click="openCreateModal"
                 class="inline-flex items-center gap-2 bg-primary hover:bg-primary/90
@@ -82,15 +82,15 @@
                        class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl
                               text-sm focus:outline-none focus:border-primary bg-gray-50"/>
             </div>
-            <input wire:model.live="filterMonth" type="month"
+            <input wire:model.live="filtreMonth" type="month"
                    class="px-3 py-2 border border-gray-200 rounded-xl text-sm
                           focus:outline-none focus:border-primary bg-gray-50"/>
-            <select wire:model.live="filterCategory"
+            <select wire:model.live="filtreCategorie"
                     class="px-3 py-2 border border-gray-200 rounded-xl text-sm
                            focus:outline-none focus:border-primary bg-gray-50">
                 <option value="">Toutes catégories</option>
-                @foreach($expenseCategories as $cat)
-                    <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                @foreach($depenseCategories as $cat)
+                    <option value="{{ $cat->id }}">{{ $cat->nom }}</option>
                 @endforeach
             </select>
         </div>
@@ -153,22 +153,22 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
-                    @forelse($expenses as $expense)
+                    @forelse($depenses as $depense)
                         <tr class="hover:bg-gray-50/50 transition-colors">
                             <td class="px-4 py-3">
                                 <p class="text-sm font-semibold text-dark">
-                                    {{ $expense->description }}
+                                    {{ $depense->description }}
                                 </p>
-                                @if($expense->notes)
+                                @if($depense->notes)
                                     <p class="text-xs text-gray-400 truncate max-w-xs">
-                                        {{ $expense->notes }}
+                                        {{ $depense->notes }}
                                     </p>
                                 @endif
                             </td>
                             <td class="px-4 py-3 hidden md:table-cell">
                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1
                                              rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                                    @switch($expense->category->icon ?? '')
+                                    @switch($depense->categorie->icon ?? '')
                                         @case('bolt') ⚡ @break
                                         @case('wifi') 📶 @break
                                         @case('droplet') 💧 @break
@@ -178,15 +178,15 @@
                                         @case('package') 📦 @break
                                         @default 💸
                                     @endswitch
-                                    {{ $expense->category->name ?? '—' }}
+                                    {{ $depense->categorie->nom ?? '—' }}
                                 </span>
                             </td>
                             <td class="px-4 py-3 hidden lg:table-cell">
                                 <p class="text-sm text-dark">
-                                    {{ $expense->expense_date->format('d/m/Y') }}
+                                    {{ $depense->date_depense->format('d/m/Y') }}
                                 </p>
                                 <p class="text-xs text-gray-400">
-                                    par {{ $expense->user->name }}
+                                    par {{ $depense->user->name }}
                                 </p>
                             </td>
                             <td class="px-4 py-3 text-center hidden md:table-cell">
@@ -206,19 +206,19 @@
                                 @endphp
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-full
                                              text-xs font-medium
-                                             {{ $pmColors[$expense->payment_method] ?? 'bg-gray-100 text-gray-600' }}">
-                                    {{ $pmLabels[$expense->payment_method] ?? $expense->payment_method }}
+                                             {{ $pmColors[$depense->mode_paiement] ?? 'bg-gray-100 text-gray-600' }}">
+                                    {{ $pmLabels[$depense->mode_paiement] ?? $depense->mode_paiement }}
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <p class="text-sm font-bold text-red-500">
-                                    {{ number_format($expense->amount, 0, ',', ' ') }}
+                                    {{ number_format($depense->montant, 0, ',', ' ') }}
                                     <span class="text-xs font-normal text-gray-400">FCFA</span>
                                 </p>
                             </td>
                             <td class="px-4 py-3 sticky right-0 bg-white border-l border-gray-100">
                                 <div class="flex items-center justify-end gap-1">
-                                    <button wire:click="openEditModal({{ $expense->id }})"
+                                    <button wire:click="openEditModal({{ $depense->id }})"
                                             class="w-8 h-8 flex items-center justify-center
                                                    rounded-lg text-gray-400 hover:text-primary
                                                    hover:bg-primary/10 transition-colors">
@@ -231,8 +231,8 @@
                                                      15H9v-2.828l8.586-8.586z"/>
                                         </svg>
                                     </button>
-                                    @if($expense->isDeletable())
-                                    <button wire:click="confirmDelete({{ $expense->id }})"
+                                    @if($depense->created_at->diffInHours(now()) <= 24)
+                                    <button wire:click="confirmDelete({{ $depense->id }})"
                                             class="w-8 h-8 flex items-center justify-center
                                                    rounded-lg text-gray-400 hover:text-red-500
                                                    hover:bg-red-50 transition-colors">
@@ -288,9 +288,9 @@
             </table>
         </div>
 
-        @if($expenses->hasPages())
+        @if($depenses->hasPages())
             <div class="px-4 py-3 border-t border-gray-100">
-                {{ $expenses->links() }}
+                {{ $depenses->links() }}
             </div>
         @endif
     </div>
@@ -298,7 +298,7 @@
     {{-- ══════════════════════════════════════
          MODAL Créer / Modifier
     ══════════════════════════════════════ --}}
-    @if($showModal)
+    @if($afficherModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
                  wire:click="closeModal"></div>
@@ -327,20 +327,20 @@
                         <label class="block text-sm font-medium text-dark mb-1.5">
                             Catégorie <span class="text-red-500">*</span>
                         </label>
-                        <select wire:model="expense_category_id"
+                        <select wire:model="depense_categorie_id"
                                 class="w-full px-3 py-2.5 border rounded-xl text-sm
                                        focus:outline-none transition-colors
-                                       {{ $errors->has('expense_category_id')
+                                       {{ $errors->has('depense_categorie_id')
                                           ? 'border-red-400 bg-red-50'
                                           : 'border-gray-200 bg-gray-50 focus:border-primary' }}">
                             <option value="0">Sélectionner...</option>
-                            @foreach($expenseCategories as $cat)
+                            @foreach($depenseCategories as $cat)
                                 <option value="{{ $cat->id }}">
-                                    {{ $cat->name }}
+                                    {{ $cat->nom }}
                                 </option>
                             @endforeach
                         </select>
-                        @error('expense_category_id')
+                        @error('depense_categorie_id')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
@@ -369,19 +369,19 @@
                                 Montant <span class="text-red-500">*</span>
                             </label>
                             <div class="relative">
-                                <input wire:model="amount" type="number"
+                                <input wire:model="montant" type="number"
                                        min="1" placeholder="0"
-                                       @if($amountLocked) readonly @endif
+                                       @if($montantVerrouille) readonly @endif
                                        class="w-full px-3 py-2.5 pr-14 border rounded-xl text-sm
                                               focus:outline-none transition-colors
-                                              {{ $amountLocked
+                                              {{ $montantVerrouille
                                                  ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                 : ($errors->has('amount')
+                                                 : ($errors->has('montant')
                                                     ? 'border-red-400 bg-red-50'
                                                     : 'border-gray-200 bg-gray-50 focus:border-primary focus:bg-white') }}"/>
                                 <span class="absolute right-3 top-1/2 -translate-y-1/2
                                              text-xs text-gray-400">
-                                    @if($amountLocked)
+                                    @if($montantVerrouille)
                                         <svg class="w-3.5 h-3.5 text-gray-400" fill="none"
                                              stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -395,7 +395,7 @@
                                     @endif
                                 </span>
                             </div>
-                            @if($amountLocked)
+                            @if($montantVerrouille)
                                 <p class="text-amber-600 text-xs mt-1 flex items-center gap-1">
                                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd"
@@ -408,7 +408,7 @@
                                     Montant verrouillé après 24h
                                 </p>
                             @else
-                                @error('amount')
+                                @error('montant')
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             @endif
@@ -417,11 +417,11 @@
                             <label class="block text-sm font-medium text-dark mb-1.5">
                                 Date <span class="text-red-500">*</span>
                             </label>
-                            <input wire:model="expense_date" type="date"
+                            <input wire:model="date_depense" type="date"
                                    class="w-full px-3 py-2.5 border border-gray-200 rounded-xl
                                           text-sm bg-gray-50 focus:outline-none
                                           focus:border-primary transition-colors"/>
-                            @error('expense_date')
+                            @error('date_depense')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
@@ -440,13 +440,13 @@
                                 ['value' => 'virement', 'label' => 'Virement'],
                             ] as $method)
                                 <button type="button"
-                                        wire:click="$set('payment_method', '{{ $method['value'] }}')"
+                                        wire:click="$set('mode_paiement', '{{ $method['value'] }}')"
                                         @class([
                                             'py-2 px-1 rounded-xl text-xs font-semibold transition-all border-2',
                                             'border-primary bg-primary text-white'
-                                                => $payment_method === $method['value'],
+                                                => $mode_paiement === $method['value'],
                                             'border-gray-200 bg-gray-50 text-gray-600 hover:border-primary/50'
-                                                => $payment_method !== $method['value'],
+                                                => $mode_paiement !== $method['value'],
                                         ])>
                                     {{ $method['label'] }}
                                 </button>
@@ -459,16 +459,16 @@
                         <label class="block text-sm font-medium text-dark mb-1.5">
                             Justificatif (photo)
                         </label>
-                        @if($currentReceipt && !$receipt)
+                        @if($justificatifActuel && !$justificatif)
                             <div class="mb-2">
-                                <img src="{{ Storage::url($currentReceipt) }}"
+                                <img src="{{ Storage::url($justificatifActuel) }}"
                                      class="w-16 h-16 object-cover rounded-lg
                                             border border-gray-200"/>
                             </div>
                         @endif
-                        @if($receipt)
+                        @if($justificatif)
                             <div class="mb-2">
-                                <img src="{{ $receipt->temporaryUrl() }}"
+                                <img src="{{ $justificatif->temporaryUrl() }}"
                                      class="w-16 h-16 object-cover rounded-lg
                                             border border-gray-200"/>
                             </div>
@@ -521,17 +521,17 @@
     @endif
 
     {{-- Modal suppression --}}
-    @if($showDeleteModal)
+    @if($afficherModalSuppression)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
-                 wire:click="$set('showDeleteModal', false)"></div>
+                 wire:click="$set('afficherModalSuppression', false)"></div>
             <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
                 <h3 class="text-base font-bold text-dark mb-2">Supprimer la dépense</h3>
                 <p class="text-sm text-gray-500 mb-6">
                     Cette action est irréversible. Les dépenses de plus de 24h ne peuvent pas être supprimées.
                 </p>
                 <div class="flex gap-3">
-                    <button wire:click="$set('showDeleteModal', false)"
+                    <button wire:click="$set('afficherModalSuppression', false)"
                             class="flex-1 py-2 text-sm font-medium text-gray-600
                                    hover:bg-gray-100 rounded-xl transition-colors">
                         Annuler

@@ -38,11 +38,11 @@
     </url>
     @endforeach
 
-    {{-- Produits --}}
-    @foreach($products as $product)
+    {{-- Plats --}}
+    @foreach($plats as $plat)
     <url>
-        <loc>{{ url('/shop/produit/' . $product->slug) }}</loc>
-        <lastmod>{{ $product->updated_at->toAtomString() }}</lastmod>
+        <loc>{{ route('shop.plat', $plat->slug) }}</loc>
+        <lastmod>{{ $plat->updated_at->toAtomString() }}</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>

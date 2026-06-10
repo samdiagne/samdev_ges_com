@@ -14,10 +14,10 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->string('phone')->nullable();      // ← ajouté
-            $table->string('whatsapp')->nullable();   // ← ajouté
-            $table->string('avatar')->nullable();     // ← ajouté
-            $table->boolean('is_active')->default(true); // ← ajouté
+            $table->string('phone')->nullable();
+            $table->string('whatsapp')->nullable();
+            $table->string('avatar')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->rememberToken();
             $table->timestamps();
         });
@@ -40,8 +40,8 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
     }
 };

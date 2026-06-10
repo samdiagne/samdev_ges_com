@@ -3,92 +3,96 @@
 namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
+use App\Models\Plat;
+use App\Models\Parametre;
 use Illuminate\Http\Request;
 
 class PanierController extends Controller
 {
     public function index()
     {
-        $cart     = session('cart', []);
-        $total    = collect($cart)->sum(fn($i) => $i['price'] * $i['quantity']);
-        $settings = \App\Models\CompanySetting::getSettings();
+        $panier     = session('panier', []);
+        $total      = collect($panier)->sum(fn($i) => $i['prix'] * $i['quantite']);
+        $parametres = Parametre::first();
 
-        return view('shop.panier', compact('cart', 'total', 'settings'));
+        return view('shop.panier', compact('panier', 'total', 'parametres'));
     }
 
     public function add(Request $request)
     {
         $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'quantity'   => 'required|integer|min:1',
+            'plat_id'  => 'required|exists:plats,id',
+            'quantite' => 'required|integer|min:1',
         ]);
 
-        $product = Product::findOrFail($request->product_id);
+        $plat = Plat::findOrFail($request->plat_id);
 
-        if ($product->stock_quantity <= 0) {
-            return back()->with('error', 'Ce produit est en rupture de stock.');
+        if ($plat->stock <= 0) {
+            return back()->with('error', 'Ce plat est en rupture de stock.');
         }
 
-        $cart = session('cart', []);
-        $key  = 'product_' . $product->id;
+        $panier = session('panier', []);
+        $cle    = 'plat_' . $plat->id;
 
-        if (isset($cart[$key])) {
-            $cart[$key]['quantity'] += $request->quantity;
+        if (isset($panier[$cle])) {
+            $panier[$cle]['quantite'] += $request->quantite;
         } else {
-            $cart[$key] = [
-                'product_id' => $product->id,
-                'name'       => $product->name,
-                'price'      => $product->selling_price,
-                'image'      => $product->main_image,
-                'slug'       => $product->slug,
-                'quantity'   => $request->quantity,
-                'stock'      => $product->stock_quantity,
+            $panier[$cle] = [
+                'plat_id'  => $plat->id,
+                'nom'      => $plat->nom,
+                'prix'     => $plat->prix_vente,
+                'image'    => $plat->image_principale,
+                'slug'     => $plat->slug,
+                'quantite' => $request->quantite,
+                'stock'    => $plat->stock,
             ];
         }
 
         // Limiter au stock disponible
-        if ($cart[$key]['quantity'] > $product->stock_quantity) {
-            $cart[$key]['quantity'] = $product->stock_quantity;
+        if ($panier[$cle]['quantite'] > $plat->stock) {
+            $panier[$cle]['quantite'] = $plat->stock;
         }
 
-        session(['cart' => $cart]);
+        session(['panier' => $panier]);
 
         if ($request->expectsJson()) {
-            return response()->json(['success' => true, 'count' => collect(session('cart'))->sum('quantity')]);
+            return response()->json([
+                'success' => true,
+                'count'   => collect(session('panier'))->sum('quantite'),
+            ]);
         }
 
-        return back()->with('success', $product->name . ' ajouté au panier !');
+        return back()->with('success', $plat->nom . ' ajouté au panier !');
     }
 
     public function update(Request $request)
     {
         $request->validate([
-            'product_id' => 'required',
-            'quantity'   => 'required|integer|min:0',
+            'plat_id'  => 'required',
+            'quantite' => 'required|integer|min:0',
         ]);
 
-        $cart = session('cart', []);
-        $key  = 'product_' . $request->product_id;
+        $panier = session('panier', []);
+        $cle    = 'plat_' . $request->plat_id;
 
-        if ($request->quantity <= 0) {
-            unset($cart[$key]);
+        if ($request->quantite <= 0) {
+            unset($panier[$cle]);
         } else {
-            $cart[$key]['quantity'] = $request->quantity;
+            $panier[$cle]['quantite'] = $request->quantite;
         }
 
-        session(['cart' => $cart]);
+        session(['panier' => $panier]);
 
         return back()->with('success', 'Panier mis à jour !');
     }
 
     public function remove(Request $request)
     {
-        $cart = session('cart', []);
-        $key  = 'product_' . $request->product_id;
-        unset($cart[$key]);
-        session(['cart' => $cart]);
+        $panier = session('panier', []);
+        $cle    = 'plat_' . $request->plat_id;
+        unset($panier[$cle]);
+        session(['panier' => $panier]);
 
-        return back()->with('success', 'Produit retiré du panier.');
+        return back()->with('success', 'Plat retiré du panier.');
     }
 }

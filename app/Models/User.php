@@ -7,16 +7,6 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
-
-/**
- * @method bool hasRole(string|array $roles)
- * @method bool hasAnyRole(string|array $roles)
- * @method bool hasAllRoles(string|array $roles)
- * @method \Illuminate\Support\Collection getRoleNames()
- * @method $this assignRole(string|array $roles)
- * @method $this removeRole(string $role)
- * @method bool hasPermissionTo(string $permission)
- */
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasRoles;
@@ -45,11 +35,6 @@ class User extends Authenticatable
         ];
     }
 
-    public function customer(): \Illuminate\Database\Eloquent\Relations\HasOne
-    {
-        return $this->hasOne(\App\Models\Customer::class);
-    }
-
     public function isAdmin(): bool
     {
         return $this->hasRole('admin');
@@ -57,11 +42,38 @@ class User extends Authenticatable
 
     public function isGestionnaire(): bool
     {
-        return $this->hasRole('gestionnaire');
+        return $this->hasRole(['admin', 'gestionnaire']);
     }
 
     public function isClient(): bool
     {
         return $this->hasRole('client');
+    }
+
+    // ── Relations ─────────────────────────────────
+
+    public function client(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Client::class);
+    }
+
+    public function ventes(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Vente::class);
+    }
+
+    public function achats(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Achat::class);
+    }
+
+    public function depenses(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Depense::class);
+    }
+
+    public function commandes(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Commande::class);
     }
 }

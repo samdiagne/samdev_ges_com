@@ -20,7 +20,7 @@
             width: 100%;
             margin-bottom: 25px;
             padding-bottom: 15px;
-            border-bottom: 3px solid #1E6FBF;
+            border-bottom: 3px solid #F27B20;
         }
         .header-left  { display: table-cell; width: 55%; vertical-align: top; }
         .header-right { display: table-cell; width: 45%; vertical-align: top; text-align: right; }
@@ -30,7 +30,7 @@
         .company-name {
             font-size: 20px;
             font-weight: bold;
-            color: #1E6FBF;
+            color: #F27B20;
             margin-bottom: 5px;
         }
         .company-info { color: #555; font-size: 10px; line-height: 1.7; }
@@ -38,7 +38,7 @@
         .invoice-title {
             font-size: 30px;
             font-weight: bold;
-            color: #1E6FBF;
+            color: #F27B20;
             letter-spacing: 3px;
         }
         .invoice-number { font-size: 14px; font-weight: bold; color: #2D2D2D; margin-top: 3px; }
@@ -69,7 +69,7 @@
             display: table-cell;
             width: 33.33%;
             background: #F8F9FC;
-            border-left: 3px solid #1E6FBF;
+            border-left: 3px solid #F27B20;
             border-radius: 6px;
             padding: 10px 12px;
             vertical-align: top;
@@ -77,7 +77,7 @@
         .info-box-title {
             font-size: 9px;
             font-weight: bold;
-            color: #1E6FBF;
+            color: #F27B20;
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 6px;
@@ -91,7 +91,7 @@
             border-collapse: collapse;
             margin-bottom: 15px;
         }
-        thead tr { background: #1E6FBF; color: white; }
+        thead tr { background: #F27B20; color: white; }
         thead th {
             padding: 8px 10px;
             text-align: left;
@@ -139,12 +139,12 @@
             font-size: 13px;
             font-weight: bold;
             color: #2D2D2D;
-            border-top: 2px solid #1E6FBF;
+            border-top: 2px solid #F27B20;
             padding-top: 8px;
             margin-top: 4px;
         }
-        .totals-row.total .totals-row-value { color: #1E6FBF; font-size: 14px; }
-        .totals-row.discount .totals-row-value { color: #F5A800; }
+        .totals-row.total .totals-row-value { color: #F27B20; font-size: 14px; }
+        .totals-row.discount .totals-row-value { color: #2DB667; }
 
         /* ── Note paiement ── */
         .payment-note {
@@ -212,19 +212,19 @@
             @if($logoPath && file_exists($logoPath))
                 <img src="{{ $logoPath }}" class="logo"/>
             @endif
-            <div class="company-name">{{ $settings->name }}</div>
+            <div class="company-name">{{ $parametres->nom }}</div>
             <div class="company-info">
-                @if($settings->address) Adresse : {{ $settings->address }}<br/>@endif
-                @if($settings->phone)   Tél : {{ $settings->phone }}<br/>@endif
-                @if($settings->email)   Email : {{ $settings->email }}<br/>@endif
-                @if($settings->ninea)   NINEA : {{ $settings->ninea }}<br/>@endif
-                @if($settings->rc)      RC : {{ $settings->rc }}@endif
+                @if($parametres->adresse) Adresse : {{ $parametres->adresse }}<br/>@endif
+                @if($parametres->telephone)   Tél : {{ $parametres->telephone }}<br/>@endif
+                @if($parametres->email)   Email : {{ $parametres->email }}<br/>@endif
+                @if($parametres->ninea)   NINEA : {{ $parametres->ninea }}<br/>@endif
+                @if($parametres->rc)      RC : {{ $parametres->rc }}@endif
             </div>
         </div>
         <div class="header-right">
             <div class="invoice-title">FACTURE</div>
-            <div class="invoice-number">{{ $invoice->invoice_number }}</div>
-            <div class="invoice-date">Date : {{ $invoice->issued_at->format('d/m/Y') }}</div>
+            <div class="invoice-number">{{ $facture->numero_facture }}</div>
+            <div class="invoice-date">Date : {{ $facture->emise_le->format('d/m/Y') }}</div>
             <div><span class="badge-paid">✓ Payée</span></div>
         </div>
     </div>
@@ -233,18 +233,18 @@
     <div class="info-section">
         <div class="info-box">
             <div class="info-box-title">Vendeur</div>
-            <p class="bold">{{ $settings->name }}</p>
-            @if($settings->address) <p>{{ $settings->address }}</p>@endif
-            @if($settings->phone)   <p>Tél : {{ $settings->phone }}</p>@endif
-            @if($settings->ninea)   <p>NINEA : {{ $settings->ninea }}</p>@endif
+            <p class="bold">{{ $parametres->nom }}</p>
+            @if($parametres->adresse) <p>{{ $parametres->adresse }}</p>@endif
+            @if($parametres->telephone)   <p>Tél : {{ $parametres->telephone }}</p>@endif
+            @if($parametres->ninea)   <p>NINEA : {{ $parametres->ninea }}</p>@endif
         </div>
         <div class="info-box">
             <div class="info-box-title">Client</div>
-            @if($sale->customer)
-                <p class="bold">{{ $sale->customer->name }}</p>
-                @if($sale->customer->phone)   <p>Tél : {{ $sale->customer->phone }}</p>@endif
-                @if($sale->customer->address) <p>{{ $sale->customer->address }}</p>@endif
-                @if($sale->customer->ninea)   <p>NINEA : {{ $sale->customer->ninea }}</p>@endif
+            @if($vente->client)
+                <p class="bold">{{ $vente->client->nom }}</p>
+                @if($vente->client->telephone)   <p>Tél : {{ $vente->client->telephone }}</p>@endif
+                @if($vente->client->adresse) <p>{{ $vente->client->adresse }}</p>@endif
+                @if($vente->client->ninea)   <p>NINEA : {{ $vente->client->ninea }}</p>@endif
             @else
                 <p class="bold">Client anonyme</p>
                 <p style="color:#aaa;">Vente comptoir</p>
@@ -254,7 +254,7 @@
             <div class="info-box-title">Paiement</div>
             <p>Mode :
                 <strong>
-                    @switch($sale->payment_method)
+                    @switch($vente->mode_paiement)
                         @case('cash')  Espèces @break
                         @case('wave')  Wave @break
                         @case('om')    Orange Money @break
@@ -262,14 +262,14 @@
                         @case('visa')  Visa @break
                         @case('mastercard') Mastercard @break
                         @case('card')  Carte bancaire @break
-                        @default {{ ucfirst($sale->payment_method) }}
+                        @default {{ ucfirst($vente->mode_paiement) }}
                     @endswitch
                 </strong>
             </p>
-            <p>Date : {{ $sale->sold_at->format('d/m/Y à H:i') }}</p>
-            <p>Réf : {{ $sale->reference }}</p>
-            @if($sale->change_given > 0)
-                <p>Monnaie : <strong>{{ number_format($sale->change_given, 0, ',', ' ') }} FCFA</strong></p>
+            <p>Date : {{ $vente->vendu_le->format('d/m/Y à H:i') }}</p>
+            <p>Réf : {{ $vente->reference }}</p>
+            @if($vente->monnaie_rendue > 0)
+                <p>Monnaie : <strong>{{ number_format($vente->monnaie_rendue, 0, ',', ' ') }} FCFA</strong></p>
             @endif
         </div>
     </div>
@@ -286,14 +286,14 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($sale->items as $index => $item)
+            @foreach($vente->lignes as $index => $item)
                 <tr>
                     <td>{{ $index + 1 }}</td>
-                    <td><strong>{{ $item->product_name }}</strong></td>
-                    <td class="center">{{ $item->quantity }}</td>
-                    <td class="right">{{ number_format($item->unit_price_ht, 0, ',', ' ') }}</td>
+                    <td><strong>{{ $item->nom_plat }}</strong></td>
+                    <td class="center">{{ $item->quantite }}</td>
+                    <td class="right">{{ number_format($item->prix_unitaire, 0, ',', ' ') }}</td>
                     <td class="right">
-                        <strong>{{ number_format($item->total_ttc, 0, ',', ' ') }}</strong>
+                        <strong>{{ number_format($item->total, 0, ',', ' ') }}</strong>
                     </td>
                 </tr>
             @endforeach
@@ -306,10 +306,10 @@
             {{-- Note acquittée --}}
             <div class="payment-note">
                 <strong>✓ Facture acquittée</strong><br/>
-                Montant reçu : <strong>{{ number_format($sale->amount_paid, 0, ',', ' ') }} FCFA</strong>
+                Montant reçu : <strong>{{ number_format($vente->montant_recu, 0, ',', ' ') }} FCFA</strong>
                 — Réglé par
                 <strong>
-                    @switch($sale->payment_method)
+                    @switch($vente->mode_paiement)
                         @case('cash')  espèces @break
                         @case('wave')  Wave @break
                         @case('om')    Orange Money @break
@@ -317,10 +317,10 @@
                         @case('visa')  Visa @break
                         @case('mastercard') Mastercard @break
                         @case('card')  carte bancaire @break
-                        @default {{ $sale->payment_method }}
+                        @default {{ $vente->mode_paiement }}
                     @endswitch
                 </strong>
-                le {{ $sale->sold_at->format('d/m/Y à H:i') }}.
+                le {{ $vente->vendu_le->format('d/m/Y à H:i') }}.
             </div>
         </div>
     </div>
@@ -328,11 +328,11 @@
     {{-- ── Footer ── --}}
     <div class="footer">
         <div class="footer-legal">
-            <strong>{{ $settings->name }}</strong><br/>
-            @if($settings->ninea) NINEA : {{ $settings->ninea }}<br/>@endif
-            @if($settings->rc)    RC : {{ $settings->rc }}<br/>@endif
+            <strong>{{ $parametres->nom }}</strong><br/>
+            @if($parametres->ninea) NINEA : {{ $parametres->ninea }}<br/>@endif
+            @if($parametres->rc)    RC : {{ $parametres->rc }}<br/>@endif
             <span style="color:#bbb; font-size:8px;">
-                Document généré le {{ now()->format('d/m/Y à H:i') }} — Al-Adab Tech Store
+                Document généré le {{ now()->format('d/m/Y à H:i') }} — Mon Restaurant
             </span>
         </div>
 
@@ -340,9 +340,9 @@
             <div class="signs-inner">
 
                 {{-- Cachet (masqué si vide) --}}
-                @if($stampPath && file_exists($stampPath))
+                @if($cachetPath && file_exists($cachetPath))
                 <div class="sign-block">
-                    <img src="{{ $stampPath }}"
+                    <img src="{{ $cachetPath }}"
                          style="height:65px; object-fit:contain; opacity:0.88; margin-bottom:3px;"/>
                     <div class="sign-line">Cachet officiel</div>
                 </div>

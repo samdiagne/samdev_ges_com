@@ -30,7 +30,7 @@
                        class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl
                               text-sm focus:outline-none focus:border-primary bg-gray-50"/>
             </div>
-            <input wire:model.live="filterMonth" type="month"
+            <input wire:model.live="filtreMonth" type="month"
                    class="px-3 py-2 border border-gray-200 rounded-xl text-sm
                           focus:outline-none focus:border-primary bg-gray-50"/>
         </div>
@@ -73,60 +73,60 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
-                    @forelse($invoices as $invoice)
+                    @forelse($factures as $facture)
                         @php
                             $pmLabels = [
                                 'cash' => 'Cash',
                                 'wave' => 'Wave',
                                 'om'   => 'OM',
-                                'card' => 'Carte',
+                                'carte' => 'Carte',
                             ];
                             $pmColors = [
-                                'cash' => 'bg-green-100 text-green-700',
-                                'wave' => 'bg-blue-100 text-blue-700',
-                                'om'   => 'bg-orange-100 text-orange-700',
-                                'card' => 'bg-purple-100 text-purple-700',
+                                'cash'  => 'bg-green-100 text-green-700',
+                                'wave'  => 'bg-blue-100 text-blue-700',
+                                'om'    => 'bg-orange-100 text-orange-700',
+                                'carte' => 'bg-purple-100 text-purple-700',
                             ];
                         @endphp
                         <tr class="hover:bg-gray-50/50 transition-colors">
                             <td class="px-4 py-3">
                                 <p class="text-sm font-bold text-dark">
-                                    {{ $invoice->invoice_number }}
+                                    {{ $facture->numero_facture }}
                                 </p>
                                 <p class="text-xs text-gray-400">
-                                    {{ $invoice->sale->reference }}
+                                    {{ $facture->vente->reference }}
                                 </p>
                             </td>
                             <td class="px-4 py-3 hidden md:table-cell">
                                 <p class="text-sm text-dark">
-                                    {{ $invoice->sale->customer?->name ?? 'Client anonyme' }}
+                                    {{ $facture->vente->client?->nom ?? 'Client anonyme' }}
                                 </p>
                             </td>
                             <td class="px-4 py-3 hidden lg:table-cell">
                                 <p class="text-sm text-dark">
-                                    {{ $invoice->issued_at->format('d/m/Y') }}
+                                    {{ $facture->emise_le->format('d/m/Y') }}
                                 </p>
                                 <p class="text-xs text-gray-400">
-                                    {{ $invoice->issued_at->format('H:i') }}
+                                    {{ $facture->emise_le->format('H:i') }}
                                 </p>
                             </td>
                             <td class="px-4 py-3 text-center hidden md:table-cell">
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-full
                                              text-xs font-medium
-                                             {{ $pmColors[$invoice->sale->payment_method] ?? 'bg-gray-100 text-gray-600' }}">
-                                    {{ $pmLabels[$invoice->sale->payment_method] ?? $invoice->sale->payment_method }}
+                                             {{ $pmColors[$facture->vente->mode_paiement] ?? 'bg-gray-100 text-gray-600' }}">
+                                    {{ $pmLabels[$facture->vente->mode_paiement] ?? $facture->vente->mode_paiement }}
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <p class="text-sm font-bold text-dark">
-                                    {{ number_format($invoice->total_ttc, 0, ',', ' ') }}
+                                    {{ number_format($facture->total, 0, ',', ' ') }}
                                     <span class="text-xs font-normal text-gray-400">FCFA</span>
                                 </p>
                             </td>
                             <td class="px-4 py-3 sticky right-0 bg-white border-l border-gray-100">
                                 <div class="flex items-center justify-end gap-1">
                                     {{-- Voir --}}
-                                    <a href="{{ route('factures.show', $invoice->sale_id) }}"
+                                    <a href="{{ route('factures.show', $facture->vente_id) }}"
                                        class="w-8 h-8 flex items-center justify-center rounded-lg
                                               text-gray-400 hover:text-primary hover:bg-primary/10
                                               transition-colors" title="Voir">
@@ -143,7 +143,7 @@
                                         </svg>
                                     </a>
                                     {{-- Télécharger --}}
-                                    <a href="{{ route('factures.download', $invoice->sale_id) }}"
+                                    <a href="{{ route('factures.download', $facture->vente_id) }}"
                                        class="w-8 h-8 flex items-center justify-center rounded-lg
                                               text-gray-400 hover:text-secondary hover:bg-secondary/10
                                               transition-colors" title="Télécharger PDF">
@@ -186,9 +186,9 @@
             </table>
         </div>
 
-        @if($invoices->hasPages())
+        @if($factures->hasPages())
             <div class="px-4 py-3 border-t border-gray-100">
-                {{ $invoices->links() }}
+                {{ $factures->links() }}
             </div>
         @endif
     </div>

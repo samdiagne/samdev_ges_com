@@ -26,16 +26,16 @@
                             <label class="block text-sm font-medium text-dark mb-1.5">
                                 Nom complet <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" name="customer_name"
-                                   value="{{ old('customer_name', auth()->user()?->name) }}"
+                            <input type="text" name="nom_client"
+                                   value="{{ old('nom_client', auth()->user()?->name) }}"
                                    placeholder="Prénom Nom"
                                    class="w-full px-3 py-2.5 border rounded-xl text-sm
                                           focus:outline-none transition-colors
-                                          {{ $errors->has('customer_name')
+                                          {{ $errors->has('nom_client')
                                              ? 'border-red-400 bg-red-50'
                                              : 'border-gray-200 bg-gray-50
                                                 focus:border-primary' }}"/>
-                            @error('customer_name')
+                            @error('nom_client')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
@@ -44,16 +44,16 @@
                             <label class="block text-sm font-medium text-dark mb-1.5">
                                 Téléphone <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" name="customer_phone"
-                                   value="{{ old('customer_phone', auth()->user()?->phone) }}"
+                            <input type="text" name="telephone_client"
+                                   value="{{ old('telephone_client', auth()->user()?->phone) }}"
                                    placeholder="+221 XX XXX XX XX"
                                    class="w-full px-3 py-2.5 border rounded-xl text-sm
                                           focus:outline-none transition-colors
-                                          {{ $errors->has('customer_phone')
+                                          {{ $errors->has('telephone_client')
                                              ? 'border-red-400 bg-red-50'
                                              : 'border-gray-200 bg-gray-50
                                                 focus:border-primary' }}"/>
-                            @error('customer_phone')
+                            @error('telephone_client')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
@@ -63,8 +63,8 @@
                                 Email
                                 <span class="text-gray-400 font-normal">(facultatif)</span>
                             </label>
-                            <input type="email" name="customer_email"
-                                   value="{{ old('customer_email', auth()->user()?->email) }}"
+                            <input type="email" name="email_client"
+                                   value="{{ old('email_client', auth()->user()?->email) }}"
                                    placeholder="email@exemple.com"
                                    class="w-full px-3 py-2.5 border border-gray-200
                                           rounded-xl text-sm bg-gray-50 focus:outline-none
@@ -87,7 +87,7 @@
                                 <label class="block text-sm font-medium text-dark mb-1.5">
                                     Ville <span class="text-red-500">*</span>
                                 </label>
-                                <select name="city"
+                                <select name="ville"
                                         class="w-full px-3 py-2.5 border border-gray-200
                                                rounded-xl text-sm bg-gray-50
                                                focus:outline-none focus:border-primary
@@ -96,11 +96,11 @@
                                         'Dakar', 'Pikine', 'Guédiawaye', 'Rufisque',
                                         'Thiès', 'Saint-Louis', 'Ziguinchor', 'Kaolack',
                                         'Mbour', 'Autre'
-                                    ] as $city)
-                                        <option value="{{ $city }}"
-                                            {{ old('city', 'Dakar') === $city
+                                    ] as $ville)
+                                        <option value="{{ $ville }}"
+                                            {{ old('ville', 'Dakar') === $ville
                                                ? 'selected' : '' }}>
-                                            {{ $city }}
+                                            {{ $ville }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -111,15 +111,15 @@
                             <label class="block text-sm font-medium text-dark mb-1.5">
                                 Adresse complète <span class="text-red-500">*</span>
                             </label>
-                            <textarea name="delivery_address" rows="3"
+                            <textarea name="adresse_livraison" rows="3"
                                       placeholder="Quartier, rue, numéro, point de repère..."
                                       class="w-full px-3 py-2.5 border rounded-xl text-sm
                                              focus:outline-none transition-colors resize-none
-                                             {{ $errors->has('delivery_address')
+                                             {{ $errors->has('adresse_livraison')
                                                 ? 'border-red-400 bg-red-50'
                                                 : 'border-gray-200 bg-gray-50
-                                                   focus:border-primary' }}">{{ old('delivery_address') }}</textarea>
-                            @error('delivery_address')
+                                                   focus:border-primary' }}">{{ old('adresse_livraison') }}</textarea>
+                            @error('adresse_livraison')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
@@ -192,7 +192,7 @@
 
                     {{-- Articles --}}
                     <div class="space-y-3 mb-5">
-                        @foreach($cart as $item)
+                        @foreach($panier as $item)
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 bg-gray-50 rounded-lg
                                             flex-shrink-0 overflow-hidden">
@@ -203,15 +203,15 @@
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <p class="text-xs font-medium text-dark truncate">
-                                        {{ $item['name'] }}
+                                        {{ $item['nom'] }}
                                     </p>
                                     <p class="text-xs text-gray-400">
-                                        ×{{ $item['quantity'] }}
+                                        ×{{ $item['quantite'] }}
                                     </p>
                                 </div>
                                 <p class="text-xs font-bold text-dark flex-shrink-0">
                                     {{ number_format(
-                                        $item['price'] * $item['quantity'],
+                                        $item['prix'] * $item['quantite'],
                                         0, ',', ' ') }}
                                 </p>
                             </div>
@@ -241,7 +241,7 @@
                                    text-white transition-all shadow-lg
                                    shadow-primary/25 hover:scale-[1.02]
                                    flex items-center justify-center gap-2"
-                            style="background-color: #1E6FBF;">
+                            style="background-color: #F27B20;">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor"
                              viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round"

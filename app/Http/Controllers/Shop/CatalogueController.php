@@ -3,41 +3,42 @@
 namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
-use App\Models\Category;
-use App\Models\CompanySetting;
+use App\Models\Plat;
+use App\Models\Categorie;
+use App\Models\Parametre;
 use Illuminate\Http\Request;
 
 class CatalogueController extends Controller
 {
     public function index(Request $request)
     {
-        $categories = Category::where('is_active', true)
-            ->withCount('activeProducts')
-            ->having('active_products_count', '>', 0)
+        $categories = Categorie::where('est_active', true)
+            ->withCount('platsActifs')
+            ->having('plats_actifs_count', '>', 0)
+            ->orderBy('ordre')
             ->get();
 
-        $settings = CompanySetting::getSettings();
+        $parametres = Parametre::first();
 
-        return view('shop.catalogue', compact('categories', 'settings'));
+        return view('shop.catalogue', compact('categories', 'parametres'));
     }
 
     public function show(string $slug)
     {
-        $product = Product::where('slug', $slug)
-            ->where('is_active', true)
-            ->with(['category', 'images'])
+        $plat = Plat::where('slug', $slug)
+            ->where('est_actif', true)
+            ->with(['categorie', 'images'])
             ->firstOrFail();
 
-        $related = Product::where('is_active', true)
-            ->where('category_id', $product->category_id)
-            ->where('id', '!=', $product->id)
-            ->where('stock_quantity', '>', 0)
+        $similaires = Plat::where('est_actif', true)
+            ->where('categorie_id', $plat->categorie_id)
+            ->where('id', '!=', $plat->id)
+            ->where('stock', '>', 0)
             ->limit(4)
             ->get();
 
-        $settings = CompanySetting::getSettings();
+        $parametres = Parametre::first();
 
-        return view('shop.produit', compact('product', 'related', 'settings'));
+        return view('shop.plat', compact('plat', 'similaires', 'parametres'));
     }
 }

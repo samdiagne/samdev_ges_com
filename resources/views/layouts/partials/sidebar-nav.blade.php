@@ -1,9 +1,20 @@
 @php
     $user = Auth::user();
-    $pendingOrdersCount  = \App\Models\Order::where('status', 'pending')->count();
-    $pendingReviewsCount = \App\Models\ProductReview::where('is_approved', false)->count();
+    $pendingOrdersCount  = \App\Models\Commande::where('statut', 'en_attente')->count();
+    $pendingReviewsCount = \App\Models\Avis::where('est_approuve', false)->count();
 
     $groups = [
+        [
+            'label' => null,
+            'items' => [
+                [
+                    'label' => 'Dashboard',
+                    'route' => 'dashboard',
+                    'icon'  => 'home',
+                    'roles' => ['admin', 'gestionnaire'],
+                ],
+            ],
+        ],
         [
             'label' => 'Caisse',
             'items' => [
@@ -17,12 +28,6 @@
                     'label' => 'Ventes',
                     'route' => 'caisse.ventes.index',
                     'icon'  => 'cash',
-                    'roles' => ['admin', 'gestionnaire'],
-                ],
-                [
-                    'label' => 'Devis',
-                    'route' => 'devis.index',
-                    'icon'  => 'document-text',
                     'roles' => ['admin', 'gestionnaire'],
                 ],
                 [
@@ -73,8 +78,8 @@
             'label' => 'Catalogue',
             'items' => [
                 [
-                    'label' => 'Produits',
-                    'route' => 'produits.index',
+                    'label' => 'Plats',
+                    'route' => 'plats.index',
                     'icon'  => 'device-mobile',
                     'roles' => ['admin', 'gestionnaire'],
                 ],
@@ -99,12 +104,6 @@
                     'label' => 'États',
                     'route' => 'etats.index',
                     'icon'  => 'document-text',
-                    'roles' => ['admin', 'gestionnaire'],
-                ],
-                [
-                    'label' => 'Import données',
-                    'route' => 'import.index',
-                    'icon'  => 'upload',
                     'roles' => ['admin', 'gestionnaire'],
                 ],
             ],
@@ -148,15 +147,13 @@
         {{-- Label groupe --}}
         @if($group['label'])
             <div x-show="sidebarOpen" x-transition.opacity
-                 class="px-3 pt-4 pb-1">
-                <p class="text-xs font-semibold uppercase tracking-widest"
-                   style="color: #F5A800; opacity: 0.8;">
+                 class="px-3 pt-5 pb-2">
+                <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-white/25">
                     {{ $group['label'] }}
                 </p>
             </div>
-            {{-- Séparateur sidebar réduite --}}
             <div x-show="!sidebarOpen"
-                 class="mx-4 my-1 border-t border-white/5"></div>
+                 class="mx-3 my-2 border-t border-white/[0.06]"></div>
         @endif
 
         {{-- Items --}}
@@ -164,35 +161,37 @@
             @if($user->hasAnyRole($item['roles']))
                 @php $isActive = request()->routeIs($item['route'] . '*'); @endphp
                 <a href="{{ route($item['route']) }}"
-                @click="sidebarMobile = false"
+                   @click="sidebarMobile = false"
                    @class([
-                       'group flex items-center gap-3 px-3 py-2 mx-1 rounded-lg
-                        transition-all duration-150 relative',
-                       'bg-white/15 text-white' => $isActive,
-                       'text-white/85 hover:bg-white/10 hover:text-white' => !$isActive,
-                   ])>
-
-                    {{-- Indicateur actif --}}
-                    @if($isActive)
-                        <div class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5
-                                    rounded-r-full"
-                             style="background-color: #F5A800;"></div>
-                    @endif
+                       'group flex items-center gap-3 px-3 py-2.5 mx-1 rounded-xl
+                        transition-all duration-200 relative',
+                       'nav-item-active bg-white/[0.08] text-white shadow-sm' => $isActive,
+                       'text-white/50 hover:bg-white/[0.05] hover:text-white/80' => !$isActive,
+                   ])
+                   @if($isActive)
+                   style="box-shadow: inset 0 0 20px rgba(242,123,32,0.06);"
+                   @endif>
 
                     {{-- Icône --}}
                     <div @class([
-                        'w-5 h-5 flex-shrink-0 transition-colors',
+                        'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
+                         transition-all duration-200',
                         'text-white' => $isActive,
-                        'text-white/80 group-hover:text-white' => !$isActive,
-                    ])>
-                        @include('layouts.partials.icons.' . $item['icon'])
+                        'text-white/40 group-hover:text-white/70' => !$isActive,
+                    ])
+                    @if($isActive)
+                    style="background: linear-gradient(135deg, rgba(242,123,32,0.2), rgba(242,123,32,0.08));"
+                    @endif>
+                        <div class="w-[18px] h-[18px]">
+                            @include('layouts.partials.icons.' . $item['icon'])
+                        </div>
                     </div>
 
                     {{-- Label --}}
                     <span x-show="sidebarOpen ?? true"
                           x-transition.opacity
                           @class([
-                              'text-sm truncate transition-colors flex-1',
+                              'text-[13px] truncate transition-colors flex-1',
                               'font-semibold text-white' => $isActive,
                               'font-medium' => !$isActive,
                           ])>
@@ -204,15 +203,15 @@
                         <span x-show="sidebarOpen ?? true"
                               x-transition.opacity
                               class="ml-auto flex-shrink-0 min-w-[20px] h-5 px-1.5
-                                     bg-red-500 text-white text-xs font-bold
+                                     text-white text-[10px] font-bold
                                      rounded-full flex items-center justify-center
-                                     leading-none">
+                                     leading-none animate-pulse"
+                              style="background: linear-gradient(135deg, #ef4444, #dc2626);">
                             {{ $item['badge'] > 99 ? '99+' : $item['badge'] }}
                         </span>
-                        {{-- Pastille réduite quand sidebar fermée --}}
                         <span x-show="!(sidebarOpen ?? true)"
-                              class="absolute top-1 right-1 w-2.5 h-2.5
-                                     bg-red-500 rounded-full border-2 border-dark">
+                              class="absolute top-1.5 right-1.5 w-2 h-2
+                                     bg-red-500 rounded-full ring-2 ring-stone-900">
                         </span>
                     @endif
                 </a>

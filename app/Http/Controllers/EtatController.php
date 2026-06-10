@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Sale;
-use App\Models\Expense;
-use App\Models\Purchase;
-use App\Models\Product;
-use App\Models\CompanySetting;
+use App\Models\Vente;
+use App\Models\Depense;
+use App\Models\Achat;
+use App\Models\Plat;
+use App\Models\Parametre;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -20,29 +20,28 @@ class EtatController extends Controller
         $from = Carbon::parse($request->date_from ?? now()->startOfMonth());
         $to   = Carbon::parse($request->date_to ?? now())->endOfDay();
 
-        $sales = Sale::with(['customer', 'items'])
-            ->where('status', 'completed')
-            ->whereBetween('sold_at', [$from, $to])
-            ->latest('sold_at')
+        $ventes = Vente::with(['client', 'lignes'])
+            ->where('statut', 'completee')
+            ->whereBetween('vendu_le', [$from, $to])
+            ->latest('vendu_le')
             ->get();
 
         $stats = [
-            'total'       => $sales->sum('total_ttc'),
-            'count'       => $sales->count(),
-            'cash'        => $sales->where('payment_method', 'cash')->sum('total_ttc'),
-            'wave'        => $sales->where('payment_method', 'wave')->sum('total_ttc'),
-            'om'          => $sales->where('payment_method', 'om')->sum('total_ttc'),
-            'card'        => $sales->where('payment_method', 'card')->sum('total_ttc'),
-            'avg_basket'  => $sales->count() > 0
-                ? round($sales->sum('total_ttc') / $sales->count()) : 0,
+            'total'         => $ventes->sum('total'),
+            'count'         => $ventes->count(),
+            'cash'          => $ventes->where('mode_paiement', 'cash')->sum('total'),
+            'wave'          => $ventes->where('mode_paiement', 'wave')->sum('total'),
+            'om'            => $ventes->where('mode_paiement', 'om')->sum('total'),
+            'carte'         => $ventes->where('mode_paiement', 'carte')->sum('total'),
+            'panier_moyen'  => $ventes->count() > 0
+                ? round($ventes->sum('total') / $ventes->count()) : 0,
         ];
 
-        $settings      = CompanySetting::getSettings();
+        $parametres = Parametre::first();
         $logoBase64 = $this->getLogoBase64();
 
-
         return Pdf::loadView('pdf.etats.etat-ventes',
-            compact('sales', 'stats', 'settings', 'logoBase64', 'from', 'to')
+            compact('ventes', 'stats', 'parametres', 'logoBase64', 'from', 'to')
         )
         ->setPaper('a4', 'portrait')
         ->setOptions(['defaultFont' => 'DejaVu Sans', 'isHtml5ParserEnabled' => true])
@@ -55,24 +54,23 @@ class EtatController extends Controller
         $from = Carbon::parse($request->date_from ?? now()->startOfMonth());
         $to   = Carbon::parse($request->date_to ?? now())->endOfDay();
 
-        $expenses = Expense::with(['category', 'user'])
-            ->whereBetween('expense_date', [$from->toDateString(), $to->toDateString()])
-            ->latest('expense_date')
+        $depenses = Depense::with(['categorie', 'user'])
+            ->whereBetween('date_depense', [$from->toDateString(), $to->toDateString()])
+            ->latest('date_depense')
             ->get();
 
         $stats = [
-            'total'        => $expenses->sum('amount'),
-            'count'        => $expenses->count(),
-            'by_category'  => $expenses->groupBy('category.name')
-                ->map(fn($g) => $g->sum('amount')),
+            'total'         => $depenses->sum('montant'),
+            'count'         => $depenses->count(),
+            'par_categorie' => $depenses->groupBy('categorie.nom')
+                ->map(fn($g) => $g->sum('montant')),
         ];
 
-        $settings = CompanySetting::getSettings();
+        $parametres = Parametre::first();
         $logoBase64 = $this->getLogoBase64();
 
-
         return Pdf::loadView('pdf.etats.etat-depenses',
-            compact('expenses', 'stats', 'settings', 'logoBase64', 'from', 'to')
+            compact('depenses', 'stats', 'parametres', 'logoBase64', 'from', 'to')
         )
         ->setPaper('a4', 'portrait')
         ->setOptions(['defaultFont' => 'DejaVu Sans', 'isHtml5ParserEnabled' => true])
@@ -85,17 +83,17 @@ class EtatController extends Controller
         $from = Carbon::parse($request->date_from ?? now()->startOfMonth());
         $to   = Carbon::parse($request->date_to ?? now())->endOfDay();
 
-        $recettes = Sale::where('status', 'completed')
-            ->whereBetween('sold_at', [$from, $to])
-            ->sum('total_ttc');
+        $recettes = Vente::where('statut', 'completee')
+            ->whereBetween('vendu_le', [$from, $to])
+            ->sum('total');
 
-        $achats   = Purchase::whereBetween('purchase_date', [
+        $achats = Achat::whereBetween('date_achat', [
             $from->toDateString(), $to->toDateString()
-        ])->sum('amount_paid');
+        ])->sum('montant_paye');
 
-        $depenses = Expense::whereBetween('expense_date', [
+        $depenses = Depense::whereBetween('date_depense', [
             $from->toDateString(), $to->toDateString()
-        ])->sum('amount');
+        ])->sum('montant');
 
         $solde = $recettes - $achats - $depenses;
 
@@ -103,11 +101,11 @@ class EtatController extends Controller
         $mouvements = [];
         $current = $from->copy();
         while ($current->lte($to)) {
-            $dateStr  = $current->toDateString();
-            $recette  = Sale::where('status', 'completed')
-                ->whereDate('sold_at', $dateStr)->sum('total_ttc');
-            $achat    = Purchase::whereDate('purchase_date', $dateStr)->sum('amount_paid');
-            $depense  = Expense::whereDate('expense_date', $dateStr)->sum('amount');
+            $dateStr = $current->toDateString();
+            $recette = Vente::where('statut', 'completee')
+                ->whereDate('vendu_le', $dateStr)->sum('total');
+            $achat   = Achat::whereDate('date_achat', $dateStr)->sum('montant_paye');
+            $depense = Depense::whereDate('date_depense', $dateStr)->sum('montant');
 
             if ($recette > 0 || $achat > 0 || $depense > 0) {
                 $mouvements[] = [
@@ -121,12 +119,12 @@ class EtatController extends Controller
             $current->addDay();
         }
 
-        $stats    = compact('recettes', 'achats', 'depenses', 'solde');
-        $settings = CompanySetting::getSettings();
+        $stats      = compact('recettes', 'achats', 'depenses', 'solde');
+        $parametres = Parametre::first();
         $logoBase64 = $this->getLogoBase64();
 
         return Pdf::loadView('pdf.etats.etat-tresorerie',
-            compact('mouvements', 'stats', 'settings', 'logoBase64', 'from', 'to')
+            compact('mouvements', 'stats', 'parametres', 'logoBase64', 'from', 'to')
         )
         ->setPaper('a4', 'portrait')
         ->setOptions(['defaultFont' => 'DejaVu Sans', 'isHtml5ParserEnabled' => true])
@@ -136,49 +134,43 @@ class EtatController extends Controller
     // ── Bilan stocks ──────────────────────────────
     public function bilanStocks(Request $request)
     {
-        $products = Product::with('category')
-            ->where('is_active', true)
-            ->orderBy('category_id')
-            ->orderBy('name')
+        $plats = Plat::with('categorie')
+            ->where('est_actif', true)
+            ->orderBy('categorie_id')
+            ->orderBy('nom')
             ->get();
 
         $stats = [
-            'total_produits'     => $products->count(),
-            'valeur_achat'       => $products->sum(fn($p) =>
-                $p->stock_quantity * $p->purchase_price),
-            'valeur_vente'       => $products->sum(fn($p) =>
-                $p->stock_quantity * $p->selling_price),
-            'ruptures'           => $products->where('stock_quantity', '<=', 0)->count(),
-            'stock_bas'          => $products->filter(fn($p) =>
-                $p->stock_quantity > 0 &&
-                $p->stock_quantity <= $p->stock_alert_threshold
+            'total_produits'    => $plats->count(),
+            'valeur_vente'      => $plats->sum(fn($p) => $p->stock * $p->prix_vente),
+            'ruptures'          => $plats->where('stock', '<=', 0)->count(),
+            'stock_bas'         => $plats->filter(fn($p) =>
+                $p->stock > 0 && $p->stock <= $p->seuil_alerte_stock
             )->count(),
         ];
 
-        $stats['marge_potentielle'] = $stats['valeur_vente'] - $stats['valeur_achat'];
-
-        $settings = CompanySetting::getSettings();
-
+        $parametres = Parametre::first();
         $logoBase64 = $this->getLogoBase64();
 
         return Pdf::loadView('pdf.etats.bilan-stocks',
-            compact('products', 'stats', 'settings', 'logoBase64')
+            compact('plats', 'stats', 'parametres', 'logoBase64')
         )
         ->setPaper('a4', 'landscape')
         ->setOptions(['defaultFont' => 'DejaVu Sans', 'isHtml5ParserEnabled' => true])
         ->download('bilan-stocks-' . now()->format('Y-m-d') . '.pdf');
     }
 
+    // ── Helper logo ───────────────────────────────
     private function getLogoBase64(): ?string
     {
-        $settings = CompanySetting::getSettings();
-        if (!$settings->logo) return null;
-        
-        $path = Storage::disk('public')->path($settings->logo);
-        if (!file_exists($path)) return null;
-        
-        $type    = pathinfo($path, PATHINFO_EXTENSION);
-        $data    = base64_encode(file_get_contents($path));
+        $parametres = Parametre::first();
+        if (! $parametres?->logo) return null;
+
+        $path = Storage::disk('public')->path($parametres->logo);
+        if (! file_exists($path)) return null;
+
+        $type = pathinfo($path, PATHINFO_EXTENSION);
+        $data = base64_encode(file_get_contents($path));
         return "data:image/{$type};base64,{$data}";
     }
 }

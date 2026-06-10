@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
-use App\Models\Customer;
+use App\Models\Client;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -29,7 +29,7 @@ class AuthClientController extends Controller
             'password.required' => 'Le mot de passe est obligatoire.',
         ]);
 
-        if (!Auth::attempt([
+        if (! Auth::attempt([
             'email'    => $request->email,
             'password' => $request->password,
         ], $request->boolean('remember'))) {
@@ -40,15 +40,14 @@ class AuthClientController extends Controller
 
         $user = Auth::user();
 
-        // Bloquer les admins/gestionnaires — ils ont leur propre login
-        if ($user->hasAnyRole(['admin', 'gestionnaire'])) {
+        if ($user->isGestionnaire()) {
             Auth::logout();
             return back()->withErrors([
                 'email' => 'Utilisez le portail administrateur.',
             ]);
         }
 
-        if (!$user->is_active) {
+        if (! $user->is_active) {
             Auth::logout();
             return back()->withErrors([
                 'email' => 'Votre compte est désactivé.',
@@ -57,9 +56,8 @@ class AuthClientController extends Controller
 
         $request->session()->regenerate();
 
-        // Ne pas utiliser intended() : évite la redirection vers des routes admin
-        $intended = session()->pull('url.intended', '');
-        $safePath = parse_url($intended, PHP_URL_PATH) ?? '';
+        $intended    = session()->pull('url.intended', '');
+        $safePath    = parse_url($intended, PHP_URL_PATH) ?? '';
         $destination = str_starts_with($safePath, '/compte/')
             ? $intended
             : route('compte.commandes');
@@ -96,20 +94,18 @@ class AuthClientController extends Controller
         $user = User::create([
             'name'      => $request->name,
             'email'     => $request->email,
-            'phone'     => $request->phone,
             'password'  => Hash::make($request->password),
+            'phone'     => $request->phone,
             'is_active' => true,
         ]);
 
         $user->assignRole('client');
 
-        // Créer la fiche client dans le back-office
-        Customer::create([
-            'user_id' => $user->id,
-            'name'    => $user->name,
-            'email'   => $user->email,
-            'phone'   => $user->phone,
-            'type'    => 'individual',
+        Client::create([
+            'user_id'   => $user->id,
+            'nom'       => $user->name,
+            'email'     => $user->email,
+            'telephone' => $request->phone,
         ]);
 
         Auth::login($user);

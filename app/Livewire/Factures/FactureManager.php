@@ -4,52 +4,50 @@ namespace App\Livewire\Factures;
 
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\Invoice;
-use App\Models\Sale;
+use App\Models\Facture;
 
 class FactureManager extends Component
 {
     use WithPagination;
 
-    public string $search      = '';
-    public string $filterMonth = '';
-    public string $filterStatus = '';
+    public string $search       = '';
+    public string $filtreMonth  = '';
+    public string $filtreStatut = '';
 
     public function mount(): void
     {
-        $this->filterMonth = now()->format('Y-m');
+        $this->filtreMonth = now()->format('Y-m');
     }
 
     public function updatingSearch(): void { $this->resetPage(); }
 
     public function render()
     {
-        $invoices = Invoice::with(['sale.customer', 'sale.user'])
+        $factures = Facture::with(['vente.client', 'vente.user'])
             ->when($this->search, fn($q) =>
-                $q->where('invoice_number', 'like', '%' . $this->search . '%')
-                  ->orWhereHas('sale.customer', fn($q2) =>
-                      $q2->where('name', 'like', '%' . $this->search . '%')
+                $q->where('numero_facture', 'like', '%' . $this->search . '%')
+                  ->orWhereHas('vente.client', fn($q2) =>
+                      $q2->where('nom', 'like', '%' . $this->search . '%')
                   )
             )
-            ->when($this->filterMonth, fn($q) =>
-                $q->whereYear('issued_at', substr($this->filterMonth, 0, 4))
-                  ->whereMonth('issued_at', substr($this->filterMonth, 5, 2))
+            ->when($this->filtreMonth, fn($q) =>
+                $q->whereYear('emise_le', substr($this->filtreMonth, 0, 4))
+                  ->whereMonth('emise_le', substr($this->filtreMonth, 5, 2))
             )
-            ->latest('issued_at')
+            ->latest('emise_le')
             ->paginate(15);
 
         $stats = [
-            'total'   => Invoice::when($this->filterMonth, fn($q) =>
-                $q->whereYear('issued_at', substr($this->filterMonth, 0, 4))
-                  ->whereMonth('issued_at', substr($this->filterMonth, 5, 2))
-            )->sum('total_ttc'),
-            'count'   => Invoice::when($this->filterMonth, fn($q) =>
-                $q->whereYear('issued_at', substr($this->filterMonth, 0, 4))
-                  ->whereMonth('issued_at', substr($this->filterMonth, 5, 2))
+            'total' => Facture::when($this->filtreMonth, fn($q) =>
+                $q->whereYear('emise_le', substr($this->filtreMonth, 0, 4))
+                  ->whereMonth('emise_le', substr($this->filtreMonth, 5, 2))
+            )->sum('total'),
+            'count' => Facture::when($this->filtreMonth, fn($q) =>
+                $q->whereYear('emise_le', substr($this->filtreMonth, 0, 4))
+                  ->whereMonth('emise_le', substr($this->filtreMonth, 5, 2))
             )->count(),
         ];
 
-        return view('livewire.factures.facture-manager',
-            compact('invoices', 'stats'));
+        return view('livewire.factures.facture-manager', compact('factures', 'stats'));
     }
 }

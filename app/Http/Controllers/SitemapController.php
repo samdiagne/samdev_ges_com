@@ -2,21 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
-use App\Models\Category;
+use App\Models\Plat;
+use App\Models\Categorie;
 use Illuminate\Http\Response;
 
 class SitemapController extends Controller
 {
     public function index(): Response
     {
-        $products   = Product::where('is_active', true)
-            ->select('slug', 'updated_at')->latest()->get();
+        $plats = Plat::where('est_actif', true)
+            ->select('slug', 'updated_at')
+            ->latest()
+            ->get();
 
-        $categories = Category::where('is_active', true)
-            ->select('slug', 'updated_at')->get();
+        $categories = Categorie::where('est_active', true)
+            ->select('slug', 'updated_at')
+            ->get();
 
-        $content = view('sitemap', compact('products', 'categories'));
+        $content = view('sitemap', compact('plats', 'categories'));
 
         return response($content, 200)
             ->header('Content-Type', 'application/xml');

@@ -1,4 +1,24 @@
 <div>
+    {{-- Stats --}}
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Total</p>
+            <p class="text-2xl font-bold text-dark mt-1">{{ $stats['total'] }}</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Admins</p>
+            <p class="text-2xl font-bold text-primary mt-1">{{ $stats['admins'] }}</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Gestionnaires</p>
+            <p class="text-2xl font-bold text-secondary mt-1">{{ $stats['gestionnaires'] }}</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+            <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Inactifs</p>
+            <p class="text-2xl font-bold text-gray-400 mt-1">{{ $stats['inactifs'] }}</p>
+        </div>
+    </div>
+
     {{-- Header --}}
     <div class="flex items-center justify-between mb-6">
         <div>
@@ -15,6 +35,38 @@
             </svg>
             Nouvel utilisateur
         </button>
+    </div>
+
+    {{-- Filtres --}}
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-4">
+        <div class="flex flex-col sm:flex-row gap-3">
+            <div class="relative flex-1">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
+                </svg>
+                <input wire:model.live.debounce.300ms="search"
+                       type="text"
+                       placeholder="Nom, email..."
+                       class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl
+                              text-sm focus:outline-none focus:border-primary bg-gray-50"/>
+            </div>
+            <select wire:model.live="filtreRole"
+                    class="px-3 py-2 border border-gray-200 rounded-xl text-sm
+                           focus:outline-none focus:border-primary bg-gray-50">
+                <option value="">Tous les rôles</option>
+                <option value="admin">Admin</option>
+                <option value="gestionnaire">Gestionnaire</option>
+            </select>
+            <select wire:model.live="filtreStatut"
+                    class="px-3 py-2 border border-gray-200 rounded-xl text-sm
+                           focus:outline-none focus:border-primary bg-gray-50">
+                <option value="">Tous les statuts</option>
+                <option value="1">Actifs</option>
+                <option value="0">Inactifs</option>
+            </select>
+        </div>
     </div>
 
     {{-- Flash --}}
@@ -57,7 +109,7 @@
             <tbody class="divide-y divide-gray-50">
                 @forelse($users as $user)
                     <tr class="hover:bg-gray-50/50 transition-colors
-                               {{ $user->id === auth()->id() ? 'bg-primary/2' : '' }}">
+                               {{ $user->id === auth()->id() ? 'bg-primary/5' : '' }}">
                         <td class="px-4 py-3">
                             <div class="flex items-center gap-3">
                                 <div class="w-9 h-9 rounded-full bg-primary flex items-center
@@ -74,9 +126,6 @@
                                             </span>
                                         @endif
                                     </p>
-                                    @if($user->phone)
-                                        <p class="text-xs text-gray-400">{{ $user->phone }}</p>
-                                    @endif
                                 </div>
                             </div>
                         </td>
@@ -84,21 +133,15 @@
                             <p class="text-sm text-gray-600">{{ $user->email }}</p>
                         </td>
                         <td class="px-4 py-3 text-center">
-                            @php $role = $user->getRoleNames()->first(); @endphp
-                            @if($role === 'admin')
+                            @if($user->hasRole('admin'))
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-full
                                              text-xs font-medium bg-primary/10 text-primary">
-                                    👑 Admin
-                                </span>
-                            @elseif($role === 'gestionnaire')
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-full
-                                             text-xs font-medium bg-secondary/10 text-secondary">
-                                    🧾 Gestionnaire
+                                    Admin
                                 </span>
                             @else
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-full
-                                             text-xs font-medium bg-gray-100 text-gray-500">
-                                    {{ $role ?? '—' }}
+                                             text-xs font-medium bg-secondary/10 text-secondary">
+                                    Gestionnaire
                                 </span>
                             @endif
                         </td>
@@ -156,7 +199,7 @@
                 @empty
                     <tr>
                         <td colspan="5" class="px-4 py-12 text-center text-sm text-gray-400">
-                            Aucun utilisateur
+                            Aucun utilisateur trouvé
                         </td>
                     </tr>
                 @endforelse
@@ -170,7 +213,7 @@
     </div>
 
     {{-- Modal Créer/Modifier --}}
-    @if($showModal)
+    @if($afficherModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
                  wire:click="closeModal"></div>
@@ -213,7 +256,7 @@
                         <label class="block text-sm font-medium text-dark mb-1.5">
                             Email <span class="text-red-500">*</span>
                         </label>
-                        <input wire:model="email" type="email" placeholder="email@boutique.sn"
+                        <input wire:model="email" type="email" placeholder="email@restaurant.sn"
                                class="w-full px-3 py-2.5 border rounded-xl text-sm
                                       focus:outline-none transition-colors
                                       {{ $errors->has('email')
@@ -222,18 +265,6 @@
                         @error('email')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
-                    </div>
-
-                    {{-- Téléphone --}}
-                    <div>
-                        <label class="block text-sm font-medium text-dark mb-1.5">
-                            Téléphone
-                        </label>
-                        <input wire:model="phone" type="text"
-                               placeholder="+221 XX XXX XX XX"
-                               class="w-full px-3 py-2.5 border border-gray-200 rounded-xl
-                                      text-sm bg-gray-50 focus:outline-none
-                                      focus:border-primary focus:bg-white transition-colors"/>
                     </div>
 
                     {{-- Mot de passe --}}
@@ -283,6 +314,9 @@
                                 🧾 Gestionnaire
                             </button>
                         </div>
+                        @error('role')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     {{-- Statut --}}
@@ -328,17 +362,17 @@
     @endif
 
     {{-- Modal suppression --}}
-    @if($showDeleteModal)
+    @if($afficherModalSuppression)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
-                 wire:click="$set('showDeleteModal', false)"></div>
+                 wire:click="$set('afficherModalSuppression', false)"></div>
             <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
                 <h3 class="text-base font-bold text-dark mb-2">
                     Supprimer l'utilisateur
                 </h3>
                 <p class="text-sm text-gray-500 mb-6">Cette action est irréversible.</p>
                 <div class="flex gap-3">
-                    <button wire:click="$set('showDeleteModal', false)"
+                    <button wire:click="$set('afficherModalSuppression', false)"
                             class="flex-1 py-2 text-sm font-medium text-gray-600
                                    hover:bg-gray-100 rounded-xl transition-colors">
                         Annuler

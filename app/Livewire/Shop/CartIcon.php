@@ -2,17 +2,26 @@
 
 namespace App\Livewire\Shop;
 
-use Livewire\Attributes\On;
 use Livewire\Component;
+use Livewire\Attributes\On;
 
 class CartIcon extends Component
 {
-    #[On('cart-updated')]
-    public function refresh(): void {}
+    public int $count = 0;
+
+    public function mount(): void
+    {
+        $this->refreshCount();
+    }
+
+    #[On('panier-mis-a-jour')]
+    public function refreshCount(): void
+    {
+        $this->count = (int) collect(session('panier', []))->sum('quantite');
+    }
 
     public function render()
     {
-        $count = collect(session('cart', []))->sum('quantity');
-        return view('livewire.shop.cart-icon', compact('count'));
+        return view('livewire.shop.cart-icon');
     }
 }

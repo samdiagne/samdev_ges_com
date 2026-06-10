@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Quote;
 use App\Services\QuoteService;
-use Illuminate\Http\Request;
 
 class DevisController extends Controller
 {
@@ -12,8 +11,7 @@ class DevisController extends Controller
 
     public function download(Quote $quote)
     {
-        $quote->load(['items', 'customer']);
+        $quote->load(['items', 'client']);
         return $this->quoteService->download($quote);
     }
-
 }

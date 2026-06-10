@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
-use App\Models\CompanySetting;
+use App\Models\Parametre;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -31,8 +31,8 @@ class PageController extends Controller
             'message.min'      => 'Le message doit contenir au moins 10 caractères.',
         ]);
 
-        $settings = CompanySetting::getSettings();
-        $to       = $settings->email ?? config('mail.from.address');
+        $parametres = Parametre::first();
+        $to         = $parametres?->email ?? config('mail.from.address');
 
         if ($to) {
             Mail::raw(
@@ -42,10 +42,10 @@ class PageController extends Controller
                 . "Téléphone : " . ($request->phone ?? 'Non renseigné') . "\n"
                 . "Sujet : {$request->subject}\n\n"
                 . "Message :\n{$request->message}",
-                function ($mail) use ($to, $request, $settings) {
+                function ($mail) use ($to, $request, $parametres) {
                     $mail->to($to)
                          ->replyTo($request->email, $request->name)
-                         ->subject('[Contact] ' . $request->subject . ' — ' . ($settings->name ?? 'Boutique'));
+                         ->subject('[Contact] ' . $request->subject . ' — ' . ($parametres?->nom ?? 'Restaurant'));
                 }
             );
         }
@@ -60,7 +60,7 @@ class PageController extends Controller
 
     public function cgv()
     {
-        $settings = CompanySetting::getSettings();
-        return view('shop.cgv', compact('settings'));
+        $parametres = Parametre::first();
+        return view('shop.cgv', compact('parametres'));
     }
 }

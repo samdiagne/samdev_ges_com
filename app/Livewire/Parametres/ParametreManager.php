@@ -4,200 +4,177 @@ namespace App\Livewire\Parametres;
 
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use App\Models\CompanySetting;
+use App\Models\Parametre;
 use Illuminate\Support\Facades\Storage;
 
 class ParametreManager extends Component
 {
     use WithFileUploads;
 
-    // Infos entreprise
-    public string $name           = '';
-    public string $ninea          = '';
-    public string $rc             = '';
-    public string $phone          = '';
-    public string $whatsapp       = '';
-    public string $email          = '';
-    public string $address        = '';
-    public string $facebook       = '';
-    public string $instagram      = '';
-    public string $tiktok         = '';
-    public string $currency       = 'FCFA';
-    public string $invoice_prefix = 'FAC';
-    public float  $tva_rate       = 18;
+    public string  $nom             = '';
+    public string  $ninea           = '';
+    public string  $rc              = '';
+    public string  $telephone       = '';
+    public string  $whatsapp        = '';
+    public string  $email           = '';
+    public string  $adresse         = '';
+    public string  $facebook        = '';
+    public string  $instagram       = '';
+    public string  $tiktok          = '';
+    public string  $lien_whatsapp   = '';
+    public string  $devise          = 'FCFA';
+    public string  $prefixe_facture = 'FAC';
 
-    // Images
-    public        $logo           = null;
-    public ?string $currentLogo   = null;
-    public        $stamp          = null;
-    public ?string $currentStamp  = null;
+    public         $logo            = null;
+    public ?string $logoActuel      = null;
+    public         $cachet          = null;
+    public ?string $cachetActuel    = null;
 
-    // Signature (base64 depuis canvas)
-    public ?string $signatureData  = null;
-    public ?string $currentSignature = null;
-    public bool    $signatureCleared = false;
+    public ?string $signatureData    = null;
+    public ?string $signatureActuelle = null;
+    public bool    $signatureEffacee  = false;
 
-    // UI
-    public string $activeTab = 'entreprise';
-    public bool   $saved     = false;
+    public string  $ongletActif = 'entreprise';
+    public bool    $sauvegarde  = false;
 
     protected function rules(): array
     {
         return [
-            'name'           => 'required|string|min:2|max:255',
-            'ninea'          => 'nullable|string|max:50',
-            'rc'             => 'nullable|string|max:50',
-            'phone'          => 'nullable|string|max:100',
-            'whatsapp'       => 'nullable|string|max:100',
-            'email'          => 'nullable|email|max:255',
-            'address'        => 'nullable|string|max:500',
-            'tva_rate'       => 'required|numeric|min:0|max:100',
-            'invoice_prefix' => 'required|string|max:10',
-            'logo'           => 'nullable|image|max:2048',
-            'stamp'          => 'nullable|image|max:2048',
+            'nom'             => 'required|string|min:2|max:255',
+            'ninea'           => 'nullable|string|max:50',
+            'rc'              => 'nullable|string|max:50',
+            'telephone'       => 'nullable|string|max:100',
+            'whatsapp'        => 'nullable|string|max:100',
+            'email'           => 'nullable|email|max:255',
+            'adresse'         => 'nullable|string|max:500',
+            'prefixe_facture' => 'required|string|max:10',
+            'logo'            => 'nullable|image|max:2048',
+            'cachet'          => 'nullable|image|max:2048',
         ];
     }
 
     public function mount(): void
     {
-        $settings = CompanySetting::getSettings();
+        $parametres = Parametre::first();
+        if (! $parametres) return;
 
-        $this->name             = $settings->name;
-        $this->ninea            = $settings->ninea ?? '';
-        $this->rc               = $settings->rc ?? '';
-        $this->phone            = $settings->phone ?? '';
-        $this->whatsapp         = $settings->whatsapp ?? '';
-        $this->email            = $settings->email ?? '';
-        $this->address          = $settings->address ?? '';
-        $this->facebook         = $settings->facebook ?? '';
-        $this->instagram        = $settings->instagram ?? '';
-        $this->tiktok           = $settings->tiktok ?? '';
-        $this->currency         = $settings->currency ?? 'FCFA';
-        $this->invoice_prefix   = $settings->invoice_prefix ?? 'FAC';
-        $this->tva_rate         = (float) ($settings->tva_rate ?? 18);
-        $this->currentLogo      = $settings->logo;
-        $this->currentStamp     = $settings->stamp_image;
-        $this->currentSignature = $settings->signature_image;
+        $this->nom              = $parametres->nom;
+        $this->ninea            = $parametres->ninea ?? '';
+        $this->rc               = $parametres->rc ?? '';
+        $this->telephone        = $parametres->telephone ?? '';
+        $this->whatsapp         = $parametres->whatsapp ?? '';
+        $this->email            = $parametres->email ?? '';
+        $this->adresse          = $parametres->adresse ?? '';
+        $this->facebook         = $parametres->facebook ?? '';
+        $this->instagram        = $parametres->instagram ?? '';
+        $this->tiktok           = $parametres->tiktok ?? '';
+        $this->lien_whatsapp    = $parametres->lien_whatsapp ?? '';
+        $this->devise           = $parametres->devise ?? 'FCFA';
+        $this->prefixe_facture  = $parametres->prefixe_facture ?? 'FAC';
+        $this->logoActuel       = $parametres->logo;
+        $this->cachetActuel     = $parametres->cachet;
+        $this->signatureActuelle = $parametres->signature;
     }
 
-    public function saveEntreprise(): void
+    public function saveRestaurant(): void
     {
         $this->validate([
-            'name'     => 'required|string|min:2|max:255',
-            'ninea'    => 'nullable|string|max:50',
-            'rc'       => 'nullable|string|max:50',
-            'phone'    => 'nullable|string|max:100',
-            'whatsapp' => 'nullable|string|max:100',
-            'email'    => 'nullable|email|max:255',
-            'address'   => 'nullable|string|max:500',
-            'facebook'  => 'nullable|string|max:255',
-            'instagram' => 'nullable|string|max:255',
-            'tiktok'    => 'nullable|string|max:255',
-            'tva_rate'  => 'required|numeric|min:0|max:100',
-            'invoice_prefix' => 'required|string|max:10',
-            'logo'  => 'nullable|mimes:jpeg,jpg,png,gif,webp|max:5120',
-            'stamp' => 'nullable|mimes:jpeg,jpg,png,gif,webp|max:5120',
+            'nom'             => 'required|string|min:2|max:255',
+            'ninea'           => 'nullable|string|max:50',
+            'rc'              => 'nullable|string|max:50',
+            'telephone'       => 'nullable|string|max:100',
+            'whatsapp'        => 'nullable|string|max:100',
+            'email'           => 'nullable|email|max:255',
+            'adresse'         => 'nullable|string|max:500',
+            'facebook'        => 'nullable|string|max:255',
+            'instagram'       => 'nullable|string|max:255',
+            'tiktok'          => 'nullable|string|max:255',
+            'lien_whatsapp'   => 'nullable|string|max:255',
+            'prefixe_facture' => 'required|string|max:10',
+            'logo'            => 'nullable|mimes:jpeg,jpg,png,gif,webp|max:5120',
         ]);
 
-        $settings  = CompanySetting::getSettings();
-        $logoPath = $this->currentLogo;
-
+        $logoPath = $this->logoActuel;
         if ($this->logo) {
-            // Supprimer l'ancien si existe
-            if ($this->currentLogo && Storage::disk('public')->exists($this->currentLogo)) {
-                Storage::disk('public')->delete($this->currentLogo);
+            if ($this->logoActuel && Storage::disk('public')->exists($this->logoActuel)) {
+                Storage::disk('public')->delete($this->logoActuel);
             }
-            $logoPath = $this->logo->store('settings', 'public');
-            $this->currentLogo = $logoPath;
+            $logoPath = $this->logo->store('parametres', 'public');
+            $this->logoActuel = $logoPath;
             $this->logo = null;
         }
 
-        CompanySetting::where('id', 1)->update([
-            'name'           => $this->name,
-            'ninea'          => $this->ninea ?: null,
-            'rc'             => $this->rc ?: null,
-            'phone'          => $this->phone ?: null,
-            'whatsapp'       => $this->whatsapp ?: null,
-            'email'          => $this->email ?: null,
-            'address'        => $this->address ?: null,
-            'facebook'       => $this->facebook ?: null,
-            'instagram'      => $this->instagram ?: null,
-            'tiktok'         => $this->tiktok ?: null,
-            'tva_rate'       => $this->tva_rate,
-            'invoice_prefix' => $this->invoice_prefix,
-            'currency'       => $this->currency,
-            'logo'           => $logoPath,
+        Parametre::updateOrCreate(['id' => 1], [
+            'nom'             => $this->nom,
+            'ninea'           => $this->ninea ?: null,
+            'rc'              => $this->rc ?: null,
+            'telephone'       => $this->telephone ?: null,
+            'whatsapp'        => $this->whatsapp ?: null,
+            'email'           => $this->email ?: null,
+            'adresse'         => $this->adresse ?: null,
+            'facebook'        => $this->facebook ?: null,
+            'instagram'       => $this->instagram ?: null,
+            'tiktok'          => $this->tiktok ?: null,
+            'lien_whatsapp'   => $this->lien_whatsapp ?: null,
+            'devise'          => $this->devise,
+            'prefixe_facture' => $this->prefixe_facture,
+            'logo'            => $logoPath,
         ]);
 
-        $this->currentLogo = $logoPath;
-        $this->logo        = null;
         $this->showSaved();
     }
 
     public function saveSignature(): void
     {
-        $settings   = CompanySetting::getSettings();
-        $stampPath  = $this->currentStamp;
+        $parametres = Parametre::first();
+        $cachetPath = $this->cachetActuel;
 
-        // Upload cachet
-        if ($this->stamp) {
-            $this->validate(['stamp' => 'nullable|image|max:2048']);
-            if ($this->currentStamp) {
-                Storage::disk('public')->delete($this->currentStamp);
-            }
-            $stampPath = $this->stamp->store('settings', 'public');
+        if ($this->cachet) {
+            $this->validate(['cachet' => 'nullable|image|max:2048']);
+            if ($this->cachetActuel) Storage::disk('public')->delete($this->cachetActuel);
+            $cachetPath = $this->cachet->store('parametres', 'public');
         }
 
-        // Signature dessinée
-        $signaturePath = $this->currentSignature;
+        $signaturePath = $this->signatureActuelle;
         if ($this->signatureData) {
-            // Décoder base64 et sauvegarder
-            $imageData = base64_decode(
-                preg_replace('#^data:image/\w+;base64,#i', '', $this->signatureData)
-            );
-            $filename  = 'settings/signature_' . time() . '.png';
+            $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $this->signatureData));
+            $filename  = 'parametres/signature_' . time() . '.png';
             Storage::disk('public')->put($filename, $imageData);
             $signaturePath = $filename;
         }
-
-        if ($this->signatureCleared) {
-            if ($this->currentSignature) {
-                Storage::disk('public')->delete($this->currentSignature);
-            }
+        if ($this->signatureEffacee) {
+            if ($this->signatureActuelle) Storage::disk('public')->delete($this->signatureActuelle);
             $signaturePath = null;
         }
 
-        $settings->update([
-            'stamp_image'     => $stampPath,
-            'signature_image' => $signaturePath,
-        ]);
+        $parametres?->update(['cachet' => $cachetPath, 'signature' => $signaturePath]);
 
-        $this->currentStamp     = $stampPath;
-        $this->currentSignature = $signaturePath;
-        $this->stamp            = null;
-        $this->signatureData    = null;
-        $this->signatureCleared = false;
+        $this->cachetActuel      = $cachetPath;
+        $this->signatureActuelle = $signaturePath;
+        $this->cachet            = null;
+        $this->signatureData     = null;
+        $this->signatureEffacee  = false;
 
         $this->showSaved();
     }
 
     public function clearSignature(): void
     {
-        $this->signatureCleared = true;
+        $this->signatureEffacee = true;
         $this->signatureData    = null;
         $this->dispatch('clearSignaturePad');
     }
 
     private function showSaved(): void
     {
-        $this->saved = true;
+        $this->sauvegarde = true;
         $this->dispatch('flash-saved');
     }
 
     public function render()
     {
         return view('livewire.parametres.parametre-manager', [
-            'settings' => CompanySetting::getSettings(),
+            'parametres' => Parametre::first(),
         ]);
     }
 }

@@ -4,95 +4,93 @@ namespace App\Livewire\Caisse;
 
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\Purchase;
+use App\Models\Achat;
+use App\Models\Fournisseur;
 
 class AchatManager extends Component
 {
     use WithPagination;
 
-    public string $search         = '';
-    public string $filterMonth    = '';
-    public string $filterStatus   = '';
-    public string $filterSupplier = '';
+    public string $search          = '';
+    public string $filtreMonth     = '';
+    public string $filtreStatut    = '';
+    public string $filtreFournisseur = '';
 
-    public bool $showDetailModal  = false;
-    public ?int $viewingPurchaseId = null;
+    public bool   $afficherModalDetail = false;
+    public ?int   $voirAchatId         = null;
 
-    public bool $showDeleteModal  = false;
-    public ?int $deletingId       = null;
+    public bool   $afficherModalSuppression = false;
+    public ?int   $suppressionId            = null;
 
     public function mount(): void
     {
-        $this->filterMonth = now()->format('Y-m');
+        $this->filtreMonth = now()->format('Y-m');
     }
 
     public function updatingSearch(): void { $this->resetPage(); }
 
-    public function viewPurchase(int $id): void
+    public function view(int $id): void
     {
-        $this->viewingPurchaseId = $id;
-        $this->showDetailModal   = true;
+        $this->voirAchatId         = $id;
+        $this->afficherModalDetail = true;
     }
 
     public function confirmDelete(int $id): void
     {
-        $this->deletingId      = $id;
-        $this->showDeleteModal = true;
+        $this->suppressionId             = $id;
+        $this->afficherModalSuppression  = true;
     }
 
     public function delete(): void
     {
-        $purchase = Purchase::findOrFail($this->deletingId);
-        $purchase->delete();
+        Achat::findOrFail($this->suppressionId)->delete();
         session()->flash('success', 'Achat supprimé avec succès !');
-        $this->showDeleteModal = false;
-        $this->deletingId      = null;
+        $this->afficherModalSuppression = false;
+        $this->suppressionId            = null;
         $this->resetPage();
     }
 
     public function render()
     {
-        $purchases = Purchase::with(['supplier', 'user', 'items'])
+        $achats = Achat::with(['fournisseur', 'user', 'lignes'])
             ->when($this->search, fn($q) =>
                 $q->where('reference', 'like', '%' . $this->search . '%')
-                  ->orWhereHas('supplier', fn($q2) =>
-                      $q2->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhereHas('fournisseur', fn($q2) =>
+                      $q2->where('nom', 'like', '%' . $this->search . '%')
                   )
             )
-            ->when($this->filterStatus, fn($q) =>
-                $q->where('status', $this->filterStatus)
+            ->when($this->filtreStatut, fn($q) =>
+                $q->where('statut', $this->filtreStatut)
             )
-            ->when($this->filterSupplier, fn($q) =>
-                $q->where('supplier_id', $this->filterSupplier)
+            ->when($this->filtreFournisseur, fn($q) =>
+                $q->where('fournisseur_id', $this->filtreFournisseur)
             )
-            ->when($this->filterMonth, fn($q) =>
-                $q->whereYear('purchase_date', substr($this->filterMonth, 0, 4))
-                  ->whereMonth('purchase_date', substr($this->filterMonth, 5, 2))
+            ->when($this->filtreMonth, fn($q) =>
+                $q->whereYear('date_achat', substr($this->filtreMonth, 0, 4))
+                  ->whereMonth('date_achat', substr($this->filtreMonth, 5, 2))
             )
-            ->latest('purchase_date')
+            ->latest('date_achat')
             ->paginate(15);
 
-        $statsQuery = Purchase::when($this->filterMonth, fn($q) =>
-            $q->whereYear('purchase_date', substr($this->filterMonth, 0, 4))
-              ->whereMonth('purchase_date', substr($this->filterMonth, 5, 2))
+        $statsQuery = Achat::when($this->filtreMonth, fn($q) =>
+            $q->whereYear('date_achat', substr($this->filtreMonth, 0, 4))
+              ->whereMonth('date_achat', substr($this->filtreMonth, 5, 2))
         );
 
         $stats = [
-            'count'    => $statsQuery->count(),
-            'total'    => $statsQuery->sum('total_amount'),
-            'paid'     => $statsQuery->sum('amount_paid'),
-            'due'      => $statsQuery->sum('amount_due'),
+            'count'  => $statsQuery->count(),
+            'total'  => $statsQuery->sum('montant_total'),
+            'paye'   => $statsQuery->sum('montant_paye'),
+            'du'     => $statsQuery->sum('montant_du'),
         ];
 
-        $suppliers = \App\Models\Supplier::where('is_active', true)
-            ->orderBy('name')->get(['id', 'name']);
+        $fournisseurs = Fournisseur::where('est_actif', true)->orderBy('nom')->get(['id', 'nom']);
 
-        $viewingPurchase = $this->viewingPurchaseId
-            ? Purchase::with(['supplier', 'user', 'items'])
-                    ->find($this->viewingPurchaseId)
+        $voirAchat = $this->voirAchatId
+            ? Achat::with(['fournisseur', 'user', 'lignes'])->find($this->voirAchatId)
             : null;
 
         return view('livewire.caisse.achat-manager',
-            compact('purchases', 'stats', 'suppliers', 'viewingPurchase'));
+            compact('achats', 'stats', 'fournisseurs', 'voirAchat'));
     }
 }

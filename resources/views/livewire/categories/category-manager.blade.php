@@ -3,7 +3,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
             <h3 class="text-lg font-bold text-dark">Catégories</h3>
-            <p class="text-sm text-gray-400">Gérez les catégories de produits</p>
+            <p class="text-sm text-gray-400">Gérez les catégories du menu</p>
         </div>
         <button wire:click="openCreateModal"
                 class="inline-flex items-center gap-2 bg-primary hover:bg-primary/90
@@ -32,7 +32,7 @@
                        class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl
                               text-sm focus:outline-none focus:border-primary bg-gray-50"/>
             </div>
-            <select wire:model.live="filterStatus"
+            <select wire:model.live="filtreStatut"
                     class="px-3 py-2 border border-gray-200 rounded-xl text-sm
                            focus:outline-none focus:border-primary bg-gray-50">
                 <option value="">Tous les statuts</option>
@@ -85,7 +85,7 @@
                         </th>
                         <th class="text-center text-xs font-semibold text-gray-500
                                    uppercase tracking-wider px-4 py-3">
-                            Produits
+                            Plats
                         </th>
                         <th class="text-center text-xs font-semibold text-gray-500
                                    uppercase tracking-wider px-4 py-3">
@@ -107,7 +107,7 @@
                                                 justify-center flex-shrink-0 overflow-hidden">
                                         @if($category->image)
                                             <img src="{{ Storage::url($category->image) }}"
-                                                 alt="{{ $category->name }}"
+                                                 alt="{{ $category->nom }}"
                                                  class="w-full h-full object-cover"/>
                                         @else
                                             <svg class="w-5 h-5 text-primary" fill="none"
@@ -121,7 +121,7 @@
                                     </div>
                                     <div>
                                         <p class="text-sm font-semibold text-dark">
-                                            {{ $category->name }}
+                                            {{ $category->nom }}
                                         </p>
                                         <p class="text-xs text-gray-400">
                                             {{ $category->slug }}
@@ -137,11 +137,11 @@
                                 </p>
                             </td>
 
-                            {{-- Nb produits --}}
+                            {{-- Nb plats --}}
                             <td class="px-4 py-3 text-center">
                                 <span class="inline-flex items-center justify-center w-7 h-7
                                              bg-accent/10 text-primary text-xs font-bold rounded-lg">
-                                    {{ $category->products_count }}
+                                    {{ $category->plats_count }}
                                 </span>
                             </td>
 
@@ -150,14 +150,14 @@
                                 <button wire:click="toggleStatus({{ $category->id }})"
                                         class="inline-flex items-center gap-1.5 px-2.5 py-1
                                                rounded-full text-xs font-medium transition-all
-                                               {{ $category->is_active
+                                               {{ $category->est_active
                                                   ? 'bg-green-100 text-green-700 hover:bg-green-200'
                                                   : 'bg-gray-100 text-gray-500 hover:bg-gray-200' }}">
                                     <span class="w-1.5 h-1.5 rounded-full
-                                                 {{ $category->is_active
+                                                 {{ $category->est_active
                                                     ? 'bg-green-500' : 'bg-gray-400' }}">
                                     </span>
-                                    {{ $category->is_active ? 'Active' : 'Inactive' }}
+                                    {{ $category->est_active ? 'Active' : 'Inactive' }}
                                 </button>
                             </td>
 
@@ -234,7 +234,7 @@
     {{-- ══════════════════════════════════════════════
          MODAL — Créer / Modifier
     ══════════════════════════════════════════════ --}}
-    @if($showModal)
+    @if($afficherModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
              x-data x-init="$el.querySelector('[data-modal]').focus()">
 
@@ -272,15 +272,15 @@
                         <label class="block text-sm font-medium text-dark mb-1.5">
                             Nom <span class="text-red-500">*</span>
                         </label>
-                        <input wire:model="name"
+                        <input wire:model="nom"
                                type="text"
-                               placeholder="Ex: Ordinateurs portables"
+                               placeholder="Ex: Plats principaux"
                                class="w-full px-3 py-2.5 border rounded-xl text-sm
                                       focus:outline-none transition-colors
-                                      {{ $errors->has('name')
+                                      {{ $errors->has('nom')
                                          ? 'border-red-400 bg-red-50'
                                          : 'border-gray-200 bg-gray-50 focus:border-primary focus:bg-white' }}"/>
-                        @error('name')
+                        @error('nom')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
@@ -305,9 +305,9 @@
                             Image
                         </label>
 
-                        @if($currentImage && !$image)
+                        @if($imageActuelle && !$image)
                             <div class="mb-2 flex items-center gap-2">
-                                <img src="{{ Storage::url($currentImage) }}"
+                                <img src="{{ Storage::url($imageActuelle) }}"
                                      class="w-12 h-12 rounded-lg object-cover border border-gray-200"/>
                                 <span class="text-xs text-gray-400">Image actuelle</span>
                             </div>
@@ -339,13 +339,13 @@
                             <p class="text-xs text-gray-400">Visible sur le site et dans la caisse</p>
                         </div>
                         <button type="button"
-                                wire:click="$toggle('is_active')"
+                                wire:click="$toggle('est_active')"
                                 class="relative inline-flex h-6 w-11 items-center rounded-full
                                        transition-colors duration-200
-                                       {{ $is_active ? 'bg-primary' : 'bg-gray-300' }}">
+                                       {{ $est_active ? 'bg-primary' : 'bg-gray-300' }}">
                             <span class="inline-block h-4 w-4 transform rounded-full bg-white
                                          shadow transition-transform duration-200
-                                         {{ $is_active ? 'translate-x-6' : 'translate-x-1' }}">
+                                         {{ $est_active ? 'translate-x-6' : 'translate-x-1' }}">
                             </span>
                         </button>
                     </div>
@@ -381,10 +381,10 @@
     {{-- ══════════════════════════════════════════════
          MODAL — Confirmation suppression
     ══════════════════════════════════════════════ --}}
-    @if($showDeleteModal)
+    @if($afficherModalSuppression)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
-                 wire:click="$set('showDeleteModal', false)"></div>
+                 wire:click="$set('afficherModalSuppression', false)"></div>
             <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
                 <div class="flex items-center gap-4 mb-4">
                     <div class="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center">
@@ -404,10 +404,10 @@
                 </div>
                 <p class="text-sm text-gray-600 mb-6">
                     Êtes-vous sûr de vouloir supprimer cette catégorie ?
-                    Les produits associés ne seront pas supprimés.
+                    Les plats associés ne seront pas supprimés.
                 </p>
                 <div class="flex items-center justify-end gap-3">
-                    <button wire:click="$set('showDeleteModal', false)"
+                    <button wire:click="$set('afficherModalSuppression', false)"
                             class="px-4 py-2 text-sm font-medium text-gray-600
                                    hover:bg-gray-100 rounded-xl transition-colors">
                         Annuler

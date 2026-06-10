@@ -3,11 +3,12 @@
 namespace App\Services;
 
 use App\Models\Quote;
-use App\Models\QuoteItem;
-use App\Models\Sale;
-use App\Models\SaleItem;
-use App\Models\Customer;
-use App\Models\CompanySetting;
+use App\Models\Vente;
+use App\Models\VenteLigne;
+use App\Models\Facture;
+use App\Models\Client;
+use App\Models\Plat;
+use App\Models\Parametre;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,20 +18,16 @@ class QuoteService
 {
     public function __construct(private StockService $stockService) {}
 
-    // ── Générer PDF devis ─────────────────────────
     public function generatePdf(Quote $quote): string
     {
-        $quote->load(['items', 'customer']);
-        $settings      = CompanySetting::getSettings();
-        $logoPath      = $settings->logo
-            ? Storage::disk('public')->path($settings->logo) : null;
-        $stampPath     = $settings->stamp_image
-            ? Storage::disk('public')->path($settings->stamp_image) : null;
-        $signaturePath = $settings->signature_image
-            ? Storage::disk('public')->path($settings->signature_image) : null;
+        $quote->load(['items', 'client']);
+        $parametres    = Parametre::first();
+        $logoPath      = $this->resoudreCheminAbsolu($parametres?->logo);
+        $cachetPath    = $this->resoudreCheminAbsolu($parametres?->cachet);
+        $signaturePath = $this->resoudreCheminAbsolu($parametres?->signature);
 
         $pdf = Pdf::loadView('pdf.devis', compact(
-            'quote', 'settings', 'logoPath', 'stampPath', 'signaturePath'
+            'quote', 'parametres', 'logoPath', 'cachetPath', 'signaturePath'
         ))
         ->setPaper('a4', 'portrait')
         ->setOptions([
@@ -48,113 +45,106 @@ class QuoteService
 
     public function download(Quote $quote)
     {
-        $quote->load(['items', 'customer']);
-        $settings      = CompanySetting::getSettings();
-        $logoPath      = $settings->logo
-            ? Storage::disk('public')->path($settings->logo) : null;
-        $stampPath     = $settings->stamp_image
-            ? Storage::disk('public')->path($settings->stamp_image) : null;
-        $signaturePath = $settings->signature_image
-            ? Storage::disk('public')->path($settings->signature_image) : null;
+        $quote->load(['items', 'client']);
+        $parametres    = Parametre::first();
+        $logoPath      = $this->resoudreCheminAbsolu($parametres?->logo);
+        $cachetPath    = $this->resoudreCheminAbsolu($parametres?->cachet);
+        $signaturePath = $this->resoudreCheminAbsolu($parametres?->signature);
 
         return Pdf::loadView('pdf.devis', compact(
-            'quote', 'settings', 'logoPath', 'stampPath', 'signaturePath'
+            'quote', 'parametres', 'logoPath', 'cachetPath', 'signaturePath'
         ))
         ->setPaper('a4', 'portrait')
+        ->setOptions([
+            'defaultFont'          => 'DejaVu Sans',
+            'isRemoteEnabled'      => false,
+            'isHtml5ParserEnabled' => true,
+            'chroot'               => storage_path('app/public'),
+        ])
         ->download($quote->reference . '.pdf');
     }
 
-    // ── Convertir devis en vente ──────────────────
-    public function convertToSale(Quote $quote, array $payment): Sale
+    public function convertToSale(Quote $quote, array $payment): Vente
     {
         return DB::transaction(function () use ($quote, $payment) {
-            $settings = CompanySetting::getSettings();
+            $parametres = Parametre::first();
 
-            // Récupérer ou créer le client
-            $customerId = $quote->customer_id;
-            if (!$customerId && $quote->customer_name) {
-                $customer = Customer::firstOrCreate(
-                    ['phone' => $quote->customer_phone],
-                    [
-                        'name'     => $quote->customer_name,
-                        'phone'    => $quote->customer_phone,
-                        'whatsapp' => $quote->customer_phone,
-                    ]
+            $clientId = $quote->client_id;
+            if (!$clientId && $quote->client_nom) {
+                $client = Client::firstOrCreate(
+                    ['telephone' => $quote->client_telephone],
+                    ['nom' => $quote->client_nom, 'telephone' => $quote->client_telephone]
                 );
-                $customerId = $customer->id;
+                $clientId = $client->id;
             }
 
             $amountPaid  = $payment['amount_paid'];
-            $changeGiven = max(0, $amountPaid - $quote->total_ttc);
+            $changeGiven = max(0, $amountPaid - $quote->total);
 
-            // Créer la vente
-            $lastSale = Sale::withTrashed()->latest()->first();
+            $lastSale = Vente::withTrashed()->latest()->first();
             $num      = $lastSale
                 ? (intval(substr($lastSale->reference, -4)) + 1) : 1;
             $ref      = 'VNT-' . date('Y') . '-' . str_pad($num, 4, '0', STR_PAD_LEFT);
 
-            $sale = Sale::create([
+            $vente = Vente::create([
                 'reference'      => $ref,
-                'customer_id'    => $customerId,
+                'client_id'      => $clientId,
                 'user_id'        => Auth::id(),
-                'source'         => 'shop',
-                'status'         => 'completed',
-                'subtotal_ht'    => $quote->subtotal_ht,
-                'tva_amount'     => $quote->tva_amount,
-                'total_ttc'      => $quote->total_ttc,
-                'discount'       => $quote->discount,
-                'amount_paid'    => $amountPaid,
-                'change_given'   => $changeGiven,
-                'payment_method' => $payment['method'],
+                'source'         => 'devis',
+                'statut'         => 'completee',
+                'total'          => $quote->total,
+                'remise'         => $quote->remise,
+                'montant_recu'   => $amountPaid,
+                'monnaie_rendue' => $changeGiven,
+                'mode_paiement'  => $payment['method'],
                 'notes'          => 'Converti depuis devis ' . $quote->reference,
-                'sold_at'        => now(),
+                'vendu_le'       => now(),
             ]);
 
-            // Créer les lignes + décrémenter stock
             foreach ($quote->items as $item) {
-                SaleItem::create([
-                    'sale_id'        => $sale->id,
-                    'product_id'     => $item->product_id,
-                    'product_name'   => $item->description,
-                    'unit_price_ht'  => $item->unit_price_ht,
-                    'unit_price_ttc' => $item->unit_price_ttc,
-                    'quantity'       => $item->quantity,
-                    'discount'       => $item->discount,
-                    'total_ht'       => $item->total_ht,
-                    'total_ttc'      => $item->total_ttc,
+                VenteLigne::create([
+                    'vente_id'      => $vente->id,
+                    'plat_id'       => $item->plat_id,
+                    'nom_plat'      => $item->description,
+                    'prix_unitaire' => $item->prix_unitaire,
+                    'quantite'      => $item->quantite,
+                    'remise'        => $item->remise,
+                    'total'         => $item->total,
                 ]);
 
-                if ($item->product_id) {
-                    $product = \App\Models\Product::find($item->product_id);
-                    if ($product) {
-                        $this->stockService->decrementStock(
-                            $product, $item->quantity,
-                            'sale', $sale->id,
+                if ($item->plat_id) {
+                    $plat = Plat::find($item->plat_id);
+                    if ($plat) {
+                        $this->stockService->decrementerStock(
+                            $plat, $item->quantite,
+                            'vente', $vente->id,
                             'Vente depuis devis #' . $quote->reference
                         );
                     }
                 }
             }
 
-            // Générer facture
-            $invoice = \App\Models\Invoice::create([
-                'sale_id'        => $sale->id,
-                'customer_id'    => $customerId,
-                'invoice_number' => $settings->invoice_prefix . '-' . date('Y') . '-'
-                    . str_pad($settings->invoice_counter, 4, '0', STR_PAD_LEFT),
-                'status'         => 'issued',
-                'subtotal_ht'    => $quote->subtotal_ht,
-                'tva_rate'       => $quote->tva_rate,
-                'tva_amount'     => $quote->tva_amount,
-                'total_ttc'      => $quote->total_ttc,
-                'issued_at'      => now(),
+            Facture::create([
+                'vente_id'       => $vente->id,
+                'client_id'      => $clientId,
+                'numero_facture' => ($parametres?->prefixe_facture ?? 'FAC') . '-' . date('Y') . '-'
+                    . str_pad($parametres?->compteur_facture ?? 1, 4, '0', STR_PAD_LEFT),
+                'statut'         => 'emise',
+                'total'          => $quote->total,
+                'emise_le'       => now(),
             ]);
-            $settings->increment('invoice_counter');
+            $parametres?->increment('compteur_facture');
 
-            // Marquer devis comme accepté
             $quote->update(['status' => 'accepted']);
 
-            return $sale->load(['items', 'invoice', 'customer']);
+            return $vente->load(['lignes', 'facture', 'client']);
         });
+    }
+
+    private function resoudreCheminAbsolu(?string $chemin): ?string
+    {
+        if (! $chemin) return null;
+        $cheminAbsolu = Storage::disk('public')->path($chemin);
+        return file_exists($cheminAbsolu) ? $cheminAbsolu : null;
     }
 }

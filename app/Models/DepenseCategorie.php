@@ -1,0 +1,18 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class DepenseCategorie extends Model
+{
+    protected $table = 'depense_categories';
+
+    protected $fillable = ['nom'];
+
+    public function depenses(): HasMany
+    {
+        return $this->hasMany(Depense::class, 'depense_categorie_id');
+    }
+}

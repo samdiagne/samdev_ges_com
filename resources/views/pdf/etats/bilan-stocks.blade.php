@@ -10,7 +10,7 @@
                   padding-bottom:10px; border-bottom:3px solid #8B5CF6; }
         .header-left  { display:table-cell; width:60%; vertical-align:middle; }
         .header-right { display:table-cell; width:40%; vertical-align:middle; text-align:right; }
-        .company-name { font-size:14px; font-weight:bold; color:#1E6FBF; }
+        .company-name { font-size:14px; font-weight:bold; color:#F27B20; }
         .doc-title  { font-size:16px; font-weight:bold; color:#8B5CF6; }
         .doc-period { font-size:9px; color:#666; margin-top:2px; }
         .stats-grid { display:table; width:100%; margin-bottom:15px; border-collapse:separate; border-spacing:5px; }
@@ -51,7 +51,7 @@
                 <img src="{{ $logoBase64 }}" 
                     style="height:95px; width:auto; max-width:220px;"/>
             @endif
-            <div class="company-name">{{ $settings->name }}</div>
+            <div class="company-name">{{ $parametres->nom }}</div>
         </div>
         <div class="header-right">
             <div class="doc-title">BILAN DES STOCKS</div>
@@ -62,20 +62,12 @@
     {{-- Stats --}}
     <div class="stats-grid">
         <div class="stat-box">
-            <div class="stat-label">Produits</div>
+            <div class="stat-label">Plats</div>
             <div class="stat-value">{{ $stats['total_produits'] }}</div>
         </div>
         <div class="stat-box">
-            <div class="stat-label">Valeur achat</div>
-            <div class="stat-value">{{ number_format($stats['valeur_achat'], 0, ',', ' ') }} FCFA</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-label">Valeur vente</div>
+            <div class="stat-label">Valeur du stock</div>
             <div class="stat-value green">{{ number_format($stats['valeur_vente'], 0, ',', ' ') }} FCFA</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-label">Marge potentielle</div>
-            <div class="stat-value green">{{ number_format($stats['marge_potentielle'], 0, ',', ' ') }} FCFA</div>
         </div>
         <div class="stat-box">
             <div class="stat-label">Ruptures</div>
@@ -87,44 +79,40 @@
         </div>
     </div>
 
-    {{-- Table produits --}}
+    {{-- Table plats --}}
     <table>
         <thead>
             <tr>
-                <th style="width:25%">Produit</th>
-                <th style="width:15%">Catégorie</th>
-                <th style="width:10%">SKU</th>
-                <th class="right" style="width:12%">P. Achat</th>
-                <th class="right" style="width:12%">P. Vente</th>
-                <th class="center" style="width:8%">Stock</th>
-                <th class="right" style="width:12%">Val. Stock</th>
-                <th class="center" style="width:6%">Statut</th>
+                <th style="width:30%">Plat</th>
+                <th style="width:18%">Catégorie</th>
+                <th class="right" style="width:18%">Prix</th>
+                <th class="center" style="width:10%">Stock</th>
+                <th class="right" style="width:14%">Val. Stock</th>
+                <th class="center" style="width:10%">Statut</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($products as $product)
+            @foreach($plats as $plat)
                 <tr>
-                    <td><strong>{{ $product->name }}</strong></td>
-                    <td>{{ $product->category?->name ?? '—' }}</td>
-                    <td style="color:#888;">{{ $product->sku ?? '—' }}</td>
-                    <td class="right">{{ number_format($product->purchase_price, 0, ',', ' ') }}</td>
-                    <td class="right">{{ number_format($product->selling_price, 0, ',', ' ') }}</td>
+                    <td><strong>{{ $plat->nom }}</strong></td>
+                    <td>{{ $plat->categorie?->nom ?? '—' }}</td>
+                    <td class="right">{{ number_format($plat->prix_vente, 0, ',', ' ') }}</td>
                     <td class="center">
-                        @if($product->stock_quantity <= 0)
-                            <span class="badge-out">{{ $product->stock_quantity }}</span>
-                        @elseif($product->isLowStock())
-                            <span class="badge-low">{{ $product->stock_quantity }}</span>
+                        @if($plat->stock <= 0)
+                            <span class="badge-out">{{ $plat->stock }}</span>
+                        @elseif($plat->estStockFaible())
+                            <span class="badge-low">{{ $plat->stock }}</span>
                         @else
-                            <span class="badge-ok">{{ $product->stock_quantity }}</span>
+                            <span class="badge-ok">{{ $plat->stock }}</span>
                         @endif
                     </td>
                     <td class="right">
-                        {{ number_format($product->stock_quantity * $product->purchase_price, 0, ',', ' ') }}
+                        {{ number_format($plat->stock * $plat->prix_vente, 0, ',', ' ') }}
                     </td>
                     <td class="center">
-                        @if($product->stock_quantity <= 0)
+                        @if($plat->stock <= 0)
                             <span class="badge-out">Rupture</span>
-                        @elseif($product->isLowStock())
+                        @elseif($plat->estStockFaible())
                             <span class="badge-low">Bas</span>
                         @else
                             <span class="badge-ok">OK</span>
@@ -135,9 +123,9 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="6">VALEUR TOTALE DU STOCK (prix achat)</td>
+                <td colspan="4">VALEUR TOTALE DU STOCK</td>
                 <td class="right">
-                    {{ number_format($stats['valeur_achat'], 0, ',', ' ') }} FCFA
+                    {{ number_format($stats['valeur_vente'], 0, ',', ' ') }} FCFA
                 </td>
                 <td></td>
             </tr>
@@ -145,8 +133,8 @@
     </table>
 
     <div class="footer">
-        {{ $settings->name }}
-        @if($settings->ninea) · NINEA : {{ $settings->ninea }}@endif
+        {{ $parametres->nom }}
+        @if($parametres->ninea) · NINEA : {{ $parametres->ninea }}@endif
         · Bilan généré le {{ now()->format('d/m/Y à H:i') }}
     </div>
 </div>

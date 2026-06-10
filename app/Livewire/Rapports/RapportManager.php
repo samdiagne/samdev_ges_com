@@ -3,167 +3,140 @@
 namespace App\Livewire\Rapports;
 
 use Livewire\Component;
-use App\Models\Sale;
-use App\Models\Purchase;
-use App\Models\Expense;
-use App\Models\Product;
-use App\Models\SaleItem;
-use App\Models\StockMovement;
+use App\Models\Vente;
+use App\Models\VenteLigne;
+use App\Models\Achat;
+use App\Models\Depense;
+use App\Models\Plat;
+use App\Models\Client;
 use Carbon\Carbon;
 
 class RapportManager extends Component
 {
-    public string $activeTab  = 'ventes';
-    public string $dateFrom   = '';
-    public string $dateTo     = '';
-    public string $filterMonth= '';
-    public string $filterYear = '';
+    public string $dateFrom    = '';
+    public string $dateTo      = '';
+    public string $typeRapport = 'ventes';
 
     public function mount(): void
     {
-        $this->filterMonth = now()->format('Y-m');
-        $this->filterYear  = now()->format('Y');
-        $this->dateFrom    = now()->startOfMonth()->format('Y-m-d');
-        $this->dateTo      = now()->format('Y-m-d');
+        $this->dateFrom = now()->startOfMonth()->format('Y-m-d');
+        $this->dateTo   = now()->format('Y-m-d');
     }
 
     public function render()
     {
-        $data = match($this->activeTab) {
-            'ventes'    => $this->getVentesData(),
-            'stocks'    => $this->getStocksData(),
-            'comptabilite' => $this->getComptaData(),
-            default     => $this->getVentesData(),
-        };
-
-        return view('livewire.rapports.rapport-manager', array_merge(
-            ['activeTab' => $this->activeTab],
-            $data
-        ));
-    }
-
-    // ── Rapport Ventes ────────────────────────────
-    private function getVentesData(): array
-    {
         $from = Carbon::parse($this->dateFrom)->startOfDay();
         $to   = Carbon::parse($this->dateTo)->endOfDay();
 
-        $sales = Sale::with(['customer', 'items'])
-            ->where('status', 'completed')
-            ->whereBetween('sold_at', [$from, $to])
-            ->latest('sold_at')
-            ->get();
+        $rapport = match ($this->typeRapport) {
+            'ventes'     => $this->rapportVentes($from, $to),
+            'plats'      => $this->rapportPlats($from, $to),
+            'clients'    => $this->rapportClients($from, $to),
+            'achats'     => $this->rapportAchats($from, $to),
+            'tresorerie' => $this->rapportTresorerie($from, $to),
+            default      => [],
+        };
 
-        // Stats globales
-        $totalCa    = $sales->sum('total_ttc');
-        $totalHt    = $sales->sum('subtotal_ht');
-        $totalRemise= $sales->sum('discount');
-        $nbVentes   = $sales->count();
-        $panierMoyen= $nbVentes > 0 ? round($totalCa / $nbVentes) : 0;
-
-        // Par mode de paiement
-        $byPayment = $sales->groupBy('payment_method')
-            ->map(fn($g) => [
-                'count'  => $g->count(),
-                'total'  => $g->sum('total_ttc'),
-            ]);
-
-        // Par jour
-        $byDay = $sales->groupBy(fn($s) => $s->sold_at->format('d/m/Y'))
-            ->map(fn($g) => [
-                'count' => $g->count(),
-                'total' => $g->sum('total_ttc'),
-            ]);
-
-        // Top produits
-        $topProducts = SaleItem::whereHas('sale', fn($q) =>
-            $q->where('status', 'completed')
-              ->whereBetween('sold_at', [$from, $to])
-        )
-        ->selectRaw('product_name, SUM(quantity) as qty, SUM(total_ttc) as ca')
-        ->groupBy('product_name')
-        ->orderByDesc('ca')
-        ->limit(10)
-        ->get();
-
-        return compact(
-            'sales', 'totalCa',
-            'totalRemise', 'nbVentes', 'panierMoyen',
-            'byPayment', 'byDay', 'topProducts'
-        );
+        return view('livewire.rapports.rapport-manager', compact('rapport'));
     }
 
-    // ── Rapport Stocks ────────────────────────────
-    private function getStocksData(): array
+    private function rapportVentes(Carbon $from, Carbon $to): array
     {
-        $products = Product::with('category')
-            ->orderBy('stock_quantity')
+        $ventes = Vente::with(['client', 'lignes'])
+            ->where('statut', 'completee')
+            ->whereBetween('vendu_le', [$from, $to])
             ->get();
 
-        $movements = StockMovement::with(['product', 'user'])
-            ->whereBetween('moved_at', [
-                Carbon::parse($this->dateFrom)->startOfDay(),
-                Carbon::parse($this->dateTo)->endOfDay(),
-            ])
-            ->latest('moved_at')
-            ->limit(50)
-            ->get();
-
-        $stockStats = [
-            'total_products' => $products->count(),
-            'total_value'    => $products->sum(fn($p) =>
-                $p->stock_quantity * $p->purchase_price
-            ),
-            'out_of_stock'   => $products->where('stock_quantity', '<=', 0)->count(),
-            'low_stock'      => $products->filter(fn($p) =>
-                $p->stock_quantity > 0 &&
-                $p->stock_quantity <= $p->stock_alert_threshold
-            )->count(),
+        return [
+            'total'         => $ventes->sum('total'),
+            'count'         => $ventes->count(),
+            'panier_moyen'  => $ventes->count() > 0 ? round($ventes->sum('total') / $ventes->count()) : 0,
+            'par_mode'      => $ventes->groupBy('mode_paiement')
+                ->map(fn($g) => ['total' => $g->sum('total'), 'count' => $g->count()]),
+            'par_source'    => $ventes->groupBy('source')
+                ->map(fn($g) => ['total' => $g->sum('total'), 'count' => $g->count()]),
+            'par_jour'      => $ventes->groupBy(fn($v) => $v->vendu_le->format('d/m/Y'))
+                ->map(fn($g) => $g->sum('total')),
         ];
-
-        return compact('products', 'movements', 'stockStats');
     }
 
-    // ── Rapport Comptabilité ──────────────────────
-    private function getComptaData(): array
+    private function rapportPlats(Carbon $from, Carbon $to): array
     {
-        $year = (int) $this->filterYear;
+        $lignes = VenteLigne::with('plat.categorie')
+            ->whereHas('vente', fn($q) =>
+                $q->where('statut', 'completee')->whereBetween('vendu_le', [$from, $to])
+            )
+            ->selectRaw('plat_id, nom_plat, SUM(quantite) as total_qte, SUM(total) as total_ca')
+            ->groupBy('plat_id', 'nom_plat')
+            ->orderByDesc('total_ca')
+            ->get();
 
-        // Données mensuelles
-        $monthly = [];
-        for ($m = 1; $m <= 12; $m++) {
-            $from = Carbon::create($year, $m, 1)->startOfMonth();
-            $to   = Carbon::create($year, $m, 1)->endOfMonth();
-
-            $ca       = Sale::where('status', 'completed')
-                ->whereYear('sold_at', $year)->whereMonth('sold_at', $m)
-                ->sum('total_ttc');
-            $caHt     = Sale::where('status', 'completed')
-                ->whereYear('sold_at', $year)->whereMonth('sold_at', $m)
-                ->sum('subtotal_ht');
-            $achats   = Purchase::whereYear('purchase_date', $year)
-                ->whereMonth('purchase_date', $m)->sum('total_amount');
-            $depenses = Expense::whereYear('expense_date', $year)
-                ->whereMonth('expense_date', $m)->sum('amount');
-            $benefice = $ca - $achats - $depenses;
-
-            $monthly[] = [
-                'mois'     => Carbon::create($year, $m, 1)->translatedFormat('F'),
-                'ca'       => $ca,
-                'achats'   => $achats,
-                'depenses' => $depenses,
-                'benefice' => $benefice,
-            ];
-        }
-
-        // Totaux annuels
-        $annuel = [
-            'ca'       => array_sum(array_column($monthly, 'ca')),
-            'achats'   => array_sum(array_column($monthly, 'achats')),
-            'depenses' => array_sum(array_column($monthly, 'depenses')),
-            'benefice' => array_sum(array_column($monthly, 'benefice')),
+        return [
+            'lignes'         => $lignes,
+            'total_ca'       => $lignes->sum('total_ca'),
+            'total_portions' => $lignes->sum('total_qte'),
+            'par_categorie'  => $lignes->groupBy(fn($l) => $l->plat?->categorie?->nom ?? 'Non catégorisé')
+                ->map(fn($g) => ['ca' => $g->sum('total_ca'), 'qte' => $g->sum('total_qte')]),
         ];
+    }
 
-        return compact('monthly', 'annuel', 'year');
+    private function rapportClients(Carbon $from, Carbon $to): array
+    {
+        $ventes = Vente::with('client')
+            ->where('statut', 'completee')
+            ->whereBetween('vendu_le', [$from, $to])
+            ->get();
+
+        $parClient = $ventes->groupBy('client_id')->map(fn($g) => [
+            'nom'    => $g->first()?->client?->nom ?? 'Client anonyme',
+            'total'  => $g->sum('total'),
+            'count'  => $g->count(),
+        ])->sortByDesc('total');
+
+        return [
+            'par_client'     => $parClient,
+            'total_clients'  => $parClient->count(),
+            'client_top'     => $parClient->first(),
+            'nouveaux'       => Client::whereBetween('created_at', [$from, $to])->count(),
+        ];
+    }
+
+    private function rapportAchats(Carbon $from, Carbon $to): array
+    {
+        $achats = Achat::with(['fournisseur', 'lignes'])
+            ->whereBetween('date_achat', [$from->toDateString(), $to->toDateString()])
+            ->get();
+
+        return [
+            'total'           => $achats->sum('montant_total'),
+            'count'           => $achats->count(),
+            'paye'            => $achats->sum('montant_paye'),
+            'du'              => $achats->sum('montant_du'),
+            'par_fournisseur' => $achats->groupBy('fournisseur_id')
+                ->map(fn($g) => [
+                    'nom'   => $g->first()?->fournisseur?->nom ?? 'Sans fournisseur',
+                    'total' => $g->sum('montant_total'),
+                    'count' => $g->count(),
+                ])->sortByDesc('total'),
+        ];
+    }
+
+    private function rapportTresorerie(Carbon $from, Carbon $to): array
+    {
+        $recettes = Vente::where('statut', 'completee')
+            ->whereBetween('vendu_le', [$from, $to])->sum('total');
+
+        $achats = Achat::whereBetween('date_achat',
+            [$from->toDateString(), $to->toDateString()])->sum('montant_paye');
+
+        $depenses = Depense::whereBetween('date_depense',
+            [$from->toDateString(), $to->toDateString()])->sum('montant');
+
+        return [
+            'recettes' => $recettes,
+            'achats'   => $achats,
+            'depenses' => $depenses,
+            'solde'    => $recettes - $achats - $depenses,
+        ];
     }
 }

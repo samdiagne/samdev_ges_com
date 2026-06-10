@@ -7,10 +7,10 @@
         body { font-family:'DejaVu Sans',Arial,sans-serif; font-size:10px; color:#2D2D2D; }
         .container { padding:25px 30px; }
         .header { display:table; width:100%; margin-bottom:20px;
-                  padding-bottom:12px; border-bottom:3px solid #1E6FBF; }
+                  padding-bottom:12px; border-bottom:3px solid #F27B20; }
         .header-left  { display:table-cell; width:60%; vertical-align:middle; }
         .header-right { display:table-cell; width:40%; vertical-align:middle; text-align:right; }
-        .company-name { font-size:16px; font-weight:bold; color:#1E6FBF; }
+        .company-name { font-size:16px; font-weight:bold; color:#F27B20; }
         .company-info { font-size:9px; color:#666; line-height:1.6; margin-top:3px; }
         .doc-title  { font-size:18px; font-weight:bold; color:#2D2D2D; }
         .doc-period { font-size:10px; color:#666; margin-top:3px; }
@@ -18,9 +18,9 @@
         .stat-box   { display:table-cell; background:#F8F9FC; border-radius:6px;
                       padding:10px 12px; text-align:center; }
         .stat-label { font-size:8px; color:#888; text-transform:uppercase; }
-        .stat-value { font-size:15px; font-weight:bold; color:#1E6FBF; margin-top:2px; }
+        .stat-value { font-size:15px; font-weight:bold; color:#F27B20; margin-top:2px; }
         table { width:100%; border-collapse:collapse; margin-bottom:15px; }
-        thead tr { background:#1E6FBF; color:white; }
+        thead tr { background:#F27B20; color:white; }
         thead th { padding:7px 8px; text-align:left; font-size:9px; font-weight:bold;
                    text-transform:uppercase; }
         thead th.right { text-align:right; }
@@ -28,7 +28,7 @@
         tbody tr:nth-child(even) { background:#F8F9FC; }
         tbody td { padding:6px 8px; font-size:9px; }
         tbody td.right { text-align:right; }
-        tfoot tr { background:#1E6FBF; color:white; }
+        tfoot tr { background:#F27B20; color:white; }
         tfoot td { padding:7px 8px; font-size:9px; font-weight:bold; }
         tfoot td.right { text-align:right; }
         .footer { margin-top:15px; padding-top:8px; border-top:1px solid #e0e0e0;
@@ -49,10 +49,10 @@
                 <img src="{{ $logoBase64 }}" 
                     style="height:95px; width:auto; max-width:220px;"/>
             @endif
-            <div class="company-name">{{ $settings->name }}</div>
+            <div class="company-name">{{ $parametres->nom }}</div>
             <div class="company-info">
-                @if($settings->ninea) NINEA : {{ $settings->ninea }} &nbsp;@endif
-                @if($settings->rc) RC : {{ $settings->rc }}@endif
+                @if($parametres->ninea) NINEA : {{ $parametres->ninea }} &nbsp;@endif
+                @if($parametres->rc) RC : {{ $parametres->rc }}@endif
             </div>
         </div>
         <div class="header-right">
@@ -78,19 +78,19 @@
         </div>
         <div class="stat-box" style="margin-right:6px;">
             <div class="stat-label">Panier moyen</div>
-            <div class="stat-value">{{ number_format($stats['avg_basket'], 0, ',', ' ') }} FCFA</div>
+            <div class="stat-value">{{ number_format($stats['panier_moyen'], 0, ',', ' ') }} FCFA</div>
         </div>
         <div class="stat-box">
             <div class="stat-label">Nb articles</div>
             <div class="stat-value">
-                {{ $sales->sum(fn($s) => $s->items->count()) }}
+                {{ $ventes->sum(fn($v) => $v->lignes->count()) }}
             </div>
         </div>
     </div>
 
     {{-- Répartition paiements --}}
     <div style="margin-bottom:15px;">
-        <p style="font-size:9px; font-weight:bold; color:#1E6FBF; margin-bottom:6px;
+        <p style="font-size:9px; font-weight:bold; color:#F27B20; margin-bottom:6px;
                   text-transform:uppercase; letter-spacing:0.5px;">
             Répartition par mode de paiement
         </p>
@@ -123,16 +123,16 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($sales as $sale)
+            @forelse($ventes as $vente)
                 <tr>
-                    <td><strong>{{ $sale->reference }}</strong></td>
-                    <td>{{ $sale->customer?->name ?? 'Anonyme' }}</td>
-                    <td>{{ $sale->sold_at->format('d/m/Y H:i') }}</td>
-                    <td style="text-transform:uppercase;">{{ $sale->payment_method }}</td>
+                    <td><strong>{{ $vente->reference }}</strong></td>
+                    <td>{{ $vente->client?->nom ?? 'Anonyme' }}</td>
+                    <td>{{ $vente->vendu_le->format('d/m/Y H:i') }}</td>
+                    <td style="text-transform:uppercase;">{{ $vente->mode_paiement }}</td>
                     <td style="color:#666;">
-                        {{ $sale->items->map(fn($i) => $i->product_name . ' x' . $i->quantity)->join(', ') }}
+                        {{ $vente->lignes->map(fn($l) => $l->nom_plat . ' x' . $l->quantite)->join(', ') }}
                     </td>
-                    <td class="right"><strong>{{ number_format($sale->total_ttc, 0, ',', ' ') }}</strong></td>
+                    <td class="right"><strong>{{ number_format($vente->total, 0, ',', ' ') }}</strong></td>
                 </tr>
             @empty
                 <tr>
@@ -142,7 +142,7 @@
                 </tr>
             @endforelse
         </tbody>
-        @if($sales->count() > 0)
+        @if($ventes->count() > 0)
             <tfoot>
                 <tr>
                     <td colspan="5">TOTAL — {{ $stats['count'] }} vente(s)</td>
@@ -153,8 +153,8 @@
     </table>
 
     <div class="footer">
-        {{ $settings->name }}
-        @if($settings->ninea) · NINEA : {{ $settings->ninea }}@endif
+        {{ $parametres->nom }}
+        @if($parametres->ninea) · NINEA : {{ $parametres->ninea }}@endif
         · Document généré le {{ now()->format('d/m/Y à H:i') }}
     </div>
 </div>

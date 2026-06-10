@@ -6,12 +6,12 @@
 
     <h1 class="text-xl sm:text-2xl font-bold text-dark mb-6 sm:mb-8">Mon Panier</h1>
 
-    @if(count($cart) > 0)
+    @if(count($panier) > 0)
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
 
             {{-- ── Articles ── --}}
             <div class="lg:col-span-2 space-y-3 sm:space-y-4">
-                @foreach($cart as $key => $item)
+                @foreach($panier as $key => $item)
                     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5">
                         <div class="flex items-start gap-3 sm:gap-5">
 
@@ -36,14 +36,14 @@
                             <div class="flex-1 min-w-0">
                                 {{-- Nom + Supprimer --}}
                                 <div class="flex items-start justify-between gap-2">
-                                    <a href="{{ route('shop.produit', $item['slug']) }}"
+                                    <a href="{{ route('shop.plat', $item['slug']) }}"
                                        class="text-sm font-semibold text-dark hover:text-primary
                                               transition-colors line-clamp-2 flex-1">
-                                        {{ $item['name'] }}
+                                        {{ $item['nom'] }}
                                     </a>
                                     <form action="{{ route('shop.panier.remove') }}" method="POST" class="flex-shrink-0">
                                         @csrf
-                                        <input type="hidden" name="product_id" value="{{ $item['product_id'] }}"/>
+                                        <input type="hidden" name="plat_id" value="{{ $item['plat_id'] }}"/>
                                         <button type="submit"
                                                 class="w-7 h-7 flex items-center justify-center
                                                        text-gray-300 hover:text-red-500 transition-colors">
@@ -57,7 +57,7 @@
 
                                 {{-- Prix unit --}}
                                 <p class="text-xs text-gray-400 mt-0.5">
-                                    {{ number_format($item['price'], 0, ',', ' ') }} FCFA / unité
+                                    {{ number_format($item['prix'], 0, ',', ' ') }} FCFA / unité
                                 </p>
 
                                 {{-- Quantité + Sous-total --}}
@@ -65,17 +65,17 @@
                                     <form action="{{ route('shop.panier.update') }}"
                                           method="POST" class="flex items-center">
                                         @csrf
-                                        <input type="hidden" name="product_id" value="{{ $item['product_id'] }}"/>
+                                        <input type="hidden" name="plat_id" value="{{ $item['plat_id'] }}"/>
                                         <div class="flex items-center gap-1.5 bg-gray-100 rounded-xl p-1">
-                                            <button type="submit" name="quantity" value="{{ $item['quantity'] - 1 }}"
+                                            <button type="submit" name="quantite" value="{{ $item['quantite'] - 1 }}"
                                                     class="w-7 h-7 bg-white rounded-lg flex items-center justify-center
                                                            font-bold shadow text-dark hover:bg-gray-50 transition-colors text-sm">
                                                 −
                                             </button>
                                             <span class="w-6 text-center text-sm font-bold">
-                                                {{ $item['quantity'] }}
+                                                {{ $item['quantite'] }}
                                             </span>
-                                            <button type="submit" name="quantity" value="{{ $item['quantity'] + 1 }}"
+                                            <button type="submit" name="quantite" value="{{ $item['quantite'] + 1 }}"
                                                     class="w-7 h-7 bg-white rounded-lg flex items-center justify-center
                                                            font-bold shadow text-dark hover:bg-gray-50 transition-colors text-sm">
                                                 +
@@ -84,7 +84,7 @@
                                     </form>
 
                                     <p class="text-sm font-bold text-dark">
-                                        {{ number_format($item['price'] * $item['quantity'], 0, ',', ' ') }}
+                                        {{ number_format($item['prix'] * $item['quantite'], 0, ',', ' ') }}
                                         <span class="text-xs font-normal text-gray-400">FCFA</span>
                                     </p>
                                 </div>
@@ -110,17 +110,17 @@
                     </h2>
 
                     <div class="space-y-3 mb-5">
-                        @foreach($cart as $item)
+                        @foreach($panier as $item)
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600 truncate max-w-36">
-                                    {{ $item['name'] }}
+                                    {{ $item['nom'] }}
                                     <span class="text-gray-400">
-                                        ×{{ $item['quantity'] }}
+                                        ×{{ $item['quantite'] }}
                                     </span>
                                 </span>
                                 <span class="font-medium flex-shrink-0 ml-2">
                                     {{ number_format(
-                                        $item['price'] * $item['quantity'],
+                                        $item['prix'] * $item['quantite'],
                                         0, ',', ' ') }}
                                 </span>
                             </div>
@@ -144,7 +144,7 @@
                               py-3.5 rounded-2xl font-bold text-sm text-white
                               transition-all shadow-lg shadow-primary/25
                               hover:scale-[1.02]"
-                       style="background-color: #1E6FBF;">
+                       style="background-color: #F27B20;">
                         Passer la commande →
                     </a>
 
@@ -157,19 +157,19 @@
 
                     {{-- Bouton WhatsApp --}}
                     @php
-                        $settings = App\Models\CompanySetting::getSettings();
-                        $wa = preg_replace('/[^0-9]/', '', $settings->whatsapp ?? $settings->phone ?? '');
+                        $parametres = App\Models\Parametre::first();
+                        $wa = preg_replace('/[^0-9]/', '', $parametres->whatsapp ?? $parametres->telephone ?? '');
                     @endphp
 
                     @if($wa)
-                        @if(count($cart) > 0)
-                            {{-- Panier avec produits → message avec détails commande --}}
+                        @if(count($panier) > 0)
+                            {{-- Panier avec plats → message avec détails commande --}}
                             @php
-                                $msg  = "Bonjour *{$settings->name}* 👋\n\n";
+                                $msg  = "Bonjour *{$parametres->nom}* 👋\n\n";
                                 $msg .= "Je souhaite passer une commande :\n\n";
-                                foreach ($cart as $item) {
-                                    $msg .= "• *{$item['name']}* x{$item['quantity']} — "
-                                        . number_format($item['price'] * $item['quantity'], 0, ',', ' ')
+                                foreach ($panier as $item) {
+                                    $msg .= "• *{$item['nom']}* x{$item['quantite']} — "
+                                        . number_format($item['prix'] * $item['quantite'], 0, ',', ' ')
                                         . " FCFA\n";
                                 }
                                 $msg .= "\n💰 *Total : " . number_format($total, 0, ',', ' ') . " FCFA*\n\n";
@@ -211,31 +211,31 @@
                                     </p>
 
                                     @php
-                                        $wa = preg_replace('/[^0-9]/', '', $settings->whatsapp ?? $settings->phone ?? '');
+                                        $wa = preg_replace('/[^0-9]/', '', $parametres->whatsapp ?? $parametres->telephone ?? '');
                                         $sujets = [
                                             [
                                                 'label' => '🛒 Passer une commande',
-                                                'msg'   => "Bonjour *{$settings->name}* 👋\nJe souhaite passer une commande. Pouvez-vous m'aider ?",
+                                                'msg'   => "Bonjour *{$parametres->nom}* 👋\nJe souhaite passer une commande. Pouvez-vous m'aider ?",
                                             ],
                                             [
-                                                'label' => '📦 Disponibilité d\'un produit',
-                                                'msg'   => "Bonjour *{$settings->name}* 👋\nJe voudrais savoir si un produit est disponible en stock.",
+                                                'label' => '📦 Disponibilité d\'un plat',
+                                                'msg'   => "Bonjour *{$parametres->nom}* 👋\nJe voudrais savoir si un plat est disponible.",
                                             ],
                                             [
                                                 'label' => '💰 Demande de prix',
-                                                'msg'   => "Bonjour *{$settings->name}* 👋\nJe souhaite avoir des informations sur vos tarifs.",
+                                                'msg'   => "Bonjour *{$parametres->nom}* 👋\nJe souhaite avoir des informations sur vos tarifs.",
                                             ],
                                             [
                                                 'label' => '🚚 Infos livraison',
-                                                'msg'   => "Bonjour *{$settings->name}* 👋\nJe voudrais des informations sur vos délais et frais de livraison.",
+                                                'msg'   => "Bonjour *{$parametres->nom}* 👋\nJe voudrais des informations sur vos délais et frais de livraison.",
                                             ],
                                             [
                                                 'label' => '🔧 Service après-vente',
-                                                'msg'   => "Bonjour *{$settings->name}* 👋\nJ'ai besoin d'assistance pour un produit acheté.",
+                                                'msg'   => "Bonjour *{$parametres->nom}* 👋\nJ'ai besoin d'assistance concernant ma commande.",
                                             ],
                                             [
                                                 'label' => '❓ Autre question',
-                                                'msg'   => "Bonjour *{$settings->name}* 👋\nJ'ai une question à vous poser.",
+                                                'msg'   => "Bonjour *{$parametres->nom}* 👋\nJ'ai une question à vous poser.",
                                             ],
                                         ];
                                     @endphp
@@ -292,7 +292,7 @@
             </div>
             <h2 class="text-lg font-bold text-dark mb-2">Votre panier est vide</h2>
             <p class="text-sm text-gray-400 mb-6">
-                Découvrez nos produits et ajoutez-les à votre panier.
+                Découvrez nos plats et ajoutez-les à votre panier.
             </p>
             <a href="{{ route('shop.catalogue') }}"
                class="inline-flex items-center gap-2 bg-primary text-white

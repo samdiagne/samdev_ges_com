@@ -3,225 +3,178 @@
 namespace App\Livewire\Caisse;
 
 use Livewire\Component;
-use App\Models\Purchase;
-use App\Models\PurchaseItem;
-use App\Models\Supplier;
+use App\Models\Achat;
+use App\Models\AchatLigne;
+use App\Models\Fournisseur;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class AchatForm extends Component
 {
-    public bool $isEditing = false;
-    public ?int $purchaseId = null;
+    public bool   $isEditing   = false;
+    public ?int   $achatId     = null;
 
-    // Infos achat
-    public ?int $supplier_id = null;
-    public string $purchase_date = '';
-    public string $status = 'received';
-    public string $payment_method = 'cash';
-    public ?float $amount_paid = 0;
-    public string $notes = '';
+    public ?int   $fournisseur_id   = null;
+    public string $date_achat       = '';
+    public string $statut           = 'recu';
+    public string $mode_paiement    = 'cash';
+    public ?float $montant_paye     = 0;
+    public string $notes            = '';
 
-    // Lignes
-    public array $items = [];
-
-    // Totaux
-    public float $totalAmount = 0;
-    public float $amountDue = 0;
+    public array  $lignes           = [];
+    public float  $montantTotal     = 0;
+    public float  $montantDu        = 0;
 
     protected function rules(): array
     {
         return [
-            'supplier_id' => 'nullable|exists:suppliers,id',
-            'purchase_date' => 'required|date',
-            'status' => 'required|in:ordered,received,partial,cancelled',
-            'payment_method' => 'nullable|string',
-            'amount_paid' => 'nullable|numeric|min:0',
-
-            'items' => 'required|array|min:1',
-            'items.*.description' => 'required|string|max:255',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.unit_price' => 'required|numeric|min:0',
+            'fournisseur_id'            => 'nullable|exists:fournisseurs,id',
+            'date_achat'                => 'required|date',
+            'statut'                    => 'required|in:commande,recu,partiel,annule',
+            'mode_paiement'             => 'nullable|string',
+            'montant_paye'              => 'nullable|numeric|min:0',
+            'lignes'                    => 'required|array|min:1',
+            'lignes.*.description'      => 'required|string|max:255',
+            'lignes.*.quantity'         => 'required|integer|min:1',
+            'lignes.*.unit_price'       => 'required|numeric|min:0',
         ];
     }
 
     protected $messages = [
-        'purchase_date.required' => 'La date d\'achat est obligatoire.',
-        'items.required' => 'Ajoutez au moins une ligne.',
-        'items.min' => 'Ajoutez au moins une ligne.',
-        'items.*.description.required' => 'La description est obligatoire.',
-        'items.*.quantity.required' => 'La quantité est obligatoire.',
-        'items.*.unit_price.required' => 'Le montant est obligatoire.',
+        'date_achat.required'           => 'La date d\'achat est obligatoire.',
+        'lignes.required'               => 'Ajoutez au moins une ligne.',
+        'lignes.min'                    => 'Ajoutez au moins une ligne.',
+        'lignes.*.description.required' => 'La description est obligatoire.',
+        'lignes.*.quantity.required'    => 'La quantité est obligatoire.',
+        'lignes.*.unit_price.required'  => 'Le montant est obligatoire.',
     ];
 
-    public function mount(?int $purchaseId = null): void
+    public function mount(?int $achatId = null): void
     {
-        $this->purchase_date = now()->format('Y-m-d');
+        $this->date_achat = now()->format('Y-m-d');
 
-        if ($purchaseId) {
+        if ($achatId) {
             $this->isEditing = true;
-            $this->purchaseId = $purchaseId;
-            $this->loadPurchase($purchaseId);
+            $this->achatId   = $achatId;
+            $this->chargerAchat($achatId);
         } else {
-            $this->addItem();
+            $this->addLine();
         }
     }
 
-    private function loadPurchase(int $id): void
+    private function chargerAchat(int $id): void
     {
-        $purchase = Purchase::with('items')->findOrFail($id);
+        $achat = Achat::with('lignes')->findOrFail($id);
 
-        $this->supplier_id = $purchase->supplier_id;
-        $this->purchase_date = $purchase->purchase_date->format('Y-m-d');
-        $this->status = $purchase->status;
-        $this->payment_method = $purchase->payment_method ?? 'cash';
-        $this->amount_paid = (float) $purchase->amount_paid;
-        $this->notes = $purchase->notes ?? '';
+        $this->fournisseur_id = $achat->fournisseur_id;
+        $this->date_achat     = $achat->date_achat->format('Y-m-d');
+        $this->statut         = $achat->statut;
+        $this->mode_paiement  = $achat->mode_paiement ?? 'cash';
+        $this->montant_paye   = (float) $achat->montant_paye;
+        $this->notes          = $achat->notes ?? '';
 
-        $this->items = $purchase->items->map(function ($item) {
-            return [
-                'description' => $item->description,
-                'quantity' => $item->quantity,
+        $this->lignes = $achat->lignes->map(fn($l) => [
+            'description' => $l->description,
+            'quantity'    => $l->quantite,
+            'unit'        => $l->unite ?? '',
+            'unit_price'  => (float) $l->total,
+        ])->toArray();
 
-                // le montant est stocké ici
-                'unit_price' => (float) $item->total_price,
-            ];
-        })->toArray();
-
-        $this->recalculateTotals();
+        $this->recalcTotals();
     }
 
-    public function addItem(): void
+    public function addLine(): void
     {
-        $this->items[] = [
+        $this->lignes[] = [
             'description' => '',
-            'quantity' => 1,
-            'unit_price' => 0,
+            'quantity'    => 1,
+            'unit'        => '',
+            'unit_price'  => 0,
         ];
     }
 
-    public function updateItem(int $index, string $field, $value): void
+    public function updateLine(int $index, string $champ, $valeur): void
     {
-        if ($field === 'quantity') {
-            $this->items[$index]['quantity'] = max(1, (int) $value);
-        }
-
-        if ($field === 'unit_price') {
-            $this->items[$index]['unit_price'] = max(0, (float) $value);
-        }
-
-        if ($field === 'description') {
-            $this->items[$index]['description'] = $value;
-        }
-
-        $this->recalculateTotals();
+        if ($champ === 'quantity')    $this->lignes[$index]['quantity']    = max(1, (int) $valeur);
+        if ($champ === 'unit_price')  $this->lignes[$index]['unit_price']  = max(0, (float) $valeur);
+        if ($champ === 'description') $this->lignes[$index]['description'] = $valeur;
+        if ($champ === 'unit')        $this->lignes[$index]['unit']        = $valeur;
+        $this->recalcTotals();
     }
 
-    public function removeItem(int $index): void
+    public function removeLine(int $index): void
     {
-        array_splice($this->items, $index, 1);
-
-        if (empty($this->items)) {
-            $this->addItem();
-        }
-
-        $this->items = array_values($this->items);
-
-        $this->recalculateTotals();
+        array_splice($this->lignes, $index, 1);
+        if (empty($this->lignes)) $this->addLine();
+        $this->lignes = array_values($this->lignes);
+        $this->recalcTotals();
     }
 
-    public function recalculateTotals(): void
+    public function recalcTotals(): void
     {
-        $this->totalAmount = round(
-            array_sum(array_column($this->items, 'unit_price')),
-            2
-        );
-
-        $this->amountDue = round(
-            $this->totalAmount - ($this->amount_paid ?? 0),
-            2
-        );
+        $this->montantTotal = round(array_sum(array_column($this->lignes, 'unit_price')), 2);
+        $this->montantDu    = round($this->montantTotal - ($this->montant_paye ?? 0), 2);
     }
 
-    public function updatedAmountPaid(): void
-    {
-        $this->recalculateTotals();
-    }
+    public function updatedMontantPaye(): void { $this->recalcTotals(); }
 
     public function save(): void
     {
         $this->validate();
 
         DB::transaction(function () {
-
             $data = [
-                'supplier_id' => $this->supplier_id,
+                'fournisseur_id' => $this->fournisseur_id,
                 'user_id' => Auth::id(),
-                'status' => $this->status,
-                'total_amount' => $this->totalAmount,
-                'amount_paid' => $this->amount_paid ?? 0,
-                'amount_due' => max(0, $this->amountDue),
-                'payment_method' => $this->payment_method ?: null,
-                'purchase_date' => $this->purchase_date,
-                'notes' => $this->notes ?: null,
+                'statut'         => $this->statut,
+                'montant_total'  => $this->montantTotal,
+                'montant_paye'   => $this->montant_paye ?? 0,
+                'montant_du'     => max(0, $this->montantDu),
+                'mode_paiement'  => $this->mode_paiement ?: null,
+                'date_achat'     => $this->date_achat,
+                'notes'          => $this->notes ?: null,
             ];
 
             if ($this->isEditing) {
-
-                $purchase = Purchase::findOrFail($this->purchaseId);
-
-                $purchase->update($data);
-
-                $purchase->items()->delete();
-
+                $achat = Achat::findOrFail($this->achatId);
+                $achat->update($data);
+                $achat->lignes()->delete();
             } else {
-
-                $data['reference'] = $this->generateReference();
-
-                $purchase = Purchase::create($data);
+                $data['reference'] = $this->generateRef();
+                $achat             = Achat::create($data);
             }
 
-            foreach ($this->items as $item) {
-
-                PurchaseItem::create([
-                    'purchase_id' => $purchase->id,
-                    'description' => $item['description'],
-                    'quantity' => $item['quantity'],
-
-                    // montant saisi directement
-                    'unit_price' => $item['unit_price'],
-                    'total_price' => $item['unit_price'],
+            foreach ($this->lignes as $ligne) {
+                AchatLigne::create([
+                    'achat_id'      => $achat->id,
+                    'description'   => $ligne['description'],
+                    'quantite'      => $ligne['quantity'],
+                    'unite'         => $ligne['unit'] ?: null,
+                    'prix_unitaire' => $ligne['unit_price'],
+                    'total'         => $ligne['unit_price'],
                 ]);
             }
         });
 
-        session()->flash(
-            'success',
-            $this->isEditing
-                ? 'Achat modifié avec succès !'
-                : 'Achat enregistré avec succès !'
+        session()->flash('success', $this->isEditing
+            ? 'Achat modifié avec succès !'
+            : 'Achat enregistré avec succès !'
         );
 
         $this->redirect(route('caisse.achats.index'));
     }
 
-    private function generateReference(): string
+    private function generateRef(): string
     {
-        $last = Purchase::withTrashed()->latest()->first();
-
-        $num = $last
-            ? intval(substr($last->reference, -4)) + 1
-            : 1;
-
+        $dernier = Achat::withTrashed()->latest()->first();
+        $num     = $dernier ? intval(substr($dernier->reference, -4)) + 1 : 1;
         return 'ACH-' . date('Y') . '-' . str_pad($num, 4, '0', STR_PAD_LEFT);
     }
 
     public function render()
     {
         return view('livewire.caisse.achat-form', [
-            'suppliers' => Supplier::where('is_active', true)
-                ->orderBy('name')
-                ->get(),
+            'fournisseurs' => Fournisseur::where('est_actif', true)->orderBy('nom')->get(),
         ]);
     }
 }

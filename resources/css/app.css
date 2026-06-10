@@ -28,54 +28,55 @@ nav { -ms-overflow-style: none; scrollbar-width: none; }
 /* ─────────────────────────────────────────────
    DARK MODE — Dashboard
    Appliqué via html.dark (class strategy)
+   Palette : stone-based warm darks
    ───────────────────────────────────────────── */
 
 html.dark { color-scheme: dark; }
 
 /* Corps & fond principal */
 html.dark body,
-html.dark .bg-light         { background-color: #0f172a !important; }
+html.dark .bg-light         { background-color: #0C0A09 !important; }
 
 /* Cards, panels, topbar */
-html.dark .bg-white         { background-color: #1e293b !important; }
+html.dark .bg-white         { background-color: #1C1917 !important; }
 
 /* Fonds subtils */
-html.dark .bg-gray-50       { background-color: #0f172a !important; }
-html.dark .bg-gray-100      { background-color: #1e293b !important; }
-html.dark .bg-gray-200      { background-color: #334155 !important; }
+html.dark .bg-gray-50       { background-color: #0C0A09 !important; }
+html.dark .bg-gray-100      { background-color: #1C1917 !important; }
+html.dark .bg-gray-200      { background-color: #292524 !important; }
 
 /* Bordures */
-html.dark .border-gray-50   { border-color: #1e293b !important; }
-html.dark .border-gray-100  { border-color: #334155 !important; }
-html.dark .border-gray-200  { border-color: #475569 !important; }
-html.dark .divide-gray-50   > * + * { border-color: #1e293b !important; }
+html.dark .border-gray-50   { border-color: #1C1917 !important; }
+html.dark .border-gray-100  { border-color: #292524 !important; }
+html.dark .border-gray-200  { border-color: #44403C !important; }
+html.dark .divide-gray-50   > * + * { border-color: #1C1917 !important; }
 
 /* Texte */
-html.dark .text-dark        { color: #f1f5f9 !important; }
-html.dark .text-gray-700    { color: #cbd5e1 !important; }
-html.dark .text-gray-600    { color: #94a3b8 !important; }
-html.dark .text-gray-500    { color: #64748b !important; }
-html.dark .text-gray-400    { color: #475569 !important; }
+html.dark .text-dark        { color: #FAFAF9 !important; }
+html.dark .text-gray-700    { color: #D6D3D1 !important; }
+html.dark .text-gray-600    { color: #A8A29E !important; }
+html.dark .text-gray-500    { color: #78716C !important; }
+html.dark .text-gray-400    { color: #57534E !important; }
 
 /* Inputs & selects */
 html.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 html.dark select,
 html.dark textarea {
-    background-color: #0f172a !important;
-    border-color: #334155 !important;
-    color: #f1f5f9 !important;
+    background-color: #0C0A09 !important;
+    border-color: #292524 !important;
+    color: #FAFAF9 !important;
 }
 html.dark input::placeholder,
-html.dark textarea::placeholder { color: #64748b !important; }
+html.dark textarea::placeholder { color: #78716C !important; }
 
 /* Hover states */
-html.dark .hover\:bg-gray-50:hover   { background-color: #1e293b !important; }
-html.dark .hover\:bg-gray-100:hover  { background-color: #334155 !important; }
-html.dark .hover\:bg-primary\/5:hover { background-color: rgba(30,111,191,.15) !important; }
+html.dark .hover\:bg-gray-50:hover   { background-color: #1C1917 !important; }
+html.dark .hover\:bg-gray-100:hover  { background-color: #292524 !important; }
+html.dark .hover\:bg-primary\/5:hover { background-color: rgba(242,123,32,.15) !important; }
 
 /* Table rows */
 html.dark tr:hover td,
-html.dark .hover\:bg-gray-50\/50:hover { background-color: #1e293b !important; }
+html.dark .hover\:bg-gray-50\/50:hover { background-color: #1C1917 !important; }
 
 /* Badges status — conserver leurs couleurs, juste légèrement ajustées */
 html.dark .bg-green-50  { background-color: rgba(22,163,74,.15)  !important; }
@@ -93,13 +94,13 @@ html.dark .border-blue-200   { border-color: rgba(37,99,235,.3)  !important; }
 html.dark .border-orange-200 { border-color: rgba(234,88,12,.3)  !important; }
 
 /* Ombres */
-html.dark .shadow-sm  { box-shadow: 0 1px 2px rgba(0,0,0,.4) !important; }
-html.dark .shadow-md  { box-shadow: 0 4px 6px rgba(0,0,0,.5) !important; }
-html.dark .shadow-xl  { box-shadow: 0 20px 25px rgba(0,0,0,.6) !important; }
+html.dark .shadow-sm  { box-shadow: 0 1px 2px rgba(0,0,0,.5) !important; }
+html.dark .shadow-md  { box-shadow: 0 4px 6px rgba(0,0,0,.6) !important; }
+html.dark .shadow-xl  { box-shadow: 0 20px 25px rgba(0,0,0,.7) !important; }
 
 /* Dropdown / overlay menus */
 html.dark [x-show] .bg-white,
-html.dark .dropdown-menu { background-color: #1e293b !important; }
+html.dark .dropdown-menu { background-color: #1C1917 !important; }
 
 /* Transition douce */
 html.dark *, * {

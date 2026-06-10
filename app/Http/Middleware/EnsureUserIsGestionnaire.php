@@ -9,10 +9,10 @@ class EnsureUserIsGestionnaire
 {
     public function handle(Request $request, Closure $next)
     {
-        if (!auth()->check() || 
-            (!auth()->user()->isAdmin() && !auth()->user()->isGestionnaire())) {
+        if (! auth()->check() || ! auth()->user()->isGestionnaire()) {
             abort(403, 'Accès réservé aux gestionnaires.');
         }
+
         return $next($request);
     }
 }

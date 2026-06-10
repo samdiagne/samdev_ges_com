@@ -30,7 +30,7 @@ class DevisManager extends Component
 
     public function markAsSent(int $id): void
     {
-        Quote::where('id', $id)->update(['status' => 'sent', 'sent_whatsapp' => true]);
+        Quote::where('id', $id)->update(['status' => 'sent', 'envoye_whatsapp' => true]);
     }
 
     public function confirmDelete(int $id): void
@@ -51,7 +51,7 @@ class DevisManager extends Component
     {
         $quote               = Quote::findOrFail($id);
         $this->convertingId  = $id;
-        $this->amountPaid    = (float) $quote->total_ttc;
+        $this->amountPaid    = (float) $quote->total;
         $this->paymentMethod = 'cash';
         $this->showConvertModal = true;
     }
@@ -60,7 +60,7 @@ class DevisManager extends Component
     {
         $quote = Quote::with('items')->findOrFail($this->convertingId);
 
-        if ($this->amountPaid < $quote->total_ttc) {
+        if ($this->amountPaid < $quote->total) {
             $this->addError('amountPaid', 'Montant insuffisant !');
             return;
         }
@@ -78,31 +78,31 @@ class DevisManager extends Component
 
     public function render()
     {
-        $quotes = Quote::with(['customer', 'user'])
+        $quotes = Quote::with(['client', 'user'])
             ->when($this->search, fn($q) =>
                 $q->where('reference', 'like', '%' . $this->search . '%')
-                  ->orWhere('customer_name', 'like', '%' . $this->search . '%')
-                  ->orWhereHas('customer', fn($q2) =>
-                      $q2->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('client_nom', 'like', '%' . $this->search . '%')
+                  ->orWhereHas('client', fn($q2) =>
+                      $q2->where('nom', 'like', '%' . $this->search . '%')
                   )
             )
             ->when($this->filterStatus, fn($q) =>
                 $q->where('status', $this->filterStatus)
             )
             ->when($this->filterMonth, fn($q) =>
-                $q->whereYear('quote_date', substr($this->filterMonth, 0, 4))
-                  ->whereMonth('quote_date', substr($this->filterMonth, 5, 2))
+                $q->whereYear('date_devis', substr($this->filterMonth, 0, 4))
+                  ->whereMonth('date_devis', substr($this->filterMonth, 5, 2))
             )
-            ->latest('quote_date')
+            ->latest('date_devis')
             ->paginate(15);
 
         $stats = [
-            'total'    => Quote::whereMonth('quote_date', now()->month)->count(),
+            'total'    => Quote::whereMonth('date_devis', now()->month)->count(),
             'draft'    => Quote::where('status', 'draft')->count(),
             'sent'     => Quote::where('status', 'sent')->count(),
             'accepted' => Quote::where('status', 'accepted')->count(),
             'ca'       => Quote::where('status', 'accepted')
-                ->whereMonth('quote_date', now()->month)->sum('total_ttc'),
+                ->whereMonth('date_devis', now()->month)->sum('total'),
         ];
 
         return view('livewire.devis.devis-manager', compact('quotes', 'stats'));

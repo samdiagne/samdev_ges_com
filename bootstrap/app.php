@@ -22,8 +22,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin'        => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'gestionnaire' => \App\Http\Middleware\EnsureUserIsGestionnaire::class,
             'active'       => \App\Http\Middleware\EnsureUserIsActive::class,
-            'role'         => \Spatie\Permission\Middleware\RoleMiddleware::class,
-            'permission'   => \Spatie\Permission\Middleware\PermissionMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

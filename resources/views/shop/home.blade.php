@@ -1,17 +1,17 @@
 @extends('layouts.shop')
 
-@section('title', $settings->name . ' — Ordinateurs Portables & Accessoires Informatique Dakar')
-@section('description', 'Achetez vos ordinateurs portables et accessoires informatiques à Dakar. Livraison rapide, qualité garantie.')
+@section('title', $parametres->nom . ' — Restaurant & Livraison à Dakar')
+@section('description', 'Découvrez nos plats faits maison à Dakar. Commande en ligne, livraison rapide, qualité garantie.')
 
 @section('content')
 
 {{-- ── HERO ───────────────────────────────── --}}
 <section class="relative overflow-hidden -mt-1"
-         style="background: linear-gradient(135deg, #0F3A6B 0%, #1E6FBF 55%, #2E8BE0 100%);">
+         style="background: linear-gradient(135deg, #B8510D 0%, #F27B20 55%, #FF9F43 100%);">
 
     {{-- Cercles décoratifs d'arrière-plan --}}
     <div class="absolute -top-20 -right-20 w-96 h-96 rounded-full pointer-events-none"
-         style="background: radial-gradient(circle, rgba(77,184,255,0.18), transparent 70%);"></div>
+         style="background: radial-gradient(circle, rgba(242,123,32,0.18), transparent 70%);"></div>
     <div class="absolute -bottom-10 -left-16 w-72 h-72 rounded-full pointer-events-none"
          style="background: radial-gradient(circle, rgba(255,255,255,0.08), transparent 70%);"></div>
 
@@ -28,13 +28,13 @@
                 </div>
 
                 <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-[1.1] mb-5">
-                    La Tech à<br/>
-                    <span style="color: #F5A800;">Votre Portée</span>
+                    Le Goût à<br/>
+                    <span style="color: #2DB667;">Votre Porte</span>
                 </h1>
 
                 <p class="text-white/75 text-base sm:text-lg mb-8 leading-relaxed max-w-md mx-auto lg:mx-0">
-                    Ordinateurs portables, accessoires informatiques —
-                    qualité garantie, prix compétitifs, livraison rapide à Dakar.
+                    Plats faits maison, saveurs authentiques —
+                    qualité garantie, commande en ligne, livraison rapide à Dakar.
                 </p>
 
                 {{-- CTA --}}
@@ -43,8 +43,8 @@
                        class="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl
                               font-bold text-sm transition-all shadow-xl
                               hover:scale-105 hover:brightness-110 active:scale-100"
-                       style="background-color: #F5A800; color: white;">
-                        🛒 Voir les produits
+                       style="background-color: #2DB667; color: white;">
+                        🛒 Voir le menu
                     </a>
 
                     <a href="{{ route('shop.contact') }}"
@@ -85,13 +85,13 @@
                                 rounded-[2rem] bg-white/10 backdrop-blur-xl border border-white/20
                                 flex items-center justify-center overflow-hidden shadow-2xl relative">
 
-                        <div class="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-blue-900/20 pointer-events-none"></div>
+                        <div class="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-orange-900/20 pointer-events-none"></div>
 
-                        @php $featuredProduct = $featured->first(); @endphp
+                        @php $platVedette = $misEnAvant->first(); @endphp
 
-                        @if($featuredProduct?->main_image)
-                            <img src="{{ Storage::url($featuredProduct->main_image) }}"
-                                 alt="{{ $featuredProduct->name }}"
+                        @if($platVedette?->image_principale)
+                            <img src="{{ Storage::url($platVedette->image_principale) }}"
+                                 alt="{{ $platVedette->nom }}"
                                  class="relative z-10 w-4/5 h-4/5 object-contain
                                         drop-shadow-[0_20px_40px_rgba(0,0,0,0.35)]
                                         hover:scale-105 transition-transform duration-500
@@ -117,7 +117,7 @@
                     <div class="absolute -bottom-4 -left-3 lg:-left-5 bg-white rounded-2xl shadow-xl
                                 px-3 py-1.5 flex items-center gap-1.5">
                         <span>🔥</span>
-                        <span class="text-xs font-bold" style="color: #F5A800;">Meilleurs prix</span>
+                        <span class="text-xs font-bold" style="color: #2DB667;">Meilleurs prix</span>
                     </div>
 
                 </div>
@@ -178,10 +178,10 @@
                 </div>
                 <p class="text-xs font-semibold text-dark group-hover:text-primary
                           transition-colors">
-                    {{ $category->name }}
+                    {{ $category->nom }}
                 </p>
                 <p class="text-xs text-gray-400 mt-0.5">
-                    {{ $category->active_products_count }} produit(s)
+                    {{ $category->plats_actifs_count }} plat(s)
                 </p>
             </a>
         @endforeach
@@ -189,13 +189,13 @@
 </section>
 @endif
 
-{{-- ── PRODUITS VEDETTES ───────────────────── --}}
-@if($featured->count() > 0)
+{{-- ── PLATS VEDETTES ───────────────────── --}}
+@if($misEnAvant->count() > 0)
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <div class="flex items-center justify-between mb-8" data-reveal="up">
         <div>
             <h2 class="text-2xl font-bold text-dark">
-                ⭐ Produits vedettes
+                ⭐ Plats vedettes
             </h2>
             <p class="text-gray-400 text-sm mt-1">
                 Nos meilleures sélections
@@ -207,22 +207,22 @@
         </a>
     </div>
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6" data-reveal="up" data-reveal-delay="100">
-        @foreach($featured as $product)
-            @include('shop.partials.product-card', compact('product'))
+        @foreach($misEnAvant as $plat)
+            @include('shop.partials.plat-card', compact('plat'))
         @endforeach
     </div>
 </section>
 @endif
 
 {{-- ── NOUVELLES ARRIVÉES ──────────────────── --}}
-@if($newArrivals->count() > 0)
+@if($nouveautes->count() > 0)
 <section class="bg-white py-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between mb-8" data-reveal="up">
             <div>
                 <h2 class="text-2xl font-bold text-dark">🆕 Nouvelles arrivées</h2>
                 <p class="text-gray-400 text-sm mt-1">
-                    Les derniers produits disponibles
+                    Les derniers plats disponibles
                 </p>
             </div>
             <a href="{{ route('shop.catalogue', ['sort' => 'latest']) }}"
@@ -231,8 +231,8 @@
             </a>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6" data-reveal="up" data-reveal-delay="100">
-            @foreach($newArrivals as $product)
-                @include('shop.partials.product-card', compact('product'))
+            @foreach($nouveautes as $plat)
+                @include('shop.partials.plat-card', compact('plat'))
             @endforeach
         </div>
     </div>
@@ -241,8 +241,8 @@
 
 {{-- ── AVIS DÉFILANTS ─────────────────────── --}}
 @php
-    $avis = App\Models\ProductReview::with('product')
-        ->where('is_approved', true)
+    $avis = App\Models\Avis::with('plat')
+        ->where('est_approuve', true)
         ->latest()
         ->limit(10)
         ->get();
@@ -283,7 +283,7 @@
                         {{-- Étoiles --}}
                         <div class="flex items-center gap-1 mb-3">
                             @for($i = 1; $i <= 5; $i++)
-                                <svg class="w-4 h-4 {{ $i <= $review->rating
+                                <svg class="w-4 h-4 {{ $i <= $review->note
                                     ? 'text-yellow-400' : 'text-gray-200' }}"
                                      fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902
@@ -302,7 +302,7 @@
 
                         {{-- Commentaire --}}
                         <p class="text-sm text-gray-600 leading-relaxed mb-4 line-clamp-3">
-                            "{{ $review->comment }}"
+                            "{{ $review->commentaire }}"
                         </p>
 
                         {{-- Auteur --}}
@@ -310,14 +310,14 @@
                             <div class="w-9 h-9 rounded-full bg-primary flex items-center
                                         justify-center text-white font-bold text-xs
                                         flex-shrink-0">
-                                {{ strtoupper(substr($review->author_name, 0, 2)) }}
+                                {{ strtoupper(substr($review->nom_auteur, 0, 2)) }}
                             </div>
                             <div>
                                 <p class="text-sm font-semibold text-dark">
-                                    {{ $review->author_name }}
+                                    {{ $review->nom_auteur }}
                                 </p>
                                 <p class="text-xs text-gray-400">
-                                    {{ $review->product->name }}
+                                    {{ $review->plat->nom }}
                                 </p>
                             </div>
                         </div>
@@ -337,7 +337,7 @@
         <div class="text-center mb-12" data-reveal="up">
             <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold
                         uppercase tracking-widest mb-4"
-                 style="background: rgba(30,111,191,0.08); color: #1E6FBF;">
+                 style="background: rgba(30,111,191,0.08); color: #F27B20;">
                 ❓ Questions fréquentes
             </div>
             <h2 class="text-3xl sm:text-4xl font-extrabold text-dark mb-3">
@@ -362,11 +362,11 @@
                 ['q' => 'Quelles sont les zones et délais de livraison ?',
                  'r' => 'Nous livrons dans tout Dakar et ses environs sous 24 à 48h après confirmation. Pour les banlieues (Pikine, Guédiawaye, Rufisque, Thiès) et autres régions, comptez 2 à 5 jours ouvrables.',
                  'icon' => '🚚'],
-                ['q' => 'Puis-je récupérer ma commande en boutique ?',
-                 'r' => 'Oui, le retrait en boutique est gratuit et disponible dès que votre commande est prête, généralement sous quelques heures. Vous serez contacté par téléphone dès que c\'est prêt.',
+                ['q' => 'Puis-je récupérer ma commande sur place ?',
+                 'r' => 'Oui, le retrait au restaurant est gratuit et disponible dès que votre commande est prête. Vous serez contacté par téléphone dès que c\'est prêt.',
                  'icon' => '🏪'],
-                ['q' => 'Les produits sont-ils garantis et originaux ?',
-                 'r' => 'Absolument. Nous ne vendons que des produits 100 % originaux provenant de fournisseurs certifiés. Les ordinateurs portables sont garantis 12 mois, les accessoires 3 à 6 mois selon le type.',
+                ['q' => 'Les plats sont-ils frais et faits maison ?',
+                 'r' => 'Absolument. Tous nos plats sont préparés le jour même avec des ingrédients frais provenant de fournisseurs locaux sélectionnés. Nous garantissons qualité et fraîcheur à chaque commande.',
                  'icon' => '✅'],
                 ['q' => 'Puis-je modifier ou annuler ma commande ?',
                  'r' => 'Les modifications sont possibles tant que votre commande est au statut "En attente". Contactez-nous rapidement par WhatsApp ou par téléphone. Une fois confirmée et en préparation, il n\'est plus possible de la modifier.',
@@ -424,7 +424,7 @@
         <div class="text-center mt-8">
             <a href="{{ route('shop.faq') }}"
                class="inline-flex items-center gap-2 text-sm font-semibold transition-colors"
-               style="color: #1E6FBF;">
+               style="color: #F27B20;">
                 Voir toutes les questions fréquentes
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -439,23 +439,23 @@
 {{-- ── BANNIÈRE CTA ─────────────────────────── --}}
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" data-reveal="up">
     <div class="rounded-3xl p-8 lg:p-12 text-center"
-         style="background: linear-gradient(135deg, #0F3A6B 0%, #1E6FBF 100%);">
+         style="background: linear-gradient(135deg, #B8510D 0%, #F27B20 100%);">
         <h2 class="text-2xl lg:text-3xl font-bold text-white mb-3">
             Vous ne trouvez pas ce que vous cherchez ?
         </h2>
         <p class="text-white/70 mb-6">
             Contactez-nous directement sur WhatsApp, nous trouverons la solution.
         </p>
-            @if($settings->whatsapp)
+            @if($parametres->whatsapp)
             @php
-                $wa = preg_replace('/[^0-9]/', '', $settings->whatsapp);
+                $wa = preg_replace('/[^0-9]/', '', $parametres->whatsapp);
                 $sujets = [
-                    ['label' => '🛒 Passer une commande',       'msg' => "Bonjour *{$settings->name}* 👋\nJe souhaite passer une commande. Pouvez-vous m'aider ?"],
-                    ['label' => '📦 Disponibilité d\'un produit','msg' => "Bonjour *{$settings->name}* 👋\nJe voudrais savoir si un produit est disponible en stock."],
-                    ['label' => '💰 Demande de prix',            'msg' => "Bonjour *{$settings->name}* 👋\nJe souhaite avoir des informations sur vos tarifs."],
-                    ['label' => '🚚 Infos livraison',            'msg' => "Bonjour *{$settings->name}* 👋\nJe voudrais des informations sur vos délais et frais de livraison."],
-                    ['label' => '🔧 Service après-vente',        'msg' => "Bonjour *{$settings->name}* 👋\nJ'ai besoin d'assistance pour un produit acheté."],
-                    ['label' => '❓ Autre question',              'msg' => "Bonjour *{$settings->name}* 👋\nJ'ai une question à vous poser."],
+                    ['label' => '🛒 Passer une commande',       'msg' => "Bonjour *{$parametres->nom}* 👋\nJe souhaite passer une commande. Pouvez-vous m'aider ?"],
+                    ['label' => '📦 Disponibilité d\'un plat',   'msg' => "Bonjour *{$parametres->nom}* 👋\nJe voudrais savoir si un plat est disponible."],
+                    ['label' => '💰 Demande de prix',            'msg' => "Bonjour *{$parametres->nom}* 👋\nJe souhaite avoir des informations sur vos tarifs."],
+                    ['label' => '🚚 Infos livraison',            'msg' => "Bonjour *{$parametres->nom}* 👋\nJe voudrais des informations sur vos délais et frais de livraison."],
+                    ['label' => '🔧 Réclamation',                'msg' => "Bonjour *{$parametres->nom}* 👋\nJ'ai besoin d'assistance concernant ma commande."],
+                    ['label' => '❓ Autre question',              'msg' => "Bonjour *{$parametres->nom}* 👋\nJ'ai une question à vous poser."],
                 ];
             @endphp
 

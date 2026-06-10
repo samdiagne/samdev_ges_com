@@ -8,14 +8,14 @@
         .container { padding:30px 35px; }
 
         .header { display:table; width:100%; margin-bottom:25px;
-                  padding-bottom:15px; border-bottom:3px solid #F5A800; }
+                  padding-bottom:15px; border-bottom:3px solid #2DB667; }
         .header-left  { display:table-cell; width:55%; vertical-align:top; }
         .header-right { display:table-cell; width:45%; vertical-align:top; text-align:right; }
 
-        .company-name { font-size:20px; font-weight:bold; color:#1E6FBF; margin-bottom:5px; }
+        .company-name { font-size:20px; font-weight:bold; color:#F27B20; margin-bottom:5px; }
         .company-info { color:#555; font-size:10px; line-height:1.7; }
 
-        .quote-title  { font-size:30px; font-weight:bold; color:#F5A800; letter-spacing:3px; }
+        .quote-title  { font-size:30px; font-weight:bold; color:#2DB667; letter-spacing:3px; }
         .quote-number { font-size:14px; font-weight:bold; color:#2D2D2D; margin-top:3px; }
         .quote-date   { font-size:10px; color:#666; margin-top:2px; }
 
@@ -30,7 +30,7 @@
         .badge-refused  { background:#fee2e2; color:#991b1b; }
 
         .validity {
-            background:#FFF8E7; border:1px solid #F5A800;
+            background:#FFF8E7; border:1px solid #2DB667;
             border-radius:6px; padding:8px 12px; margin-bottom:15px;
             font-size:10px; color:#92400e;
         }
@@ -38,19 +38,19 @@
         .info-section { display:table; width:100%; margin-bottom:20px; }
         .info-box {
             display:table-cell; width:50%;
-            background:#F8F9FC; border-left:3px solid #F5A800;
+            background:#F8F9FC; border-left:3px solid #2DB667;
             border-radius:6px; padding:10px 12px; vertical-align:top;
         }
         .info-box:first-child { margin-right:8px; }
         .info-box-title {
-            font-size:9px; font-weight:bold; color:#F5A800;
+            font-size:9px; font-weight:bold; color:#2DB667;
             text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;
         }
         .info-box p    { font-size:10px; line-height:1.6; color:#333; }
         .info-box .bold { font-weight:bold; font-size:12px; color:#2D2D2D; }
 
         table { width:100%; border-collapse:collapse; margin-bottom:15px; }
-        thead tr { background:#F5A800; color:white; }
+        thead tr { background:#2DB667; color:white; }
         thead th {
             padding:8px 10px; text-align:left; font-size:10px;
             font-weight:bold; text-transform:uppercase;
@@ -77,9 +77,9 @@
         .totals-row-value { display:table-cell; text-align:right; font-weight:bold; }
         .totals-row.total {
             font-size:13px; font-weight:bold; color:#2D2D2D;
-            border-top:2px solid #F5A800; padding-top:8px; margin-top:4px;
+            border-top:2px solid #2DB667; padding-top:8px; margin-top:4px;
         }
-        .totals-row.total .totals-row-value { color:#F5A800; font-size:14px; }
+        .totals-row.total .totals-row-value { color:#2DB667; font-size:14px; }
 
         .notes-box {
             background:#f9fafb; border-left:3px solid #e5e7eb;
@@ -110,50 +110,47 @@
             @if($logoPath && file_exists($logoPath))
                 <img src="{{ $logoPath }}" style="height:95px; width:auto; max-width:220px;"/>
             @endif
-            <div class="company-name">{{ $settings->name }}</div>
+            <div class="company-name">{{ $parametres->nom }}</div>
             <div class="company-info">
-                @if($settings->address) Adresse : {{ $settings->address }}<br/>@endif
-                @if($settings->phone)   Tél : {{ $settings->phone }}<br/>@endif
-                @if($settings->email)   Email : {{ $settings->email }}<br/>@endif
-                @if($settings->ninea)   NINEA : {{ $settings->ninea }}<br/>@endif
-                @if($settings->rc)      RC : {{ $settings->rc }}@endif
+                @if($parametres->adresse) Adresse : {{ $parametres->adresse }}<br/>@endif
+                @if($parametres->telephone) Tel : {{ $parametres->telephone }}<br/>@endif
+                @if($parametres->email) Email : {{ $parametres->email }}<br/>@endif
+                @if($parametres->ninea) NINEA : {{ $parametres->ninea }}<br/>@endif
+                @if($parametres->rc) RC : {{ $parametres->rc }}@endif
             </div>
         </div>
         <div class="header-right">
             <div class="quote-title">DEVIS</div>
             <div class="quote-number">{{ $quote->reference }}</div>
-            <div class="quote-date">Date : {{ $quote->quote_date->format('d/m/Y') }}</div>
+            <div class="quote-date">Date : {{ $quote->date_devis->format('d/m/Y') }}</div>
         </div>
     </div>
 
-    {{-- Validité --}}
-    @if($quote->valid_until)
+    {{-- Validite --}}
+    @if($quote->valide_jusqua)
         <div class="validity">
-            ⏳ Ce devis est valable jusqu'au
-            <strong>{{ $quote->valid_until->format('d/m/Y') }}</strong>.
+            Ce devis est valable jusqu'au
+            <strong>{{ $quote->valide_jusqua->format('d/m/Y') }}</strong>.
         </div>
     @endif
 
     {{-- Infos --}}
     <div class="info-section">
         <div class="info-box" style="margin-right:8px;">
-            <div class="info-box-title">Émis par</div>
-            <p class="bold">{{ $settings->name }}</p>
-            @if($settings->address) <p>{{ $settings->address }}</p>@endif
-            @if($settings->phone)   <p>Tél : {{ $settings->phone }}</p>@endif
-            @if($settings->ninea)   <p>NINEA : {{ $settings->ninea }}</p>@endif
+            <div class="info-box-title">Emis par</div>
+            <p class="bold">{{ $parametres->nom }}</p>
+            @if($parametres->adresse) <p>{{ $parametres->adresse }}</p>@endif
+            @if($parametres->telephone) <p>Tel : {{ $parametres->telephone }}</p>@endif
+            @if($parametres->ninea) <p>NINEA : {{ $parametres->ninea }}</p>@endif
         </div>
         <div class="info-box">
             <div class="info-box-title">Destinataire</div>
-            <p class="bold">{{ $quote->client_name }}</p>
-            @if($quote->customer?->phone ?? $quote->customer_phone)
-                <p>Tél : {{ $quote->customer?->phone ?? $quote->customer_phone }}</p>
+            <p class="bold">{{ $quote->nom_client }}</p>
+            @if($quote->client?->telephone ?? $quote->client_telephone)
+                <p>Tel : {{ $quote->client?->telephone ?? $quote->client_telephone }}</p>
             @endif
-            @if($quote->customer?->address)
-                <p>{{ $quote->customer->address }}</p>
-            @endif
-            @if($quote->customer?->ninea)
-                <p>NINEA : {{ $quote->customer->ninea }}</p>
+            @if($quote->client?->adresse)
+                <p>{{ $quote->client->adresse }}</p>
             @endif
         </div>
     </div>
@@ -163,8 +160,8 @@
         <thead>
             <tr>
                 <th style="width:4%">#</th>
-                <th style="width:42%">Désignation</th>
-                <th class="center" style="width:8%">Qté</th>
+                <th style="width:42%">Designation</th>
+                <th class="center" style="width:8%">Qte</th>
                 <th class="right"  style="width:15%">P.U</th>
                 <th class="right"  style="width:10%">Total</th>
             </tr>
@@ -176,10 +173,10 @@
                     <td class="{{ $item->is_free_line ? 'free-line' : '' }}">
                         <strong>{{ $item->description }}</strong>
                     </td>
-                    <td class="center">{{ $item->quantity }}</td>
-                    <td class="right">{{ number_format($item->unit_price_ht, 0, ',', ' ') }}</td>
+                    <td class="center">{{ $item->quantite }}</td>
+                    <td class="right">{{ number_format($item->prix_unitaire, 0, ',', ' ') }}</td>
                     <td class="right">
-                        <strong>{{ number_format($item->total_ttc, 0, ',', ' ') }}</strong>
+                        <strong>{{ number_format($item->total, 0, ',', ' ') }}</strong>
                     </td>
                 </tr>
             @endforeach
@@ -196,9 +193,9 @@
             @endif
             <div style="font-size:9px; color:#888; margin-top:8px;">
                 Pour accepter ce devis, veuillez nous contacter :<br/>
-                @if($settings->phone)   Tél : {{ $settings->phone }}<br/>@endif
-                @if($settings->whatsapp)WhatshApp : {{ $settings->whatsapp }}<br/>@endif
-                @if($settings->email)   Email : {{ $settings->email }}@endif
+                @if($parametres->telephone) Tel : {{ $parametres->telephone }}<br/>@endif
+                @if($parametres->whatsapp) WhatsApp : {{ $parametres->whatsapp }}<br/>@endif
+                @if($parametres->email) Email : {{ $parametres->email }}@endif
             </div>
         </div>
     </div>
@@ -206,19 +203,19 @@
     {{-- Footer --}}
     <div class="footer">
         <div class="footer-legal">
-            <strong>{{ $settings->name }}</strong><br/>
-            @if($settings->ninea) NINEA : {{ $settings->ninea }}<br/>@endif
-            @if($settings->rc)    RC : {{ $settings->rc }}<br/>@endif
+            <strong>{{ $parametres->nom }}</strong><br/>
+            @if($parametres->ninea) NINEA : {{ $parametres->ninea }}<br/>@endif
+            @if($parametres->rc) RC : {{ $parametres->rc }}<br/>@endif
             <span style="color:#bbb; font-size:8px;">
-                Document généré le {{ now()->format('d/m/Y à H:i') }} — Al-Adab Tech Store
+                Document genere le {{ now()->format('d/m/Y H:i') }}
             </span>
         </div>
         <div class="footer-signs">
 
-            {{-- Cachet (masqué si vide) --}}
-            @if($stampPath && file_exists($stampPath))
+            {{-- Cachet --}}
+            @if($cachetPath && file_exists($cachetPath))
             <div class="sign-block">
-                <img src="{{ $stampPath }}"
+                <img src="{{ $cachetPath }}"
                      style="height:65px; object-fit:contain; opacity:0.88; margin-bottom:3px;"/>
                 <div class="sign-line">Cachet officiel</div>
             </div>

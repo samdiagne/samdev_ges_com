@@ -3,351 +3,251 @@
 namespace App\Livewire\Caisse;
 
 use Livewire\Component;
-use App\Models\Product;
-use App\Models\Customer;
-use App\Models\CompanySetting;
-use App\Services\SaleService;
+use App\Models\Plat;
+use App\Models\Client;
+use App\Models\Categorie;
+use App\Services\VenteService;
 
 class PointOfSale extends Component
 {
-    // Recherche produits
-    public string $searchProduct = '';
-    public array  $searchResults = [];
+    public string $rechercherPlat        = '';
+    public string $filtreCategorie       = '';
+    public array  $plats                 = [];
+    public array  $panier                = [];
 
-    // Panier
-    public array $cart = [];
+    public string $rechercherClient      = '';
+    public array  $resultatsClients      = [];
+    public ?int   $clientSelectionneId   = null;
+    public string $clientSelectionneNom  = '';
 
-    // Client
-    public string $searchCustomer  = '';
-    public array  $customerResults = [];
-    public ?int   $selectedCustomerId   = null;
-    public string $selectedCustomerName = '';
+    public string $clientRapideNom       = '';
+    public string $clientRapideTel       = '';
+    public bool   $utiliserClientRapide  = false;
+    public ?array $doublonClient         = null;
 
-    // Client rapide (si pas dans la base)
-    public string  $quickClientName  = '';
-    public string  $quickClientPhone = '';
-    public bool    $useQuickClient   = false;
-    public ?array  $duplicateCustomer = null;
+    public string $modePaiement          = 'cash';
+    public float  $montantRecu           = 0;
+    public float  $remise                = 0;
+    public string $notes                 = '';
+    public string $dateVente             = '';
 
-    // Paiement
-    public string $paymentMethod = 'cash';
-    public float  $amountPaid    = 0;
-    public float  $discount      = 0;
-    public string $notes         = '';
-    public string $saleDate      = '';
+    public bool   $afficherModalPaiement = false;
+    public bool   $afficherModalSucces   = false;
 
-    // Modals
-    public bool $showPaymentModal  = false;
-    public bool $showSuccessModal  = false;
+    public ?int   $derniereVenteId       = null;
+    public string $derniereReference     = '';
+    public float  $monnaieRendue         = 0;
 
-    // Dernière vente
-    public ?int $lastSaleId     = null;
-    public string $lastReference = '';
-    public float  $changeGiven  = 0;
-
-    // Computed
-    public float $subtotalHt  = 0;
-    public float $tvaAmount   = 0;
-    public float $totalTtc    = 0;
-    public float $tvaRate     = 18;
-
-    public string $filterCategorie = '';
-    public array  $products        = [];
+    public float  $sousTotal             = 0;
+    public float  $total                 = 0;
 
     public function mount(): void
     {
         $this->loadProducts();
-        $this->tvaRate  = CompanySetting::getSettings()->tva_rate ?? 18;
-        $this->saleDate = now()->toDateString();
+        $this->dateVente = now()->toDateString();
     }
 
-    // ── Recherche produits ────────────────────────
     public function loadProducts(): void
     {
-        $this->products = \App\Models\Product::where('is_active', true)
-            ->where('stock_quantity', '>', 0)
-            ->with('category')
-            ->when($this->filterCategorie, fn($q) =>
-                $q->where('category_id', $this->filterCategorie)
+        $this->plats = Plat::where('est_actif', true)
+            ->where('stock', '>', 0)
+            ->with('categorie')
+            ->when($this->filtreCategorie, fn($q) =>
+                $q->where('categorie_id', $this->filtreCategorie)
             )
-            ->when($this->searchProduct, fn($q) =>
-                $q->where(fn($q2) =>
-                    $q2->where('name', 'like', '%' . $this->searchProduct . '%')
-                    ->orWhere('sku', 'like', '%' . $this->searchProduct . '%')
-                )
+            ->when($this->rechercherPlat, fn($q) =>
+                $q->where('nom', 'like', '%' . $this->rechercherPlat . '%')
             )
-            ->orderBy('name')
+            ->orderBy('nom')
             ->get()
             ->map(fn($p) => [
-                'id'            => $p->id,
-                'name'          => $p->name,
-                'sku'           => $p->sku,
-                'selling_price' => (float) $p->selling_price,
-                'stock'         => $p->stock_quantity,
-                'image'         => $p->main_image,
-                'category'      => $p->category?->name,
+                'id'         => $p->id,
+                'nom'        => $p->nom,
+                'prix_vente' => (float) $p->prix_vente,
+                'stock'      => $p->stock,
+                'image'      => $p->image_principale,
+                'categorie'  => $p->categorie?->nom,
             ])
             ->toArray();
     }
 
-    public function updatedFilterCategorie(): void { $this->loadProducts(); }
-    public function updatedSearchProduct(): void   { $this->loadProducts(); }
+    public function updatedFiltreCategorie(): void { $this->loadProducts(); }
+    public function updatedRechercherPlat(): void   { $this->loadProducts(); }
 
-    // ── Toggle produit (sélectionner / désélectionner) ──
-    public function toggleProduct(int $productId): void
+    public function togglePlat(int $platId): void
     {
-        foreach ($this->cart as $key => $item) {
-            if ($item['product_id'] === $productId) {
-                $this->removeFromCart($key);
-                return;
-            }
+        foreach ($this->panier as $cle => $item) {
+            if ($item['plat_id'] === $platId) { $this->retirerDuPanier($cle); return; }
         }
-        $this->addToCart($productId);
+        $this->ajouterAuPanier($platId);
     }
 
-    // ── Ajouter au panier ─────────────────────────
-    public function addToCart(int $productId): void
+    public function addToCart(int $platId): void
     {
-        $existingKey = null;
-        foreach ($this->cart as $key => $item) {
-            if ($item['product_id'] === $productId) {
-                $existingKey = $key;
-                break;
-            }
+        $cleTrouvee = null;
+        foreach ($this->panier as $cle => $item) {
+            if ($item['plat_id'] === $platId) { $cleTrouvee = $cle; break; }
         }
 
-        if ($existingKey !== null) {
-            // Vérifier stock disponible
-            $product = Product::find($productId);
-            if ($this->cart[$existingKey]['quantity'] >= $product->stock_quantity) {
-                session()->flash('pos_error', 'Stock insuffisant !');
-                return;
+        if ($cleTrouvee !== null) {
+            $plat = Plat::find($platId);
+            if ($this->panier[$cleTrouvee]['quantite'] >= $plat->stock) {
+                session()->flash('pos_error', 'Stock insuffisant !'); return;
             }
-            $this->cart[$existingKey]['quantity']++;
-            $this->recalculateItem($existingKey);
+            $this->panier[$cleTrouvee]['quantite']++;
+            $this->recalcLine($cleTrouvee);
         } else {
-            $product = Product::find($productId);
-            if (!$product || $product->stock_quantity <= 0) {
-                session()->flash('pos_error', 'Produit indisponible !');
-                return;
+            $plat = Plat::find($platId);
+            if (! $plat || $plat->stock <= 0) {
+                session()->flash('pos_error', 'Plat indisponible !'); return;
             }
-
-            $tvaAmount = $product->has_tva
-                ? ($product->selling_price * $this->tvaRate / 100)
-                : 0;
-
-            $this->cart[] = [
-                'product_id'     => $product->id,
-                'name'           => $product->name,
-                'sku'            => $product->sku,
-                'unit_price_ht'  => (float) $product->selling_price,
-                'unit_price_ttc' => (float) $product->selling_price_ttc,
-                'tva_rate'       => 0,
-                'quantity'       => 1,
-                'discount'       => 0,
-                'tva_amount'     => 0,
-                'total_ht'       => (float) $product->selling_price,
-                'total_ttc'      => (float) $product->selling_price_ttc,
-                'stock_max'      => $product->stock_quantity,
-                'product'        => $product,
+            $this->panier[] = [
+                'plat_id'       => $plat->id,
+                'nom'           => $plat->nom,
+                'prix_unitaire' => (float) $plat->prix_vente,
+                'quantite'      => 1,
+                'remise'        => 0,
+                'total'         => (float) $plat->prix_vente,
+                'stock_max'     => $plat->stock,
             ];
         }
-
-        $this->recalculateTotals();
+        $this->recalcTotals();
     }
 
-    // ── Modifier quantité ─────────────────────────
-    public function updateQuantity(int $index, int $quantity): void
+    public function updateQuantity(int $index, int $quantite): void
     {
-        if ($quantity <= 0) {
-            $this->removeFromCart($index);
-            return;
+        if ($quantite <= 0) { $this->retirerDuPanier($index); return; }
+        if ($quantite > $this->panier[$index]['stock_max']) {
+            $quantite = $this->panier[$index]['stock_max'];
         }
-
-        if ($quantity > $this->cart[$index]['stock_max']) {
-            $quantity = $this->cart[$index]['stock_max'];
-        }
-
-        $this->cart[$index]['quantity'] = $quantity;
-        $this->recalculateItem($index);
-        $this->recalculateTotals();
+        $this->panier[$index]['quantite'] = $quantite;
+        $this->recalcLine($index);
+        $this->recalcTotals();
     }
 
-    // ── Modifier remise ligne ─────────────────────
-    public function updateItemDiscount(int $index, float $discount): void
+    public function updateLineDiscount(int $index, float $remise): void
     {
-        $this->cart[$index]['discount'] = max(0, $discount);
-        $this->recalculateItem($index);
-        $this->recalculateTotals();
+        $this->panier[$index]['remise'] = max(0, $remise);
+        $this->recalcLine($index);
+        $this->recalcTotals();
     }
 
-    // ── Supprimer du panier ───────────────────────
     public function removeFromCart(int $index): void
     {
-        array_splice($this->cart, $index, 1);
-        $this->cart = array_values($this->cart);
-        $this->recalculateTotals();
+        array_splice($this->panier, $index, 1);
+        $this->panier = array_values($this->panier);
+        $this->recalcTotals();
     }
 
-    // ── Vider le panier ───────────────────────────
     public function clearCart(): void
     {
-        $this->cart               = [];
-        $this->subtotalHt         = 0;
-        $this->tvaAmount          = 0;
-        $this->totalTtc           = 0;
-        $this->discount           = 0;
-        $this->selectedCustomerId = null;
-        $this->selectedCustomerName = '';
-        $this->notes              = '';
+        $this->panier               = [];
+        $this->sousTotal            = 0;
+        $this->total                = 0;
+        $this->remise               = 0;
+        $this->clientSelectionneId  = null;
+        $this->clientSelectionneNom = '';
+        $this->notes                = '';
     }
 
-    // ── Recalcul ligne ────────────────────────────
-    private function recalculateItem(int $index): void
+    private function recalcLine(int $index): void
     {
-        $item     = $this->cart[$index];
-        $qty      = $item['quantity'];
-        $priceHt  = $item['unit_price_ht'];
-        $discount = $item['discount'];
-
-        $totalHt      = ($priceHt * $qty) - $discount;
-        $tvaAmount    = $item['tva_rate'] > 0
-                        ? ($totalHt * $item['tva_rate'] / 100)
-                        : 0;
-        $totalTtc     = $totalHt + $tvaAmount;
-
-        $this->cart[$index]['total_ht']   = round($totalHt, 2);
-        $this->cart[$index]['tva_amount'] = round($tvaAmount, 2);
-        $this->cart[$index]['total_ttc']  = round($totalTtc, 2);
+        $item = $this->panier[$index];
+        $this->panier[$index]['total'] = round(
+            ($item['prix_unitaire'] * $item['quantite']) - $item['remise'], 2
+        );
     }
 
-    // ── Recalcul totaux ───────────────────────────
-    private function recalculateTotals(): void
+    private function recalcTotals(): void
     {
-        $this->subtotalHt = round(array_sum(array_column($this->cart, 'total_ht')), 2);
-        $this->tvaAmount  = 0;
-        $this->totalTtc   = round($this->subtotalHt + $this->tvaAmount - $this->discount, 2);
-        $this->amountPaid = $this->totalTtc;
+        $this->sousTotal   = round(array_sum(array_column($this->panier, 'total')), 2);
+        $this->total       = round($this->sousTotal - $this->remise, 2);
+        $this->montantRecu = $this->total;
     }
 
-    // ── Recherche client ──────────────────────────
-    public function updatedSearchCustomer(): void
+    public function updatedRechercherClient(): void
     {
-        if (strlen($this->searchCustomer) < 2) {
-            $this->customerResults = [];
-            return;
-        }
-
-        $this->customerResults = Customer::where(fn($q) =>
-            $q->where('name', 'like', '%' . $this->searchCustomer . '%')
-              ->orWhere('phone', 'like', '%' . $this->searchCustomer . '%')
-        )
-        ->limit(5)
-        ->get(['id', 'name', 'phone'])
-        ->toArray();
+        if (strlen($this->rechercherClient) < 2) { $this->resultatsClients = []; return; }
+        $this->resultatsClients = Client::where(fn($q) =>
+            $q->where('nom', 'like', '%' . $this->rechercherClient . '%')
+              ->orWhere('telephone', 'like', '%' . $this->rechercherClient . '%')
+        )->limit(5)->get(['id', 'nom', 'telephone'])->toArray();
     }
 
-    public function selectCustomer(int $id, string $name): void
+    public function selectClient(int $id, string $nom): void
     {
-        $this->selectedCustomerId   = $id;
-        $this->selectedCustomerName = $name;
-        $this->searchCustomer       = '';
-        $this->customerResults      = [];
-        $this->useQuickClient       = false;
-        $this->quickClientName      = '';
-        $this->quickClientPhone     = '';
-        $this->duplicateCustomer    = null;
+        $this->clientSelectionneId  = $id;
+        $this->clientSelectionneNom = $nom;
+        $this->rechercherClient     = '';
+        $this->resultatsClients     = [];
+        $this->utiliserClientRapide = false;
+        $this->doublonClient        = null;
     }
 
-    public function updatedQuickClientPhone(): void
+    public function updatedClientRapideTel(): void
     {
-        $this->duplicateCustomer = null;
-
-        if (strlen($this->quickClientPhone) >= 6) {
-            $found = \App\Models\Customer::where('phone', $this->quickClientPhone)->first();
-            if ($found) {
-                $this->duplicateCustomer = [
-                    'id'    => $found->id,
-                    'name'  => $found->name,
-                    'phone' => $found->phone,
-                ];
+        $this->doublonClient = null;
+        if (strlen($this->clientRapideTel) >= 6) {
+            $trouve = Client::where('telephone', $this->clientRapideTel)->first();
+            if ($trouve) {
+                $this->doublonClient = ['id' => $trouve->id, 'nom' => $trouve->nom, 'telephone' => $trouve->telephone];
             }
         }
     }
 
-    public function clearCustomer(): void
+    public function clearClient(): void
     {
-        $this->selectedCustomerId   = null;
-        $this->selectedCustomerName = '';
-        $this->useQuickClient       = false;
-        $this->quickClientName      = '';
-        $this->quickClientPhone     = '';
-        $this->duplicateCustomer    = null;
+        $this->clientSelectionneId  = null;
+        $this->clientSelectionneNom = '';
+        $this->utiliserClientRapide = false;
+        $this->clientRapideNom      = '';
+        $this->clientRapideTel      = '';
+        $this->doublonClient        = null;
     }
 
-    // ── Ouvrir modal paiement ─────────────────────
     public function openPaymentModal(): void
     {
-        if (empty($this->cart)) {
-            session()->flash('pos_error', 'Le panier est vide !');
-            return;
-        }
-        $this->amountPaid      = $this->totalTtc;
-        $this->showPaymentModal = true;
+        if (empty($this->panier)) { session()->flash('pos_error', 'Le panier est vide !'); return; }
+        $this->montantRecu           = $this->total;
+        $this->afficherModalPaiement = true;
     }
 
-    // ── Mettre à jour remise globale ──────────────
-    public function updatedDiscount(): void
+    public function updatedRemise(): void
     {
-        $this->discount = max(0, $this->discount);
-        $this->totalTtc = round($this->subtotalHt + $this->tvaAmount - $this->discount, 2);
-        $this->amountPaid = $this->totalTtc;
+        $this->remise      = max(0, $this->remise);
+        $this->total       = round($this->sousTotal - $this->remise, 2);
+        $this->montantRecu = $this->total;
     }
 
-    // ── Valider la vente ──────────────────────────
-    public function completeSale(SaleService $saleService): void
+    public function processPayment(VenteService $venteService): void
     {
-        if (empty($this->cart)) return;
-
-        if ($this->amountPaid < $this->totalTtc) {
-            $this->addError('amountPaid', 'Montant insuffisant !');
-            return;
+        if (empty($this->panier)) return;
+        if ($this->montantRecu < $this->total) {
+            $this->addError('montantRecu', 'Montant insuffisant !'); return;
         }
-
         try {
-            // Créer client rapide si renseigné
-            $customerId = $this->selectedCustomerId;
-
-            if (!$customerId && $this->useQuickClient && $this->quickClientName) {
-                $phone    = $this->quickClientPhone ?: null;
-                $customer = \App\Models\Customer::create([
-                    'name'     => $this->quickClientName,
-                    'phone'    => $phone,
-                    'whatsapp' => $phone,
-                ]);
-                $customerId = $customer->id;
+            $clientId = $this->clientSelectionneId;
+            if (! $clientId && $this->utiliserClientRapide && $this->clientRapideNom) {
+                $client   = Client::create(['nom' => $this->clientRapideNom, 'telephone' => $this->clientRapideTel ?: null]);
+                $clientId = $client->id;
             }
-
-            $sale = $saleService->createSale(
-                cart: $this->cart,
-                payment: [
-                    'method'      => $this->paymentMethod,
-                    'amount_paid' => $this->amountPaid,
-                    'discount'    => $this->discount,
-                    'notes'       => $this->notes,
-                    'sale_date'   => $this->saleDate ?: now()->toDateString(),
+            $vente = $venteService->creerVente(
+                panier: $this->panier,
+                paiement: [
+                    'mode_paiement' => $this->modePaiement,
+                    'montant_recu'  => $this->montantRecu,
+                    'remise'        => $this->remise,
+                    'notes'         => $this->notes,
+                    'date_vente'    => $this->dateVente ?: now()->toDateString(),
                 ],
-                customerId: $customerId
+                clientId: $clientId
             );
-
-            $this->lastSaleId    = $sale->id;
-            $this->lastReference = $sale->reference;
-            $this->changeGiven   = $sale->change_given;
-
-            $this->showPaymentModal = false;
-            $this->showSuccessModal = true;
+            $this->derniereVenteId       = $vente->id;
+            $this->derniereReference     = $vente->reference;
+            $this->monnaieRendue         = $vente->monnaie_rendue;
+            $this->afficherModalPaiement = false;
+            $this->afficherModalSucces   = true;
             $this->clearCart();
-
         } catch (\Exception $e) {
             session()->flash('pos_error', 'Erreur : ' . $e->getMessage());
         }
@@ -355,13 +255,9 @@ class PointOfSale extends Component
 
     public function render()
     {
-        $categories = \App\Models\Category::where('is_active', true)
-        ->whereHas('products', fn($q) =>
-            $q->where('is_active', true)->where('stock_quantity', '>', 0)
-        )
-        ->get(['id', 'name']);
-
-        return view('livewire.caisse.point-of-sale',
-        array_merge(compact('categories'), [/* autres vars */]));
+        $categories = Categorie::where('est_active', true)
+            ->whereHas('plats', fn($q) => $q->where('est_actif', true)->where('stock', '>', 0))
+            ->get(['id', 'nom']);
+        return view('livewire.caisse.point-of-sale', compact('categories'));
     }
 }

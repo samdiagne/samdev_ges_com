@@ -2,29 +2,35 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ProductReview;
+use App\Models\Avis;
 
 class AvisController extends Controller
 {
     public function index()
     {
-        $pending  = ProductReview::with('product')
-            ->where('is_approved', false)->latest()->get();
-        $approved = ProductReview::with('product')
-            ->where('is_approved', true)->latest()->limit(20)->get();
+        $enAttente = Avis::with('plat')
+            ->where('est_approuve', false)
+            ->latest()
+            ->get();
 
-        return view('avis.index', compact('pending', 'approved'));
+        $approuves = Avis::with('plat')
+            ->where('est_approuve', true)
+            ->latest()
+            ->limit(20)
+            ->get();
+
+        return view('avis.index', compact('enAttente', 'approuves'));
     }
 
-    public function approve(ProductReview $review)
+    public function approve(Avis $avis)
     {
-        $review->update(['is_approved' => true]);
+        $avis->update(['est_approuve' => true]);
         return back()->with('success', 'Avis approuvé !');
     }
 
-    public function destroy(ProductReview $review)
+    public function destroy(Avis $avis)
     {
-        $review->delete();
+        $avis->delete();
         return back()->with('success', 'Avis supprimé !');
     }
 }

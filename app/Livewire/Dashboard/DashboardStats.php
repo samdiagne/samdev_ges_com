@@ -3,211 +3,156 @@
 namespace App\Livewire\Dashboard;
 
 use Livewire\Component;
-use App\Models\Sale;
-use App\Models\Purchase;
-use App\Models\Expense;
-use App\Models\Product;
-use App\Models\Customer;
-use App\Models\Order;
-use App\Models\StockMovement;
+use App\Models\Vente;
+use App\Models\VenteLigne;
+use App\Models\Achat;
+use App\Models\Depense;
+use App\Models\Plat;
+use App\Models\Client;
+use App\Models\Commande;
 use Carbon\Carbon;
 
 class DashboardStats extends Component
 {
-    public string $period = 'month';
+    public string $periode = 'mois';
 
     public function render()
     {
-        $stats   = $this->getStats();
-        $charts  = $this->getChartData();
-        $alerts  = $this->getAlerts();
-        $recent  = $this->getRecentActivity();
+        $stats  = $this->getStats();
+        $charts = $this->getChartData();
+        $alertes = $this->getAlertes();
+        $recent = $this->getActiviteRecente();
 
-        // Dispatcher les données des graphiques au frontend
         $this->dispatch('chartsUpdated', charts: $charts);
 
         return view('livewire.dashboard.dashboard-stats',
-            compact('stats', 'charts', 'alerts', 'recent'));
+            compact('stats', 'charts', 'alertes', 'recent'));
     }
 
     private function getStats(): array
     {
         [$from, $to] = $this->getDateRange();
 
-        // Ventes période
-        $salesQuery = Sale::where('status', 'completed')
-            ->whereBetween('sold_at', [$from, $to]);
+        $ventesQuery = Vente::where('statut', 'completee')
+            ->whereBetween('vendu_le', [$from, $to]);
 
-        $ca         = $salesQuery->sum('total_ttc');
-        $salesCount = $salesQuery->count();
-        $caHt       = $salesQuery->sum('subtotal_ht');
-        $tvaTotal   = $salesQuery->sum('tva_amount');
+        $ca          = $ventesQuery->sum('total');
+        $nbVentes    = $ventesQuery->count();
 
-        // Achats période
-        $purchasesQuery = Purchase::whereBetween('purchase_date', [
-            $from->toDateString(), $to->toDateString()
-        ]);
-        $achatsTotal = $purchasesQuery->sum('total_amount');
+        $achatsTotal   = Achat::whereBetween('date_achat', [$from->toDateString(), $to->toDateString()])->sum('montant_total');
+        $depensesTotal = Depense::whereBetween('date_depense', [$from->toDateString(), $to->toDateString()])->sum('montant');
+        $benefice      = $ca - $achatsTotal - $depensesTotal;
 
-        // Dépenses période
-        $depensesQuery = Expense::whereBetween('expense_date', [
-            $from->toDateString(), $to->toDateString()
-        ]);
-        $depensesTotal = $depensesQuery->sum('amount');
-
-        // Bénéfice brut = CA TTC - Achats - Dépenses
-        $benefice = $ca - $achatsTotal - $depensesTotal;
-
-        // Comparaison période précédente
         [$prevFrom, $prevTo] = $this->getPreviousDateRange();
-        $prevCa = Sale::where('status', 'completed')
-            ->whereBetween('sold_at', [$prevFrom, $prevTo])
-            ->sum('total_ttc');
-        $caEvolution = $prevCa > 0
-            ? round((($ca - $prevCa) / $prevCa) * 100, 1)
-            : 0;
+        $prevCa = Vente::where('statut', 'completee')->whereBetween('vendu_le', [$prevFrom, $prevTo])->sum('total');
+        $evolution = $prevCa > 0 ? round((($ca - $prevCa) / $prevCa) * 100, 1) : 0;
 
         return [
-            'ca'            => $ca,
-            'ca_ht'         => $caHt,
-            'tva_total'     => $tvaTotal,
-            'sales_count'   => $salesCount,
-            'achats_total'  => $achatsTotal,
-            'depenses_total'=> $depensesTotal,
-            'benefice'      => $benefice,
-            'ca_evolution'  => $caEvolution,
-            'avg_basket'    => $salesCount > 0 ? round($ca / $salesCount) : 0,
-
-            // Globaux
-            'total_products'  => Product::where('is_active', true)->count(),
-            'total_customers' => Customer::count(),
-            'stock_low'       => Product::whereColumn('stock_quantity', '<=', 'stock_alert_threshold')
-                                        ->where('stock_quantity', '>', 0)->count(),
-            'stock_out'       => Product::where('stock_quantity', '<=', 0)->count(),
-
-            // Paiements
-            'cash_total' => (clone $salesQuery)->where('payment_method', 'cash')->sum('total_ttc'),
-            'wave_total' => (clone $salesQuery)->where('payment_method', 'wave')->sum('total_ttc'),
-            'om_total'   => (clone $salesQuery)->where('payment_method', 'om')->sum('total_ttc'),
-            'card_total'   => (clone $salesQuery)->where('payment_method', 'card')->sum('total_ttc'),
+            'ca'             => $ca,
+            'nb_ventes'      => $nbVentes,
+            'achats_total'   => $achatsTotal,
+            'depenses_total' => $depensesTotal,
+            'benefice'       => $benefice,
+            'evolution_ca'   => $evolution,
+            'panier_moyen'   => $nbVentes > 0 ? round($ca / $nbVentes) : 0,
+            'total_plats'    => Plat::where('est_actif', true)->count(),
+            'total_clients'  => Client::count(),
+            'stock_faible'   => Plat::whereColumn('stock', '<=', 'seuil_alerte_stock')->where('stock', '>', 0)->count(),
+            'stock_rupture'  => Plat::where('stock', '<=', 0)->count(),
+            'cash_total'     => (clone $ventesQuery)->where('mode_paiement', 'cash')->sum('total'),
+            'wave_total'     => (clone $ventesQuery)->where('mode_paiement', 'wave')->sum('total'),
+            'om_total'       => (clone $ventesQuery)->where('mode_paiement', 'om')->sum('total'),
+            'carte_total'    => (clone $ventesQuery)->where('mode_paiement', 'carte')->sum('total'),
         ];
     }
 
     private function getChartData(): array
     {
-        // Ventes 7 derniers jours
-        $days   = [];
-        $sales  = [];
-        $counts = [];
+        $jours = [];
+        $ventes = [];
+        $comptes = [];
 
         for ($i = 6; $i >= 0; $i--) {
-            $date    = Carbon::today()->subDays($i);
-            $days[]  = $date->translatedFormat('D d/m');
-            $daySales = Sale::where('status', 'completed')
-                ->whereDate('sold_at', $date)
-                ->sum('total_ttc');
-            $sales[]  = (float) $daySales;
-            $counts[] = Sale::where('status', 'completed')
-                ->whereDate('sold_at', $date)
-                ->count();
+            $date      = Carbon::today()->subDays($i);
+            $jours[]   = $date->translatedFormat('D d/m');
+            $ventes[]  = (float) Vente::where('statut', 'completee')->whereDate('vendu_le', $date)->sum('total');
+            $comptes[]  = Vente::where('statut', 'completee')->whereDate('vendu_le', $date)->count();
         }
 
-        // CA par mois (12 derniers mois)
-        $months    = [];
-        $monthlyCA = [];
-
+        $mois   = [];
+        $caParMois = [];
         for ($i = 11; $i >= 0; $i--) {
-            $month      = Carbon::today()->startOfMonth()->subMonths($i);
-            $months[]   = $month->translatedFormat('M Y');
-            $monthlyCA[]= (float) Sale::where('status', 'completed')
-                ->whereYear('sold_at', $month->year)
-                ->whereMonth('sold_at', $month->month)
-                ->sum('total_ttc');
+            $m = Carbon::today()->startOfMonth()->subMonths($i);
+            $mois[]      = $m->translatedFormat('M Y');
+            $caParMois[] = (float) Vente::where('statut', 'completee')
+                ->whereYear('vendu_le', $m->year)->whereMonth('vendu_le', $m->month)->sum('total');
         }
 
-        // Répartition paiements (période courante)
         [$from, $to] = $this->getDateRange();
-        $paymentData = Sale::where('status', 'completed')
-            ->whereBetween('sold_at', [$from, $to])
-            ->selectRaw('payment_method, SUM(total_ttc) as total')
-            ->groupBy('payment_method')
-            ->get()
-            ->pluck('total', 'payment_method')
-            ->toArray();
+        $paiements = Vente::where('statut', 'completee')
+            ->whereBetween('vendu_le', [$from, $to])
+            ->selectRaw('mode_paiement, SUM(total) as total')
+            ->groupBy('mode_paiement')
+            ->get()->pluck('total', 'mode_paiement')->toArray();
 
         return [
-            'daily_labels'  => $days,
-            'daily_sales'   => $sales,
-            'daily_counts'  => $counts,
-            'monthly_labels'=> $months,
-            'monthly_ca'    => $monthlyCA,
-            'payment_data'  => $paymentData,
+            'labels_jours'   => $jours,
+            'ventes_jours'   => $ventes,
+            'comptes_jours'  => $comptes,
+            'labels_mois'    => $mois,
+            'ca_par_mois'    => $caParMois,
+            'paiements'      => $paiements,
         ];
     }
 
-    private function getAlerts(): array
+    private function getAlertes(): array
     {
         return [
-            'low_stock' => Product::with('category')
-                ->whereColumn('stock_quantity', '<=', 'stock_alert_threshold')
-                ->where('stock_quantity', '>', 0)
-                ->orderBy('stock_quantity')
-                ->limit(5)
-                ->get(),
-            'out_stock' => Product::with('category')
-                ->where('stock_quantity', '<=', 0)
-                ->limit(5)
-                ->get(),
+            'stock_faible' => Plat::with('categorie')
+                ->whereColumn('stock', '<=', 'seuil_alerte_stock')
+                ->where('stock', '>', 0)
+                ->orderBy('stock')->limit(5)->get(),
+            'stock_rupture' => Plat::with('categorie')
+                ->where('stock', '<=', 0)->limit(5)->get(),
         ];
     }
 
-    private function getRecentActivity(): array
+    private function getActiviteRecente(): array
     {
         return [
-            'sales' => Sale::with(['customer', 'user'])
-                ->latest('sold_at')
-                ->limit(5)
-                ->get(),
-            'pending_orders' => Order::with('items')
-                ->whereIn('status', ['pending', 'confirmed'])
-                ->latest()
-                ->limit(6)
-                ->get(),
-            'top_products' => \App\Models\SaleItem::selectRaw(
-                    'product_id, product_name,
-                     SUM(quantity) as total_qty,
-                     SUM(total_ttc) as total_ca'
+            'ventes' => Vente::with(['client', 'user'])->latest('vendu_le')->limit(5)->get(),
+            'commandes_en_attente' => Commande::with('lignes')
+                ->whereIn('statut', ['en_attente', 'confirmee', 'en_preparation'])
+                ->latest()->limit(6)->get(),
+            'top_plats' => VenteLigne::selectRaw('plat_id, nom_plat, SUM(quantite) as total_qty, SUM(total) as total_ca')
+                ->whereHas('vente', fn($q) =>
+                    $q->where('statut', 'completee')->whereMonth('vendu_le', now()->month)
                 )
-                ->whereHas('sale', fn($q) =>
-                    $q->where('status', 'completed')
-                      ->whereMonth('sold_at', now()->month)
-                )
-                ->groupBy('product_id', 'product_name')
+                ->groupBy('plat_id', 'nom_plat')
                 ->orderByDesc('total_qty')
-                ->limit(5)
-                ->get(),
+                ->limit(5)->get(),
         ];
     }
 
     private function getDateRange(): array
     {
-        return match($this->period) {
-            'today'   => [Carbon::today(),            Carbon::today()->endOfDay()],
-            'week'    => [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()],
-            'month'   => [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()],
-            'year'    => [Carbon::now()->startOfYear(),  Carbon::now()->endOfYear()],
-            default   => [Carbon::today(),             Carbon::today()->endOfDay()],
+        return match($this->periode) {
+            'aujourd_hui' => [Carbon::today(),              Carbon::today()->endOfDay()],
+            'semaine'     => [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()],
+            'mois'        => [Carbon::now()->startOfMonth(),Carbon::now()->endOfMonth()],
+            'annee'       => [Carbon::now()->startOfYear(), Carbon::now()->endOfYear()],
+            default       => [Carbon::now()->startOfMonth(),Carbon::now()->endOfMonth()],
         };
     }
 
     private function getPreviousDateRange(): array
     {
-        return match($this->period) {
-            'today'  => [Carbon::yesterday(),                    Carbon::yesterday()->endOfDay()],
-            'week'   => [Carbon::now()->subWeek()->startOfWeek(), Carbon::now()->subWeek()->endOfWeek()],
-            'month'  => [Carbon::now()->subMonth()->startOfMonth(), Carbon::now()->subMonth()->endOfMonth()],
-            'year'   => [Carbon::now()->subYear()->startOfYear(),   Carbon::now()->subYear()->endOfYear()],
-            default  => [Carbon::yesterday(),                    Carbon::yesterday()->endOfDay()],
+        return match($this->periode) {
+            'aujourd_hui' => [Carbon::yesterday(),                      Carbon::yesterday()->endOfDay()],
+            'semaine'     => [Carbon::now()->subWeek()->startOfWeek(),  Carbon::now()->subWeek()->endOfWeek()],
+            'mois'        => [Carbon::now()->subMonth()->startOfMonth(),Carbon::now()->subMonth()->endOfMonth()],
+            'annee'       => [Carbon::now()->subYear()->startOfYear(),  Carbon::now()->subYear()->endOfYear()],
+            default       => [Carbon::now()->subMonth()->startOfMonth(),Carbon::now()->subMonth()->endOfMonth()],
         };
     }
 }

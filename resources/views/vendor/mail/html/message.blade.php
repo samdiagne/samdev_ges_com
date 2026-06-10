@@ -1,6 +1,6 @@
 @php
-    $settings  = App\Models\CompanySetting::getSettings();
-    $storeName = $settings->name ?? config('app.name');
+    $settings  = App\Models\Parametre::first();
+    $storeName = $settings->nom ?? config('app.name');
 @endphp
 
 <x-mail::layout>

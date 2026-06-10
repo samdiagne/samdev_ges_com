@@ -1,5 +1,5 @@
 @extends('layouts.shop')
-@section('title', 'Commande confirmée — ' . $order->reference)
+@section('title', 'Commande confirmée — ' . $commande->reference)
 
 @section('content')
 <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
@@ -19,12 +19,12 @@
     </h1>
     <p class="text-gray-500 mb-2">
         Référence : <span class="font-bold text-primary">
-            {{ $order->reference }}
+            {{ $commande->reference }}
         </span>
     </p>
     <p class="text-gray-500 mb-8">
         Nous vous contacterons au
-        <span class="font-semibold">{{ $order->customer_phone }}</span>
+        <span class="font-semibold">{{ $commande->telephone_client }}</span>
         pour organiser la livraison.
     </p>
 
@@ -36,14 +36,14 @@
         </h2>
 
         <div class="space-y-3 mb-4">
-            @foreach($order->items as $item)
+            @foreach($commande->lignes as $ligne)
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-600">
-                        {{ $item->product_name }}
-                        <span class="text-gray-400">×{{ $item->quantity }}</span>
+                        {{ $ligne->nom_plat }}
+                        <span class="text-gray-400">×{{ $ligne->quantite }}</span>
                     </span>
                     <span class="font-semibold">
-                        {{ number_format($item->total, 0, ',', ' ') }} FCFA
+                        {{ number_format($ligne->total, 0, ',', ' ') }} FCFA
                     </span>
                 </div>
             @endforeach
@@ -53,18 +53,18 @@
                     font-bold text-dark">
             <span>Total HT</span>
             <span class="text-primary">
-                {{ number_format($order->total, 0, ',', ' ') }} FCFA
+                {{ number_format($commande->total, 0, ',', ' ') }} FCFA
             </span>
         </div>
 
-        @if($order->payment_method === 'card')
+        @if($commande->mode_paiement === 'carte')
             <div class="mt-3 bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-800 text-left">
                 <p class="font-semibold mb-2">💳 Instructions de paiement par carte bancaire</p>
                 <p class="text-xs text-blue-700 mb-2">
                     Un agent vous contactera pour traiter votre paiement par carte bancaire.
-                    Munissez-vous de votre carte et de la référence commande <strong>{{ $order->reference }}</strong>.
+                    Munissez-vous de votre carte et de la référence commande <strong>{{ $commande->reference }}</strong>.
                 </p>
-                @if($settings->whatsapp || $settings->phone)
+                @if($settings->whatsapp || $settings->telephone)
                     <p class="text-xs text-blue-700">
                         Vous serez contacté par
                         @if($settings->whatsapp)
@@ -85,24 +85,20 @@
             <div class="flex justify-between text-gray-500">
                 <span>Mode de paiement</span>
                 <span class="font-medium capitalize">
-                    {{ match($order->payment_method) {
+                    {{ match($commande->mode_paiement) {
+                        'cash'     => 'Espèces',
                         'wave'     => 'Wave',
                         'om'       => 'Orange Money',
-                        'mix'      => 'Mix by Yass',
-                        'visa'     => 'Visa',
-                        'mastercard' => 'Mastercard',
+                        'carte'    => 'Carte bancaire',
                         'paydunya' => 'Paiement en ligne (PayDunya)',
-                        'djamo'    => 'Djamo',
-                        'delivery' => 'Paiement à la livraison',
-                        'card'     => 'Carte bancaire',
-                        default    => $order->payment_method,
+                        default    => ucfirst($commande->mode_paiement ?? '—'),
                     } }}
                 </span>
             </div>
             <div class="flex justify-between text-gray-500">
                 <span>Livraison à</span>
                 <span class="font-medium text-right max-w-48">
-                    {{ $order->city }}
+                    {{ $commande->ville }}
                 </span>
             </div>
             <div class="flex justify-between text-gray-500">
@@ -110,7 +106,7 @@
                 <span class="inline-flex items-center gap-1.5 text-orange-600
                              font-medium">
                     <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
-                    {{ $order->status_label }}
+                    {{ $commande->statut_label }}
                 </span>
             </div>
         </div>
@@ -125,7 +121,7 @@
             Retour à l'accueil
         </a>
         @if($settings->whatsapp)
-            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $settings->whatsapp) }}?text={{ urlencode('Bonjour, j\'ai passé la commande ' . $order->reference . ' et j\'aimerais avoir des informations sur la livraison.') }}"
+            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $settings->whatsapp) }}?text={{ urlencode('Bonjour, j\'ai passé la commande ' . $commande->reference . ' et j\'aimerais avoir des informations sur la livraison.') }}"
                target="_blank"
                class="px-6 py-3 bg-green-500 hover:bg-green-400 text-white
                       rounded-2xl text-sm font-semibold transition-all">

@@ -1,4 +1,4 @@
-@php $settings = App\Models\CompanySetting::getSettings(); @endphp
+@php $settings = App\Models\Parametre::first(); @endphp
 
 <footer style="background: #0F172A;" class="mt-16">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -16,20 +16,20 @@
                         <div class="w-10 h-10 bg-primary rounded-xl flex items-center
                                     justify-center font-bold text-white text-sm">AT</div>
                     @endif
-                    <p class="font-bold text-white text-sm">{{ $settings->name }}</p>
+                    <p class="font-bold text-white text-sm">{{ $settings->nom }}</p>
                 </div>
 
                 <p class="text-sm leading-relaxed mb-5" style="color: #94a3b8;">
-                    Votre spécialiste en ordinateurs portables et accessoires
-                    informatiques à Dakar. Qualité garantie, livraison rapide.
+                    Votre restaurant de plats faits maison à Dakar.
+                    Qualité garantie, livraison rapide.
                 </p>
 
                 {{-- Badges confiance --}}
                 <div class="flex flex-wrap gap-2">
                     @foreach([
                         ['color' => '#22c55e', 'label' => 'Livraison rapide'],
-                        ['color' => '#1E6FBF', 'label' => 'Qualité garantie'],
-                        ['color' => '#F5A800', 'label' => 'Paiement sécurisé'],
+                        ['color' => '#F27B20', 'label' => 'Qualité garantie'],
+                        ['color' => '#2DB667', 'label' => 'Paiement sécurisé'],
                     ] as $badge)
                         <div class="flex items-center gap-1.5 px-3 py-1 rounded-full"
                              style="background: rgba(255,255,255,0.06);
@@ -61,11 +61,11 @@
                            class="text-sm transition-colors hover:text-white"
                            style="color: #94a3b8;">Catalogue</a>
                     </li>
-                    @foreach(App\Models\Category::where('is_active', true)->limit(4)->get() as $cat)
+                    @foreach(App\Models\Categorie::where('est_active', true)->orderBy('ordre')->limit(6)->get() as $cat)
                         <li>
                             <a href="{{ route('shop.catalogue', ['categorie' => $cat->slug]) }}"
                                class="text-sm transition-colors hover:text-white"
-                               style="color: #94a3b8;">{{ $cat->name }}</a>
+                               style="color: #94a3b8;">{{ $cat->nom }}</a>
                         </li>
                     @endforeach
                 </ul>
@@ -94,7 +94,7 @@
                            style="color: #94a3b8;">Contactez-nous</a>
                     </li>
                     <li>
-                        <a href="{{ route('register') }}"
+                        <a href="{{ route('compte.register') }}"
                            class="text-sm transition-colors hover:text-white"
                            style="color: #94a3b8;">Créer un compte</a>
                     </li>
@@ -108,24 +108,24 @@
                     Contact
                 </p>
                 <ul class="space-y-3">
-                    @if($settings->address)
+                    @if($settings->adresse)
                         <li class="flex items-start gap-2.5">
                             <svg class="w-3.5 h-3.5 flex-shrink-0 mt-0.5"
-                                 fill="none" stroke="#1E6FBF" stroke-width="2"
+                                 fill="none" stroke="#F27B20" stroke-width="2"
                                  viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                       d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
                                 <circle cx="12" cy="10" r="3"/>
                             </svg>
                             <span class="text-sm" style="color: #94a3b8;">
-                                {{ $settings->address }}
+                                {{ $settings->adresse }}
                             </span>
                         </li>
                     @endif
-                    @if($settings->phone)
+                    @if($settings->telephone)
                         <li class="flex items-center gap-2.5">
                             <svg class="w-3.5 h-3.5 flex-shrink-0"
-                                 fill="none" stroke="#1E6FBF" stroke-width="2"
+                                 fill="none" stroke="#F27B20" stroke-width="2"
                                  viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                       d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498
@@ -135,14 +135,14 @@
                                          2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                             </svg>
                             <span class="text-sm" style="color: #94a3b8;">
-                                {{ $settings->phone }}
+                                {{ $settings->telephone }}
                             </span>
                         </li>
                     @endif
                     @if($settings->email)
                         <li class="flex items-center gap-2.5">
                             <svg class="w-3.5 h-3.5 flex-shrink-0"
-                                 fill="none" stroke="#1E6FBF" stroke-width="2"
+                                 fill="none" stroke="#F27B20" stroke-width="2"
                                  viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                       d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2
@@ -262,7 +262,7 @@
 
             {{-- Copyright + légal --}}
             <p class="text-xs" style="color: #475569;">
-                © {{ date('Y') }} {{ $settings->name }}. Tous droits réservés.
+                © {{ date('Y') }} {{ $settings->nom }}. Tous droits réservés.
                 @if($settings->ninea)
                     · NINEA : {{ $settings->ninea }}
                 @endif

@@ -2,31 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Sale;
-use App\Services\InvoiceService;
-use Illuminate\Http\Request;
+use App\Models\Vente;
+use App\Services\FactureService;
 
 class FactureController extends Controller
 {
-    public function __construct(private InvoiceService $invoiceService) {}
+    public function __construct(private FactureService $factureService) {}
 
-    // Vue détail facture
-    public function show(Sale $sale)
+    public function show(Vente $vente)
     {
-        $sale->load(['items.product', 'customer', 'invoice', 'user']);
+        $vente->load(['lignes.plat', 'client', 'facture', 'user']);
 
-        // Toujours regénérer pour avoir les dernières infos
-        if ($sale->invoice) {
-            $this->invoiceService->generatePdf($sale);
+        if ($vente->facture) {
+            $this->factureService->generatePdf($vente);
         }
 
-        return view('factures.show', compact('sale'));
+        return view('factures.show', compact('vente'));
     }
 
-    // Télécharger PDF
-    public function download(Sale $sale)
+    public function download(Vente $vente)
     {
-        $sale->load(['items', 'customer', 'invoice']);
-        return $this->invoiceService->download($sale);
+        $vente->load(['lignes', 'client', 'facture']);
+        return $this->factureService->download($vente);
     }
 }

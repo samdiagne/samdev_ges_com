@@ -6,32 +6,33 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Role;
 
 class UtilisateurManager extends Component
 {
     use WithPagination;
 
-    public bool   $showModal  = false;
-    public bool   $isEditing  = false;
-    public ?int   $editingId  = null;
+    public string $search       = '';
+    public string $filtreRole   = '';
+    public string $filtreStatut = '';
 
-    public string $name     = '';
-    public string $email    = '';
-    public string $phone    = '';
-    public string $password = '';
-    public string $role     = 'gestionnaire';
+    public bool   $afficherModal = false;
+    public bool   $isEditing     = false;
+    public ?int   $editingId     = null;
+
+    public string $name      = '';
+    public string $email     = '';
+    public string $password  = '';
+    public string $role      = 'gestionnaire';
     public bool   $is_active = true;
 
-    public bool $showDeleteModal = false;
-    public ?int $deletingId      = null;
+    public bool   $afficherModalSuppression = false;
+    public ?int   $suppressionId            = null;
 
     protected function rules(): array
     {
         return [
             'name'     => 'required|string|min:2|max:255',
             'email'    => 'required|email|unique:users,email,' . ($this->editingId ?? 'NULL'),
-            'phone'    => 'nullable|string|max:20',
             'password' => $this->isEditing ? 'nullable|min:8' : 'required|min:8',
             'role'     => 'required|in:admin,gestionnaire',
             'is_active'=> 'boolean',
@@ -44,27 +45,29 @@ class UtilisateurManager extends Component
         'email.unique'      => 'Cet email est déjà utilisé.',
         'password.required' => 'Le mot de passe est obligatoire.',
         'password.min'      => 'Le mot de passe doit faire au moins 8 caractères.',
+        'role.required'     => 'Veuillez choisir un rôle.',
     ];
+
+    public function updatingSearch(): void { $this->resetPage(); }
 
     public function openCreateModal(): void
     {
         $this->resetForm();
-        $this->isEditing = false;
-        $this->showModal = true;
+        $this->isEditing     = false;
+        $this->afficherModal = true;
     }
 
     public function openEditModal(int $id): void
     {
         $user = User::findOrFail($id);
         $this->resetForm();
-        $this->isEditing = true;
-        $this->editingId = $id;
-        $this->name      = $user->name;
-        $this->email     = $user->email;
-        $this->phone     = $user->phone ?? '';
-        $this->role      = $user->getRoleNames()->first() ?? 'gestionnaire';
-        $this->is_active = $user->is_active;
-        $this->showModal = true;
+        $this->isEditing  = true;
+        $this->editingId  = $id;
+        $this->name       = $user->name;
+        $this->email      = $user->email;
+        $this->role       = $user->roles->first()?->name ?? 'gestionnaire';
+        $this->is_active  = $user->is_active;
+        $this->afficherModal = true;
     }
 
     public function save(): void
@@ -74,7 +77,6 @@ class UtilisateurManager extends Component
         $data = [
             'name'      => $this->name,
             'email'     => $this->email,
-            'phone'     => $this->phone ?: null,
             'is_active' => $this->is_active,
         ];
 
@@ -84,77 +86,103 @@ class UtilisateurManager extends Component
 
         if ($this->isEditing) {
             $user = User::findOrFail($this->editingId);
+
+            if ($user->id === auth()->id() && $this->role !== 'admin') {
+                $this->addError('role', 'Vous ne pouvez pas changer votre propre rôle.');
+                return;
+            }
+
             $user->update($data);
             $user->syncRoles([$this->role]);
-            session()->flash('success', 'Utilisateur modifié !');
+            session()->flash('success', 'Utilisateur modifié avec succès !');
         } else {
             $user = User::create($data);
             $user->assignRole($this->role);
-            session()->flash('success', 'Utilisateur créé !');
+            session()->flash('success', 'Utilisateur créé avec succès !');
         }
 
         $this->closeModal();
+        $this->resetPage();
     }
 
     public function toggleStatus(int $id): void
     {
         $user = User::findOrFail($id);
-
-        // Empêcher de se désactiver soi-même
         if ($user->id === auth()->id()) {
             session()->flash('error', 'Vous ne pouvez pas désactiver votre propre compte.');
             return;
         }
-
-        $user->update(['is_active' => !$user->is_active]);
+        $user->update(['is_active' => ! $user->is_active]);
         session()->flash('success', 'Statut mis à jour !');
     }
 
     public function confirmDelete(int $id): void
     {
-        // Empêcher de se supprimer soi-même
         if ($id === auth()->id()) {
             session()->flash('error', 'Vous ne pouvez pas supprimer votre propre compte.');
             return;
         }
-        $this->deletingId      = $id;
-        $this->showDeleteModal = true;
+        $this->suppressionId            = $id;
+        $this->afficherModalSuppression = true;
     }
 
     public function delete(): void
     {
-        User::findOrFail($this->deletingId)->delete();
-        session()->flash('success', 'Utilisateur supprimé !');
-        $this->showDeleteModal = false;
-        $this->deletingId      = null;
+        $user = User::findOrFail($this->suppressionId);
+        if ($user->id === auth()->id()) {
+            session()->flash('error', 'Action non autorisée.');
+            $this->afficherModalSuppression = false;
+            return;
+        }
+        $user->delete();
+        session()->flash('success', 'Utilisateur supprimé avec succès !');
+        $this->afficherModalSuppression = false;
+        $this->suppressionId            = null;
+        $this->resetPage();
     }
 
     public function closeModal(): void
     {
-        $this->showModal = false;
+        $this->afficherModal = false;
         $this->resetForm();
     }
 
     private function resetForm(): void
     {
-        $this->name      = '';
-        $this->email     = '';
-        $this->phone     = '';
-        $this->password  = '';
-        $this->role      = 'gestionnaire';
-        $this->is_active = true;
-        $this->editingId = null;
+        $this->name       = '';
+        $this->email      = '';
+        $this->password   = '';
+        $this->role       = 'gestionnaire';
+        $this->is_active  = true;
+        $this->editingId  = null;
         $this->resetErrorBag();
     }
 
     public function render()
     {
         $users = User::with('roles')
-            ->whereHas('roles', fn($q) => $q->whereIn('name', ['admin', 'gestionnaire']))
+            ->withCount('ventes')
+            ->when($this->search, fn($q) =>
+                $q->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('email', 'like', '%' . $this->search . '%')
+            )
+            ->when($this->filtreRole, fn($q) =>
+                $q->role($this->filtreRole)
+            )
+            ->when($this->filtreStatut !== '', fn($q) =>
+                $q->where('is_active', $this->filtreStatut === '1')
+            )
             ->latest()
             ->paginate(15);
 
+        $stats = [
+            'total'         => User::count(),
+            'admins'        => User::role('admin')->count(),
+            'gestionnaires' => User::role('gestionnaire')->count(),
+            'inactifs'      => User::where('is_active', false)->count(),
+        ];
+
         return view('livewire.utilisateurs.utilisateur-manager',
-            compact('users'));
+            compact('users', 'stats'));
     }
 }

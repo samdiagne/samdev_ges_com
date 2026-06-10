@@ -3,39 +3,33 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class QuoteItem extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
-        'quote_id', 'product_id', 'description',
-        'unit_price_ht', 'unit_price_ttc', 'quantity',
-        'tva_rate', 'discount', 'total_ht', 'total_ttc',
+        'quote_id', 'plat_id', 'description',
+        'prix_unitaire', 'quantite', 'remise', 'total',
         'is_free_line',
     ];
 
     protected function casts(): array
     {
         return [
-            'unit_price_ht'  => 'decimal:2',
-            'unit_price_ttc' => 'decimal:2',
-            'tva_rate'       => 'decimal:2',
-            'discount'       => 'decimal:2',
-            'total_ht'       => 'decimal:2',
-            'total_ttc'      => 'decimal:2',
-            'is_free_line'   => 'boolean',
+            'prix_unitaire' => 'decimal:2',
+            'remise'        => 'decimal:2',
+            'total'         => 'decimal:2',
+            'is_free_line'  => 'boolean',
         ];
     }
 
-    public function quote()
+    public function quote(): BelongsTo
     {
         return $this->belongsTo(Quote::class);
     }
 
-    public function product()
+    public function plat(): BelongsTo
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Plat::class);
     }
 }

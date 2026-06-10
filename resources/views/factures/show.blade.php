@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Facture ' . $sale->invoice?->invoice_number)
-@section('page-title', 'Facture ' . $sale->invoice?->invoice_number)
-@section('page-subtitle', $sale->sold_at->format('d/m/Y à H:i'))
+@section('title', 'Facture ' . $vente->facture?->numero_facture)
+@section('page-title', 'Facture ' . $vente->facture?->numero_facture)
+@section('page-subtitle', $vente->vendu_le->format('d/m/Y à H:i'))
 
 @section('content')
 <div class="max-w-4xl mx-auto space-y-4">
@@ -32,7 +32,7 @@
         </a>
 
         {{-- Télécharger PDF --}}
-        <a href="{{ route('factures.download', $sale->id) }}"
+        <a href="{{ route('factures.download', $vente->id) }}"
            class="inline-flex items-center gap-2 bg-primary hover:bg-primary/90
                   text-white font-medium px-4 py-2.5 rounded-xl transition-all
                   shadow-lg shadow-primary/25 text-sm">
@@ -62,11 +62,11 @@
     </div>
 
     {{-- Aperçu facture --}}
-    @if($sale->invoice)
+    @if($vente->facture)
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
             <div class="p-4 border-b border-gray-100 flex items-center justify-between">
                 <h3 class="text-sm font-bold text-dark">
-                    Aperçu — {{ $sale->invoice->invoice_number }}
+                    Aperçu — {{ $vente->facture->numero_facture }}
                 </h3>
             </div>
 
@@ -76,25 +76,25 @@
                 <div class="p-4">
                     <p class="text-xs text-gray-400">Client</p>
                     <p class="text-sm font-semibold text-dark mt-0.5">
-                        {{ $sale->customer?->name ?? 'Anonyme' }}
+                        {{ $vente->client?->name ?? 'Anonyme' }}
                     </p>
                 </div>
                 <div class="p-4">
                     <p class="text-xs text-gray-400">Date</p>
                     <p class="text-sm font-semibold text-dark mt-0.5">
-                        {{ $sale->sold_at->format('d/m/Y') }}
+                        {{ $vente->vendu_le->format('d/m/Y') }}
                     </p>
                 </div>
                 <div class="p-4">
                     <p class="text-xs text-gray-400">Paiement</p>
                     <p class="text-sm font-semibold text-dark mt-0.5 capitalize">
-                        {{ $sale->payment_method }}
+                        {{ $vente->mode_paiement }}
                     </p>
                 </div>
                 <div class="p-4">
                     <p class="text-xs text-gray-400">Total</p>
                     <p class="text-sm font-bold text-primary mt-0.5">
-                        {{ number_format($sale->invoice->total_ttc, 0, ',', ' ') }} FCFA
+                        {{ number_format($vente->facture->total, 0, ',', ' ') }} FCFA
                     </p>
                 </div>
             </div>
@@ -105,20 +105,20 @@
                     Articles
                 </p>
                 <div class="space-y-2">
-                    @foreach($sale->items as $item)
+                    @foreach($vente->lignes as $item)
                         <div class="flex items-center justify-between p-3
                                     bg-gray-50 rounded-xl">
                             <div>
                                 <p class="text-sm font-medium text-dark">
-                                    {{ $item->product_name }}
+                                    {{ $item->nom_plat }}
                                 </p>
                                 <p class="text-xs text-gray-400">
-                                    {{ number_format($item->unit_price_ttc, 0, ',', ' ') }}
-                                    FCFA × {{ $item->quantity }}
+                                    {{ number_format($item->prix_unitaire, 0, ',', ' ') }}
+                                    FCFA × {{ $item->quantite }}
                                 </p>
                             </div>
                             <p class="text-sm font-bold text-dark">
-                                {{ number_format($item->total_ttc, 0, ',', ' ') }} FCFA
+                                {{ number_format($item->total, 0, ',', ' ') }} FCFA
                             </p>
                         </div>
                     @endforeach
@@ -128,11 +128,11 @@
             {{-- Totaux --}}
             <div class="p-4 border-t border-gray-100">
                 <div class="max-w-xs ml-auto space-y-2">
-                    @if($sale->discount > 0)
+                    @if($vente->discount > 0)
                         <div class="flex justify-between text-sm text-secondary">
                             <span>Remise</span>
                             <span>
-                                -{{ number_format($sale->discount, 0, ',', ' ') }} FCFA
+                                -{{ number_format($vente->discount, 0, ',', ' ') }} FCFA
                             </span>
                         </div>
                     @endif
@@ -140,7 +140,7 @@
                                 border-t border-gray-100 pt-2">
                         <span>Total</span>
                         <span class="text-primary">
-                            {{ number_format($sale->invoice->total_ttc, 0, ',', ' ') }} FCFA
+                            {{ number_format($vente->facture->total, 0, ',', ' ') }} FCFA
                         </span>
                     </div>
                 </div>

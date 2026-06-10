@@ -6,10 +6,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}"/>
 
     @php
-        $settings    = App\Models\CompanySetting::getSettings();
-        $siteName    = $settings->name ?? 'Al-Adab Tech Store';
+        $settings    = App\Models\Parametre::first();
+        $siteName    = $settings->nom ?? 'Mon Restaurant';
         $siteUrl     = config('app.url');
-        $defaultDesc = 'Achetez vos ordinateurs portables et accessoires informatiques à Dakar. Livraison rapide, qualité garantie — ' . $siteName;
+        $defaultDesc = 'Découvrez nos plats faits maison à Dakar. Commande en ligne, livraison rapide, qualité garantie — ' . $siteName;
         $metaTitle   = (trim(strip_tags($__env->yieldContent('title')))
             ? trim(strip_tags($__env->yieldContent('title'))) . ' — '
             : '') . $siteName;

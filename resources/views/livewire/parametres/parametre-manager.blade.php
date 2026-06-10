@@ -17,11 +17,11 @@
             'signature'  => '✍️ Signature & Cachet',
             'facturation'=> '🧾 Facturation',
         ] as $tab => $label)
-            <button wire:click="$set('activeTab', '{{ $tab }}')"
+            <button wire:click="$set('ongletActif', '{{ $tab }}')"
                     @class([
                         'px-4 py-2 rounded-xl text-sm font-medium transition-all',
-                        'bg-primary text-white shadow-lg shadow-primary/25' => $activeTab === $tab,
-                        'text-gray-500 hover:text-dark hover:bg-gray-50' => $activeTab !== $tab,
+                        'bg-primary text-white shadow-lg shadow-primary/25' => $ongletActif === $tab,
+                        'text-gray-500 hover:text-dark hover:bg-gray-50' => $ongletActif !== $tab,
                     ])>
                 {{ $label }}
             </button>
@@ -29,7 +29,7 @@
     </div>
 
     {{-- ══ TAB : Entreprise ══ --}}
-    @if($activeTab === 'entreprise')
+    @if($ongletActif === 'entreprise')
         <div class="max-w-2xl space-y-6">
             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
                 <h3 class="text-sm font-bold text-dark mb-5 flex items-center gap-2">
@@ -44,12 +44,12 @@
                         <label class="block text-sm font-medium text-dark mb-1.5">
                             Nom de la boutique <span class="text-red-500">*</span>
                         </label>
-                        <input wire:model="name" type="text"
-                               placeholder="Al-Adab Tech Store"
+                        <input wire:model="nom" type="text"
+                               placeholder="Mon Restaurant"
                                class="w-full px-3 py-2.5 border border-gray-200 rounded-xl
                                       text-sm bg-gray-50 focus:outline-none
                                       focus:border-primary focus:bg-white transition-colors"/>
-                        @error('name')
+                        @error('nom')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
@@ -82,7 +82,7 @@
                             <label class="block text-sm font-medium text-dark mb-1.5">
                                 Téléphone
                             </label>
-                            <input wire:model="phone" type="text"
+                            <input wire:model="telephone" type="text"
                                    placeholder="+221 XX XXX XX XX"
                                    class="w-full px-3 py-2.5 border border-gray-200 rounded-xl
                                           text-sm bg-gray-50 focus:outline-none
@@ -110,7 +110,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-dark mb-1.5">Adresse</label>
-                            <input wire:model="address" type="text"
+                            <input wire:model="adresse" type="text"
                                    placeholder="Dakar, Sénégal"
                                    class="w-full px-3 py-2.5 border border-gray-200 rounded-xl
                                           text-sm bg-gray-50 focus:outline-none
@@ -168,12 +168,12 @@
                         <label class="block text-sm font-medium text-dark mb-1.5">
                             Logo boutique
                         </label>
-                        @if($currentLogo && !$logo)
+                        @if($logoActuel && !$logo)
                             <div class="mb-3 flex items-center gap-3">
-                                <img src="{{ Storage::url($currentLogo) }}"
+                                <img src="{{ Storage::url($logoActuel) }}"
                                     class="h-14 object-contain rounded-xl border border-gray-200 bg-white p-1"/>
                                 <button type="button"
-                                        wire:click="$set('currentLogo', null)"
+                                        wire:click="$set('logoActuel', null)"
                                         class="text-xs text-red-500 hover:text-red-700 transition-colors">
                                     🗑️ Supprimer
                                 </button>
@@ -195,11 +195,11 @@
                 </div>
 
                 <div class="flex justify-end mt-6">
-                    <button wire:click="saveEntreprise"
+                    <button wire:click="saveRestaurant"
                             class="px-6 py-2.5 bg-primary hover:bg-primary/90 text-white
                                    text-sm font-medium rounded-xl transition-all shadow-lg
                                    shadow-primary/25 flex items-center gap-2">
-                        <svg wire:loading wire:target="saveEntreprise"
+                        <svg wire:loading wire:target="saveRestaurant"
                              class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10"
                                     stroke="currentColor" stroke-width="4"/>
@@ -214,7 +214,7 @@
     @endif
 
     {{-- ══ TAB : Signature & Cachet ══ --}}
-    @if($activeTab === 'signature')
+    @if($ongletActif === 'signature')
         <div class="max-w-2xl space-y-6">
 
             {{-- Cachet --}}
@@ -224,23 +224,23 @@
                     Uploadez une image de votre cachet officiel (PNG avec fond transparent recommandé)
                 </p>
 
-                @if($currentStamp && !$stamp)
+                @if($cachetActuel && !$cachet)
                     <div class="mb-4 p-4 bg-gray-50 rounded-xl inline-block">
-                        <img src="{{ Storage::url($currentStamp) }}"
+                        <img src="{{ Storage::url($cachetActuel) }}"
                              class="h-24 object-contain"/>
                         <p class="text-xs text-gray-400 mt-2 text-center">Cachet actuel</p>
                     </div>
                 @endif
 
-                @if($stamp)
+                @if($cachet)
                     <div class="mb-4 p-4 bg-gray-50 rounded-xl inline-block">
-                        <img src="{{ $stamp->temporaryUrl() }}"
+                        <img src="{{ $cachet->temporaryUrl() }}"
                              class="h-24 object-contain"/>
                         <p class="text-xs text-gray-400 mt-2 text-center">Aperçu</p>
                     </div>
                 @endif
 
-                <input wire:model="stamp" type="file" accept="image/*"
+                <input wire:model="cachet" type="file" accept="image/*"
                        class="w-full text-sm text-gray-500 file:mr-3 file:py-2
                               file:px-3 file:rounded-lg file:border-0 file:text-xs
                               file:font-medium file:bg-primary/10 file:text-primary
@@ -271,10 +271,10 @@
                 </div>
 
                 {{-- Afficher signature existante si pas en train de dessiner --}}
-                @if($currentSignature && !$signatureData && !$signatureCleared)
+                @if($signatureActuelle && !$signatureData && !$signatureEffacee)
                     <div class="mb-3 p-3 bg-gray-50 rounded-xl">
                         <p class="text-xs text-gray-400 mb-2">Signature actuelle :</p>
-                        <img src="{{ Storage::url($currentSignature) }}"
+                        <img src="{{ Storage::url($signatureActuelle) }}"
                              class="h-16 object-contain"/>
                     </div>
                 @endif
@@ -318,7 +318,7 @@
             </div>
 
             {{-- Aperçu sur facture --}}
-            @if($currentStamp || $currentSignature)
+            @if($cachetActuel || $signatureActuelle)
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
                     <h3 class="text-sm font-bold text-dark mb-4">
                         Aperçu sur la facture
@@ -326,8 +326,8 @@
                     <div class="border border-gray-200 rounded-xl p-6 bg-gray-50">
                         <div class="flex items-end justify-between">
                             <div class="text-center">
-                                @if($currentSignature)
-                                    <img src="{{ Storage::url($currentSignature) }}"
+                                @if($signatureActuelle)
+                                    <img src="{{ Storage::url($signatureActuelle) }}"
                                          class="h-16 object-contain mb-2"/>
                                 @endif
                                 <div class="border-t border-gray-400 pt-1 w-40">
@@ -335,8 +335,8 @@
                                 </div>
                             </div>
                             <div class="text-center">
-                                @if($currentStamp)
-                                    <img src="{{ Storage::url($currentStamp) }}"
+                                @if($cachetActuel)
+                                    <img src="{{ Storage::url($cachetActuel) }}"
                                          class="h-20 object-contain mb-2 opacity-80"/>
                                 @endif
                                 <p class="text-xs text-gray-500">Cachet</p>
@@ -349,7 +349,7 @@
     @endif
 
     {{-- ══ TAB : Facturation ══ --}}
-    @if($activeTab === 'facturation')
+    @if($ongletActif === 'facturation')
         <div class="max-w-2xl">
             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
                 <h3 class="text-sm font-bold text-dark mb-5 flex items-center gap-2">
@@ -373,7 +373,7 @@
                             Préfixe des factures
                         </label>
                         <div class="flex items-center gap-3">
-                            <input wire:model="invoice_prefix" type="text"
+                            <input wire:model="prefixe_facture" type="text"
                                    maxlength="10"
                                    placeholder="FAC"
                                    class="w-32 px-3 py-2.5 border border-gray-200 rounded-xl
@@ -383,7 +383,7 @@
                             <span class="text-sm text-gray-400">
                                 → Exemple :
                                 <strong class="text-dark">
-                                    {{ $invoice_prefix }}-{{ date('Y') }}-0042
+                                    {{ $prefixe_facture }}-{{ date('Y') }}-0042
                                 </strong>
                             </span>
                         </div>
@@ -392,7 +392,7 @@
                     {{-- Devise --}}
                     <div>
                         <label class="block text-sm font-medium text-dark mb-1.5">Devise</label>
-                        <select wire:model="currency"
+                        <select wire:model="devise"
                                 class="w-48 px-3 py-2.5 border border-gray-200 rounded-xl
                                        text-sm bg-gray-50 focus:outline-none
                                        focus:border-primary transition-colors">
@@ -411,18 +411,18 @@
                         <p class="text-xs text-blue-600">
                             Prochaine facture :
                             <strong>
-                                {{ $invoice_prefix }}-{{ date('Y') }}-{{ str_pad($settings->invoice_counter, 4, '0', STR_PAD_LEFT) }}
+                                {{ $prefixe_facture }}-{{ date('Y') }}-{{ str_pad($parametres->compteur_facture ?? 1, 4, '0', STR_PAD_LEFT) }}
                             </strong>
                         </p>
                     </div>
                 </div>
 
                 <div class="flex justify-end mt-6">
-                    <button wire:click="saveEntreprise"
+                    <button wire:click="saveRestaurant"
                             class="px-6 py-2.5 bg-primary hover:bg-primary/90 text-white
                                    text-sm font-medium rounded-xl transition-all shadow-lg
                                    shadow-primary/25 flex items-center gap-2">
-                        <svg wire:loading wire:target="saveEntreprise"
+                        <svg wire:loading wire:target="saveRestaurant"
                              class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10"
                                     stroke="currentColor" stroke-width="4"/>
@@ -449,7 +449,7 @@
                     this.canvas = document.getElementById('signatureCanvas');
                     if (!this.canvas) return;
                     this.ctx = this.canvas.getContext('2d');
-                    this.ctx.strokeStyle = '#1E6FBF';
+                    this.ctx.strokeStyle = '#F27B20';
                     this.ctx.lineWidth   = 2.5;
                     this.ctx.lineCap     = 'round';
                     this.ctx.lineJoin    = 'round';
@@ -499,7 +499,7 @@
                         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
                     }
                     this.hasDrawn = false;
-                    @this.set('signatureCleared', true);
+                    @this.set('signatureEffacee', true);
                     @this.set('signatureData', null);
                 },
 

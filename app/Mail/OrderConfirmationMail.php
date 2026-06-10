@@ -2,8 +2,8 @@
 
 namespace App\Mail;
 
-use App\Models\Order;
-use App\Models\CompanySetting;
+use App\Models\Commande;
+use App\Models\Parametre;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -14,24 +14,24 @@ class OrderConfirmationMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public CompanySetting $settings;
+    public $settings;
 
-    public function __construct(public Order $order)
+    public function __construct(public Commande $commande)
     {
-        $this->settings = CompanySetting::getSettings();
+        $this->settings = Parametre::first();
     }
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Confirmation de votre commande ' . $this->order->reference,
+            subject: 'Confirmation de votre commande ' . $this->commande->reference,
         );
     }
 
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.orders.confirmation',
+            markdown: 'emails.commandes.confirmation',
         );
     }
 

@@ -3,32 +3,29 @@
 namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
-use App\Models\Order;
+use App\Models\Commande;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
-use Illuminate\Support\Facades\DB;
 
 class EspaceClientController extends Controller
 {
     public function index()
     {
-        $orders = Order::where('user_id', Auth::id())
-            ->with('items')
+        $commandes = Commande::where('user_id', Auth::id())
+            ->with('lignes')
             ->latest()
             ->paginate(10);
 
-        return view('shop.compte.commandes', compact('orders'));
+        return view('shop.compte.commandes', compact('commandes'));
     }
 
-    public function show(Order $order)
+    public function show(Commande $commande)
     {
-        abort_if($order->user_id !== Auth::id(), 403);
-
-        $order->load('items');
-
-        return view('shop.compte.commande', compact('order'));
+        abort_if($commande->user_id !== Auth::id(), 403);
+        $commande->load('lignes');
+        return view('shop.compte.commande', compact('commande'));
     }
 
     public function profil()
@@ -42,7 +39,8 @@ class EspaceClientController extends Controller
 
         $request->validate([
             'name'  => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'email' => ['required', 'email', 'max:255',
+                'unique:users,email,' . $user->id],
             'phone' => ['nullable', 'string', 'max:20'],
         ], [
             'name.required'  => 'Le nom est obligatoire.',
@@ -50,7 +48,7 @@ class EspaceClientController extends Controller
             'email.unique'   => 'Cette adresse email est déjà utilisée.',
         ]);
 
-        $user->update($request->only('name', 'email', 'phone'));
+        $user->update($request->only('name', 'email'));
 
         return back()->with('success', 'Votre profil a été mis à jour.');
     }
@@ -64,12 +62,11 @@ class EspaceClientController extends Controller
             'current_password.required' => 'Le mot de passe actuel est obligatoire.',
             'password.required'         => 'Le nouveau mot de passe est obligatoire.',
             'password.confirmed'        => 'Les mots de passe ne correspondent pas.',
-            'password.min'              => 'Le mot de passe doit contenir au moins 8 caractères.',
         ]);
 
         $user = Auth::user();
 
-        if (!Hash::check($request->current_password, $user->password)) {
+        if (! Hash::check($request->current_password, $user->password)) {
             return back()->withErrors(['current_password' => 'Mot de passe actuel incorrect.'])
                 ->with('tab', 'password');
         }
@@ -89,7 +86,7 @@ class EspaceClientController extends Controller
 
         $user = Auth::user();
 
-        if (!Hash::check($request->password, $user->password)) {
+        if (! Hash::check($request->password, $user->password)) {
             return back()->withErrors(['delete_password' => 'Mot de passe incorrect.'])
                 ->withFragment('danger');
         }
@@ -97,7 +94,6 @@ class EspaceClientController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-
         $user->delete();
 
         return redirect()->route('shop.home')

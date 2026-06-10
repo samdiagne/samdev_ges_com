@@ -35,6 +35,7 @@
                 </div>
                 <div>
                     <h2 class="font-bold text-dark text-base">Mon panier</h2>
+                    @php $count = collect($panier)->sum('quantite') @endphp
                     <p class="text-xs text-gray-400">{{ $count }} article{{ $count > 1 ? 's' : '' }}</p>
                 </div>
             </div>
@@ -50,7 +51,7 @@
         {{-- Corps --}}
         <div class="flex-1 overflow-y-auto px-6 py-4">
 
-            @if(empty($cart))
+            @if(empty($panier))
                 {{-- Panier vide --}}
                 <div class="flex flex-col items-center justify-center h-full text-center py-16">
                     <div class="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
@@ -72,13 +73,13 @@
             @else
                 {{-- Liste des articles --}}
                 <div class="space-y-3">
-                    @foreach($cart as $key => $item)
+                    @foreach($panier as $key => $item)
                         <div class="flex gap-3 p-3 bg-gray-50 rounded-2xl group">
                             {{-- Image --}}
                             <div class="w-16 h-16 bg-white rounded-xl overflow-hidden shrink-0 border border-gray-100">
                                 @if($item['image'])
                                     <img src="{{ Storage::url($item['image']) }}"
-                                         alt="{{ $item['name'] }}"
+                                         alt="{{ $item['nom'] }}"
                                          class="w-full h-full object-contain p-1"/>
                                 @else
                                     <div class="w-full h-full flex items-center justify-center">
@@ -93,14 +94,14 @@
 
                             {{-- Détails --}}
                             <div class="flex-1 min-w-0">
-                                <a href="{{ route('shop.produit', $item['slug']) }}"
+                                <a href="{{ route('shop.plat', $item['slug']) }}"
                                    wire:click="close"
                                    class="text-sm font-semibold text-dark hover:text-primary
                                           transition-colors line-clamp-2 leading-tight mb-1 block">
-                                    {{ $item['name'] }}
+                                    {{ $item['nom'] }}
                                 </a>
                                 <p class="text-sm font-bold text-primary">
-                                    {{ number_format($item['price'], 0, ',', ' ') }} FCFA
+                                    {{ number_format($item['prix'], 0, ',', ' ') }} FCFA
                                 </p>
 
                                 {{-- Contrôles quantité --}}
@@ -115,10 +116,10 @@
                                             </svg>
                                         </button>
                                         <span class="w-8 text-center text-sm font-bold text-dark">
-                                            {{ $item['quantity'] }}
+                                            {{ $item['quantite'] }}
                                         </span>
                                         <button wire:click="increment('{{ $key }}')"
-                                                @if($item['quantity'] >= $item['stock']) disabled @endif
+                                                @if($item['quantite'] >= $item['stock']) disabled @endif
                                                 class="w-7 h-7 flex items-center justify-center rounded-lg
                                                        bg-white border border-gray-200 hover:border-primary
                                                        hover:text-primary transition-colors text-gray-500
@@ -129,7 +130,7 @@
                                         </button>
                                     </div>
                                     <p class="text-xs font-semibold text-gray-500">
-                                        = {{ number_format($item['price'] * $item['quantity'], 0, ',', ' ') }} FCFA
+                                        = {{ number_format($item['prix'] * $item['quantite'], 0, ',', ' ') }} FCFA
                                     </p>
                                 </div>
                             </div>
@@ -167,15 +168,15 @@
         </div>
 
         {{-- Footer --}}
-        @if(!empty($cart))
+        @if(!empty($panier))
             @php
-                $settings = App\Models\CompanySetting::getSettings();
-                $wa = preg_replace('/[^0-9]/', '', $settings->whatsapp ?? $settings->phone ?? '');
-                $msg  = "Bonjour *{$settings->name}* 👋\n\n";
+                $parametres = App\Models\Parametre::first();
+                $wa = preg_replace('/[^0-9]/', '', $parametres->whatsapp ?? $parametres->telephone ?? '');
+                $msg  = "Bonjour *{$parametres->nom}* 👋\n\n";
                 $msg .= "Je souhaite passer une commande :\n\n";
-                foreach ($cart as $item) {
-                    $msg .= "• *{$item['name']}* x{$item['quantity']} — "
-                          . number_format($item['price'] * $item['quantity'], 0, ',', ' ')
+                foreach ($panier as $item) {
+                    $msg .= "• *{$item['nom']}* x{$item['quantite']} — "
+                          . number_format($item['prix'] * $item['quantite'], 0, ',', ' ')
                           . " FCFA\n";
                 }
                 $msg .= "\n💰 *Total : " . number_format($total, 0, ',', ' ') . " FCFA*\n\n";

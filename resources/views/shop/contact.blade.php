@@ -2,7 +2,7 @@
 @section('title', 'Contactez-nous')
 
 @section('content')
-@php $settings = App\Models\CompanySetting::getSettings(); @endphp
+@php $settings = App\Models\Parametre::first(); @endphp
 
 {{-- Hero --}}
 <div class="relative bg-gradient-to-br from-primary via-primary to-dark overflow-hidden py-20">
@@ -104,7 +104,7 @@
                                            {{ $errors->has('subject') ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50 focus:border-primary' }}">
                                 <option value="">Choisir un sujet</option>
                                 <option value="Demande de devis"          {{ old('subject') === 'Demande de devis' ? 'selected' : '' }}>Demande de devis</option>
-                                <option value="Question sur un produit"   {{ old('subject') === 'Question sur un produit' ? 'selected' : '' }}>Question sur un produit</option>
+                                <option value="Question sur un plat"   {{ old('subject') === 'Question sur un plat' ? 'selected' : '' }}>Question sur un plat</option>
                                 <option value="Suivi de commande"         {{ old('subject') === 'Suivi de commande' ? 'selected' : '' }}>Suivi de commande</option>
                                 <option value="Service après-vente"       {{ old('subject') === 'Service après-vente' ? 'selected' : '' }}>Service après-vente (SAV)</option>
                                 <option value="Partenariat"               {{ old('subject') === 'Partenariat' ? 'selected' : '' }}>Partenariat</option>
@@ -144,7 +144,7 @@
         <div class="lg:col-span-2 space-y-4">
 
             {{-- Carte : Adresse --}}
-            @if($settings->address)
+            @if($settings->adresse)
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
                     <div class="flex items-start gap-4">
                         <div class="w-11 h-11 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
@@ -157,7 +157,7 @@
                         </div>
                         <div>
                             <p class="text-sm font-bold text-dark mb-1">Notre adresse</p>
-                            <p class="text-sm text-gray-500 leading-relaxed">{{ $settings->address }}</p>
+                            <p class="text-sm text-gray-500 leading-relaxed">{{ $settings->adresse }}</p>
                             <p class="text-sm text-gray-400">Dakar, Sénégal</p>
                         </div>
                     </div>
@@ -165,7 +165,7 @@
             @endif
 
             {{-- Carte : Téléphone --}}
-            @if($settings->phone)
+            @if($settings->telephone)
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
                     <div class="flex items-start gap-4">
                         <div class="w-11 h-11 bg-secondary/10 rounded-xl flex items-center justify-center shrink-0">
@@ -176,9 +176,9 @@
                         </div>
                         <div>
                             <p class="text-sm font-bold text-dark mb-1">Téléphone</p>
-                            <a href="tel:{{ $settings->phone }}"
+                            <a href="tel:{{ $settings->telephone }}"
                                class="text-sm text-primary font-semibold hover:underline">
-                                {{ $settings->phone }}
+                                {{ $settings->telephone }}
                             </a>
                             <p class="text-xs text-gray-400 mt-1">Lun–Sam · 9h00 – 18h00</p>
                         </div>
@@ -191,12 +191,12 @@
                 @php
                     $wa = preg_replace('/[^0-9]/', '', $settings->whatsapp);
                     $sujets = [
-                        ['label' => '🛒 Passer une commande',        'msg' => "Bonjour *{$settings->name}* 👋\nJe souhaite passer une commande. Pouvez-vous m'aider ?"],
-                        ['label' => '📦 Disponibilité d\'un produit', 'msg' => "Bonjour *{$settings->name}* 👋\nJe voudrais savoir si un produit est disponible en stock."],
-                        ['label' => '💰 Demande de prix',             'msg' => "Bonjour *{$settings->name}* 👋\nJe souhaite avoir des informations sur vos tarifs."],
-                        ['label' => '🚚 Infos livraison',             'msg' => "Bonjour *{$settings->name}* 👋\nJe voudrais des informations sur vos délais et frais de livraison."],
-                        ['label' => '🔧 Service après-vente',         'msg' => "Bonjour *{$settings->name}* 👋\nJ'ai besoin d'assistance pour un produit acheté."],
-                        ['label' => '❓ Autre question',               'msg' => "Bonjour *{$settings->name}* 👋\nJ'ai une question à vous poser."],
+                        ['label' => '🛒 Passer une commande',        'msg' => "Bonjour *{$settings->nom}* 👋\nJe souhaite passer une commande. Pouvez-vous m'aider ?"],
+                        ['label' => '📦 Disponibilité d\'un plat',    'msg' => "Bonjour *{$settings->nom}* 👋\nJe voudrais savoir si un plat est disponible."],
+                        ['label' => '💰 Demande de prix',             'msg' => "Bonjour *{$settings->nom}* 👋\nJe souhaite avoir des informations sur vos tarifs."],
+                        ['label' => '🚚 Infos livraison',             'msg' => "Bonjour *{$settings->nom}* 👋\nJe voudrais des informations sur vos délais et frais de livraison."],
+                        ['label' => '🔧 Réclamation',                 'msg' => "Bonjour *{$settings->nom}* 👋\nJ'ai besoin d'assistance concernant ma commande."],
+                        ['label' => '❓ Autre question',               'msg' => "Bonjour *{$settings->nom}* 👋\nJ'ai une question à vous poser."],
                     ];
                 @endphp
 

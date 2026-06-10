@@ -12,7 +12,7 @@
                         Lignes du devis
                     </h3>
 
-                    {{-- Recherche + filtres catégories --}}
+                    {{-- Recherche + filtres categories --}}
                     <div class="space-y-3 mb-4">
 
                         {{-- Barre de recherche --}}
@@ -22,13 +22,13 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
                             </svg>
-                            <input wire:model.live.debounce.300ms="searchProduct"
-                                type="text" placeholder="Rechercher un produit..."
+                            <input wire:model.live.debounce.300ms="searchPlat"
+                                type="text" placeholder="Rechercher un plat..."
                                 class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl
                                         text-sm focus:outline-none focus:border-primary bg-gray-50"/>
                         </div>
 
-                        {{-- Filtres catégories --}}
+                        {{-- Filtres categories --}}
                         <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                             <button type="button"
                                     wire:click="$set('filterCategorie', '')"
@@ -53,23 +53,23 @@
                                             'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                                 => $filterCategorie != $cat->id,
                                         ])>
-                                    {{ $cat->name }}
+                                    {{ $cat->nom }}
                                 </button>
                             @endforeach
                         </div>
                     </div>
 
-                    {{-- Grille produits --}}
-                    @if(count($allProducts) > 0)
+                    {{-- Grille plats --}}
+                    @if(count($allPlats) > 0)
                         @php
-                            $selectedProductIds = array_filter(array_column($items, 'product_id'));
+                            $selectedPlatIds = array_filter(array_column($items, 'plat_id'));
                         @endphp
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4
                                     max-h-72 overflow-y-auto pr-1">
-                            @foreach($allProducts as $product)
-                                @php $isSelected = in_array($product['id'], $selectedProductIds); @endphp
+                            @foreach($allPlats as $plat)
+                                @php $isSelected = in_array($plat['id'], $selectedPlatIds); @endphp
                                 <button type="button"
-                                        wire:click="toggleProduct({{ $product['id'] }})"
+                                        wire:click="togglePlat({{ $plat['id'] }})"
                                         @class([
                                             'rounded-xl text-left transition-all duration-150
                                             overflow-hidden group',
@@ -83,8 +83,8 @@
                                     <div class="aspect-video flex items-center
                                                 justify-center p-2 relative
                                                 {{ $isSelected ? 'bg-green-100/50' : 'bg-white' }}">
-                                        @if($product['image'])
-                                            <img src="{{ Storage::url($product['image']) }}"
+                                        @if($plat['image'])
+                                            <img src="{{ Storage::url($plat['image']) }}"
                                                 class="w-full h-full object-contain
                                                         group-hover:scale-105 transition-transform"/>
                                         @else
@@ -97,7 +97,7 @@
                                             </svg>
                                         @endif
 
-                                        {{-- Checkmark sélectionné --}}
+                                        {{-- Checkmark selectionne --}}
                                         @if($isSelected)
                                             <div class="absolute top-1 left-1 w-5 h-5
                                                         bg-green-500 rounded-full flex items-center
@@ -111,11 +111,11 @@
                                         @endif
 
                                         {{-- Badge stock --}}
-                                        @if($product['stock_quantity'] <= 3)
+                                        @if($plat['stock'] <= 3)
                                             <div class="absolute top-1 right-1 bg-orange-500
                                                         text-white text-xs font-bold px-1.5 py-0.5
                                                         rounded-lg leading-none">
-                                                {{ $product['stock_quantity'] }}
+                                                {{ $plat['stock'] }}
                                             </div>
                                         @endif
                                     </div>
@@ -124,15 +124,15 @@
                                     <div class="p-2.5">
                                         <p class="text-xs truncate
                                                   {{ $isSelected ? 'text-green-600' : 'text-gray-400' }}">
-                                            {{ $product['category'] ?? '' }}
+                                            {{ $plat['categorie'] ?? '' }}
                                         </p>
                                         <p class="text-xs font-semibold truncate transition-colors
                                                   {{ $isSelected ? 'text-green-700' : 'text-dark group-hover:text-secondary' }}">
-                                            {{ $product['name'] }}
+                                            {{ $plat['nom'] }}
                                         </p>
                                         <p class="text-xs font-bold mt-1
                                                   {{ $isSelected ? 'text-green-600' : 'text-secondary' }}">
-                                            {{ number_format($product['selling_price'], 0, ',', ' ') }}
+                                            {{ number_format($plat['prix_vente'], 0, ',', ' ') }}
                                             <span class="font-normal text-gray-400">FCFA</span>
                                         </p>
                                     </div>
@@ -142,7 +142,7 @@
                     @else
                         <div class="flex flex-col items-center justify-center py-6 text-gray-400
                                     mb-4">
-                            <p class="text-sm">Aucun produit trouvé</p>
+                            <p class="text-sm">Aucun plat trouve</p>
                         </div>
                     @endif
 
@@ -152,7 +152,7 @@
                             class="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium
                                 text-secondary border border-secondary/30 rounded-xl
                                 hover:bg-secondary/5 transition-colors mb-4">
-                        ✏️ Ajouter une ligne libre
+                        Ajouter une ligne libre
                     </button>
 
                     {{-- Formulaire ligne libre --}}
@@ -160,12 +160,12 @@
                         <div class="bg-secondary/5 rounded-xl p-4 mb-4 space-y-3">
                             <p class="text-xs font-semibold text-secondary">Ligne libre</p>
                             <input wire:model="freeLineDescription" type="text"
-                                   placeholder="Description du produit/service"
+                                   placeholder="Description du plat/service"
                                    class="w-full px-3 py-2 border border-gray-200 rounded-xl
                                           text-sm bg-white focus:outline-none focus:border-secondary"/>
-                            <div class="grid grid-cols-3 gap-3">
+                            <div class="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label class="text-xs text-gray-400 mb-1 block">Prix HT</label>
+                                    <label class="text-xs text-gray-400 mb-1 block">Prix</label>
                                     <input wire:model="freeLinePrice" type="number" min="0"
                                            placeholder="0"
                                            class="w-full px-3 py-2 border border-gray-200
@@ -173,23 +173,11 @@
                                                   focus:border-secondary"/>
                                 </div>
                                 <div>
-                                    <label class="text-xs text-gray-400 mb-1 block">Quantité</label>
+                                    <label class="text-xs text-gray-400 mb-1 block">Quantite</label>
                                     <input wire:model="freeLineQty" type="number" min="1"
                                            class="w-full px-3 py-2 border border-gray-200
                                                   rounded-xl text-sm bg-white focus:outline-none
                                                   focus:border-secondary"/>
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-400 mb-1 block">TVA</label>
-                                    <button type="button"
-                                            wire:click="$toggle('freeLineTva')"
-                                            @class([
-                                                'w-full py-2 rounded-xl text-xs font-medium border-2 transition-all',
-                                                'border-primary bg-primary text-white' => $freeLineTva,
-                                                'border-gray-200 bg-gray-50 text-gray-600' => !$freeLineTva,
-                                            ])>
-                                        {{ $freeLineTva ? 'TVA ' . $tvaRate . '%' : 'Sans TVA' }}
-                                    </button>
                                 </div>
                             </div>
                             <div class="flex gap-2">
@@ -222,31 +210,25 @@
                                     <div class="flex-1 min-w-0">
                                         <p class="text-sm font-medium text-dark truncate">
                                             {{ $item['description'] }}
-                                            @if($item['is_free_line'])
-                                                <span class="text-xs text-secondary ml-1">✏️</span>
-                                            @endif
                                         </p>
                                         <p class="text-xs text-gray-400">
-                                            {{ number_format($item['unit_price_ttc'], 0, ',', ' ') }}
-                                            FCFA TTC/u
-                                            @if($item['tva_rate'] > 0)
-                                                · TVA {{ $item['tva_rate'] }}%
-                                            @endif
+                                            {{ number_format($item['prix_unitaire'], 0, ',', ' ') }}
+                                            FCFA/u
                                         </p>
                                     </div>
                                     <div class="flex items-center gap-1 flex-shrink-0">
                                         <button type="button"
-                                                wire:click="updateQuantity({{ $index }}, {{ $item['quantity'] - 1 }})"
+                                                wire:click="updateQuantity({{ $index }}, {{ $item['quantite'] - 1 }})"
                                                 class="w-6 h-6 flex items-center justify-center
                                                        bg-white rounded-lg border border-gray-200
                                                        text-gray-500 hover:bg-gray-100 text-sm">
-                                            −
+                                            &minus;
                                         </button>
                                         <span class="w-8 text-center text-sm font-bold">
-                                            {{ $item['quantity'] }}
+                                            {{ $item['quantite'] }}
                                         </span>
                                         <button type="button"
-                                                wire:click="updateQuantity({{ $index }}, {{ $item['quantity'] + 1 }})"
+                                                wire:click="updateQuantity({{ $index }}, {{ $item['quantite'] + 1 }})"
                                                 class="w-6 h-6 flex items-center justify-center
                                                        bg-white rounded-lg border border-gray-200
                                                        text-gray-500 hover:bg-gray-100 text-sm">
@@ -254,7 +236,7 @@
                                         </button>
                                     </div>
                                     <p class="text-sm font-bold text-dark flex-shrink-0 w-28 text-right">
-                                        {{ number_format($item['total_ttc'], 0, ',', ' ') }}
+                                        {{ number_format($item['total'], 0, ',', ' ') }}
                                         <span class="text-xs font-normal text-gray-400">FCFA</span>
                                     </p>
                                     <button type="button" wire:click="removeItem({{ $index }})"
@@ -273,12 +255,8 @@
                         {{-- Totaux --}}
                         <div class="mt-4 p-4 bg-secondary/5 rounded-xl space-y-2">
                             <div class="flex justify-between text-xs text-gray-500">
-                                <span>Sous-total HT</span>
-                                <span>{{ number_format($subtotalHt, 0, ',', ' ') }} FCFA</span>
-                            </div>
-                            <div class="flex justify-between text-xs text-gray-500">
-                                <span>TVA ({{ $tvaRate }}%)</span>
-                                <span>{{ number_format($tvaAmount, 0, ',', ' ') }} FCFA</span>
+                                <span>Sous-total</span>
+                                <span>{{ number_format($sousTotal, 0, ',', ' ') }} FCFA</span>
                             </div>
                             @if($discount > 0)
                                 <div class="flex justify-between text-xs text-secondary">
@@ -290,20 +268,20 @@
                                         border-t border-secondary/20 pt-2">
                                 <span>Total</span>
                                 <span class="text-secondary">
-                                    {{ number_format($totalTtc, 0, ',', ' ') }} FCFA
+                                    {{ number_format($total, 0, ',', ' ') }} FCFA
                                 </span>
                             </div>
                         </div>
                     @else
                         <div class="text-center py-8 text-gray-400">
                             <p class="text-sm">Aucune ligne</p>
-                            <p class="text-xs mt-1">Recherchez un produit ou ajoutez une ligne libre</p>
+                            <p class="text-xs mt-1">Recherchez un plat ou ajoutez une ligne libre</p>
                         </div>
                     @endif
                 </div>
             </div>
 
-            {{-- Colonne latérale --}}
+            {{-- Colonne laterale --}}
             <div class="space-y-6">
 
                 {{-- Client --}}
@@ -314,16 +292,16 @@
                         Client
                     </h3>
 
-                    @if($customerId && $customerName)
+                    @if($clientId && $clientName)
                         <div class="flex items-center justify-between bg-primary/5 rounded-xl px-3 py-2.5">
                             <div class="flex items-center gap-2">
                                 <div class="w-8 h-8 bg-primary rounded-full flex items-center
                                             justify-center text-white text-xs font-bold">
-                                    {{ strtoupper(substr($customerName, 0, 2)) }}
+                                    {{ strtoupper(substr($clientName, 0, 2)) }}
                                 </div>
-                                <p class="text-sm font-semibold text-dark">{{ $customerName }}</p>
+                                <p class="text-sm font-semibold text-dark">{{ $clientName }}</p>
                             </div>
-                            <button type="button" wire:click="clearCustomer"
+                            <button type="button" wire:click="clearClient"
                                     class="text-gray-400 hover:text-red-500">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -334,8 +312,8 @@
                     @elseif($useQuickClient)
                         <div class="space-y-2">
                             <div class="flex items-center justify-between mb-1">
-                                <p class="text-xs font-medium text-secondary">✏️ Client rapide</p>
-                                <button type="button" wire:click="clearCustomer"
+                                <p class="text-xs font-medium text-secondary">Client rapide</p>
+                                <button type="button" wire:click="clearClient"
                                         class="text-xs text-gray-400 hover:text-red-500">
                                     Annuler
                                 </button>
@@ -346,36 +324,36 @@
                                           text-sm bg-gray-50 focus:outline-none
                                           focus:border-primary transition-colors"/>
                             <input wire:model="quickClientPhone" type="text"
-                                   placeholder="Téléphone / WhatsApp"
+                                   placeholder="Telephone / WhatsApp"
                                    class="w-full px-3 py-2 border border-gray-200 rounded-xl
                                           text-sm bg-gray-50 focus:outline-none
                                           focus:border-primary transition-colors"/>
                         </div>
                     @else
                         <div class="relative">
-                            <input wire:model.live.debounce.300ms="searchCustomer"
+                            <input wire:model.live.debounce.300ms="searchClient"
                                    type="text" placeholder="Rechercher un client..."
                                    class="w-full px-3 py-2 border border-gray-200 rounded-xl
                                           text-sm bg-gray-50 focus:outline-none
                                           focus:border-primary transition-colors"/>
-                            @if(count($customerResults) > 0)
+                            @if(count($clientResults) > 0)
                                 <div class="absolute top-full left-0 right-0 mt-1 bg-white
                                             rounded-xl shadow-xl border border-gray-100 z-30 overflow-hidden">
-                                    @foreach($customerResults as $customer)
+                                    @foreach($clientResults as $client)
                                         <button type="button"
-                                                wire:click="selectCustomer({{ $customer['id'] }}, '{{ addslashes($customer['name']) }}')"
+                                                wire:click="selectClient({{ $client['id'] }}, '{{ addslashes($client['nom']) }}')"
                                                 class="w-full flex items-center gap-2 px-3 py-2.5
                                                        hover:bg-primary/5 transition-colors text-left
                                                        border-b border-gray-50 last:border-0">
                                             <div class="w-7 h-7 bg-gray-200 rounded-full flex items-center
                                                         justify-center text-xs font-bold text-gray-600">
-                                                {{ strtoupper(substr($customer['name'], 0, 2)) }}
+                                                {{ strtoupper(substr($client['nom'], 0, 2)) }}
                                             </div>
                                             <div>
                                                 <p class="text-sm font-medium text-dark">
-                                                    {{ $customer['name'] }}
+                                                    {{ $client['nom'] }}
                                                 </p>
-                                                <p class="text-xs text-gray-400">{{ $customer['phone'] }}</p>
+                                                <p class="text-xs text-gray-400">{{ $client['telephone'] }}</p>
                                             </div>
                                         </button>
                                     @endforeach
@@ -386,17 +364,17 @@
                                 class="w-full mt-2 py-1.5 text-xs font-medium text-secondary
                                        border border-secondary/30 rounded-xl hover:bg-secondary/5
                                        transition-colors">
-                            ✏️ Saisir un nouveau client
+                            Saisir un nouveau client
                         </button>
                     @endif
                 </div>
 
-                {{-- Paramètres devis --}}
+                {{-- Parametres devis --}}
                 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
                     <h3 class="text-sm font-bold text-dark mb-4 flex items-center gap-2">
                         <span class="w-6 h-6 bg-secondary/10 rounded-lg flex items-center
                                      justify-center text-secondary text-xs">3</span>
-                        Paramètres
+                        Parametres
                     </h3>
                     <div class="space-y-4">
                         <div>
@@ -441,7 +419,7 @@
             <a href="{{ route('devis.index') }}"
                class="px-4 py-2 text-sm font-medium text-gray-600
                       hover:bg-gray-100 rounded-xl transition-colors">
-                ← Retour
+                Retour
             </a>
             <button type="button" wire:click="save"
                     wire:loading.attr="disabled"

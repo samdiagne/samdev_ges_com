@@ -22,7 +22,8 @@
       "PowerShell(Copy-Item *)",
       "Bash(git log *)",
       "Bash(composer show *)",
-      "Bash(composer require *)"
+      "Bash(composer require *)",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://127.0.0.1:8000/shop/catalogue\" -UseBasicParsing -TimeoutSec 10; \"Status: $\\($r.StatusCode\\)\"; \"Length: $\\($r.Content.Length\\)\" } catch { \"Error: $\\($_.Exception.Message\\)\" })"
     ]
   }
 }

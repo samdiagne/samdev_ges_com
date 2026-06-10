@@ -10,7 +10,7 @@
                   padding-bottom:12px; border-bottom:3px solid #10B981; }
         .header-left  { display:table-cell; width:60%; vertical-align:middle; }
         .header-right { display:table-cell; width:40%; vertical-align:middle; text-align:right; }
-        .company-name { font-size:16px; font-weight:bold; color:#1E6FBF; }
+        .company-name { font-size:16px; font-weight:bold; color:#F27B20; }
         .doc-title  { font-size:18px; font-weight:bold; color:#10B981; }
         .doc-period { font-size:10px; color:#666; margin-top:3px; }
         .summary { display:table; width:100%; margin-bottom:18px; border-collapse:separate; border-spacing:6px; }
@@ -43,7 +43,7 @@
                 <img src="{{ $logoBase64 }}" 
                     style="height:95px; width:auto; max-width:220px;"/>
             @endif
-            <div class="company-name">{{ $settings->name }}</div>
+            <div class="company-name">{{ $parametres->nom }}</div>
         </div>
         <div class="header-right">
             <div class="doc-title">ÉTAT DE TRÉSORERIE</div>
@@ -140,8 +140,8 @@
     </table>
 
     <div class="footer">
-        {{ $settings->name }}
-        @if($settings->ninea) · NINEA : {{ $settings->ninea }}@endif
+        {{ $parametres->nom }}
+        @if($parametres->ninea) · NINEA : {{ $parametres->ninea }}@endif
         · Document généré le {{ now()->format('d/m/Y à H:i') }}
     </div>
 </div>
