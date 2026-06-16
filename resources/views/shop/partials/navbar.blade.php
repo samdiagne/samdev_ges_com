@@ -9,18 +9,18 @@
 
     {{-- ── Barre principale ── --}}
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center gap-4 h-18" style="height: 72px;">
+        <div class="flex items-center gap-2.5 sm:gap-4" style="height: 60px;" class="sm:!h-[72px]">
 
             {{-- Logo --}}
             <a href="{{ route('shop.home') }}"
-               class="flex items-center gap-2.5 flex-shrink-0">
+               class="flex items-center gap-2 sm:gap-2.5 flex-shrink-0">
                 @if($logo && file_exists(storage_path('app/public/' . $logo)))
                     <img src="{{ Storage::url($logo) }}"
-                         class="h-14 sm:h-16 w-auto max-w-[160px] object-contain"/>
+                         class="h-10 sm:h-14 md:h-16 w-auto max-w-[120px] sm:max-w-[160px] object-contain"/>
                 @else
-                    <div class="w-9 h-9 bg-primary rounded-xl flex items-center
+                    <div class="w-8 h-8 sm:w-9 sm:h-9 bg-primary rounded-xl flex items-center
                                 justify-center flex-shrink-0">
-                        <span class="text-white font-bold text-sm">AT</span>
+                        <span class="text-white font-bold text-xs sm:text-sm">MF</span>
                     </div>
                 @endif
                 <div class="hidden sm:block">
@@ -64,7 +64,7 @@
             </div>
 
             {{-- Actions droite --}}
-            <div class="flex items-center gap-2 flex-shrink-0 ml-auto md:ml-0">
+            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-auto md:ml-0">
 
                 {{-- Search mobile --}}
                 <button @click="mobileSearch = !mobileSearch"

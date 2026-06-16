@@ -2,19 +2,19 @@
 @section('title', 'Commande confirmée — ' . $commande->reference)
 
 @section('content')
-<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 text-center">
 
     {{-- Icône succès --}}
-    <div class="w-24 h-24 bg-green-100 rounded-full flex items-center
-                justify-center mx-auto mb-6">
-        <svg class="w-12 h-12 text-green-500" fill="none"
+    <div class="w-18 h-18 sm:w-24 sm:h-24 bg-green-100 rounded-full flex items-center
+                justify-center mx-auto mb-5 sm:mb-6" style="width: 72px; height: 72px;">
+        <svg class="w-9 h-9 sm:w-12 sm:h-12 text-green-500" fill="none"
              stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round"
                   stroke-width="2" d="M5 13l4 4L19 7"/>
         </svg>
     </div>
 
-    <h1 class="text-3xl font-bold text-dark mb-3">
+    <h1 class="text-2xl sm:text-3xl font-bold text-dark mb-2 sm:mb-3">
         Commande confirmée ! 🎉
     </h1>
     <p class="text-gray-500 mb-2">

@@ -158,12 +158,12 @@
         x-transition:leave="transition ease-in duration-200"
         x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 translate-y-4"
-        class="fixed bottom-6 right-6 z-50">
+        class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
         <button @click="window.scrollTo({ top: 0, behavior: 'smooth' })"
-                class="w-11 h-11 bg-primary hover:bg-primary/90 text-white rounded-2xl
+                class="w-10 h-10 sm:w-11 sm:h-11 bg-primary hover:bg-primary/90 text-white rounded-xl sm:rounded-2xl
                     shadow-lg shadow-primary/30 flex items-center justify-center
                     transition-all hover:-translate-y-1">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round"
                     stroke-width="2" d="M5 15l7-7 7 7"/>
             </svg>

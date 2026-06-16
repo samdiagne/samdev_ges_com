@@ -16,8 +16,14 @@ class CatalogueShop extends Component
     public string $sort        = 'latest';
     public bool   $inStockOnly = false;
     public bool   $showFilters = false;
-    public float  $minPrice    = 0;
-    public float  $maxPrice    = 0;
+    public string $budget      = '';
+
+    public const BUDGETS = [
+        'eco'      => ['label' => 'Moins de 2 000F',       'min' => 0,     'max' => 2000],
+        'standard' => ['label' => '2 000 — 5 000F',        'min' => 2000,  'max' => 5000],
+        'premium'  => ['label' => '5 000 — 10 000F',       'min' => 5000,  'max' => 10000],
+        'gastro'   => ['label' => 'Plus de 10 000F',        'min' => 10000, 'max' => null],
+    ];
 
     protected $queryString = [
         'search'    => ['except' => ''],
@@ -27,6 +33,13 @@ class CatalogueShop extends Component
 
     public function updatingSearch(): void    { $this->resetPage(); }
     public function updatingCategorie(): void { $this->resetPage(); }
+    public function updatingBudget(): void    { $this->resetPage(); }
+
+    public function toggleBudget(string $key): void
+    {
+        $this->budget = $this->budget === $key ? '' : $key;
+        $this->resetPage();
+    }
 
     public function resetFilters(): void
     {
@@ -34,8 +47,7 @@ class CatalogueShop extends Component
         $this->categorie   = '';
         $this->sort        = 'latest';
         $this->inStockOnly = false;
-        $this->minPrice    = 0;
-        $this->maxPrice    = 0;
+        $this->budget      = '';
         $this->resetPage();
     }
 
@@ -60,12 +72,14 @@ class CatalogueShop extends Component
             $query->where('stock', '>', 0);
         }
 
-        if ($this->minPrice > 0) {
-            $query->where('prix_vente', '>=', $this->minPrice);
-        }
-
-        if ($this->maxPrice > 0) {
-            $query->where('prix_vente', '<=', $this->maxPrice);
+        if ($this->budget && isset(self::BUDGETS[$this->budget])) {
+            $range = self::BUDGETS[$this->budget];
+            if ($range['min'] > 0) {
+                $query->where('prix_vente', '>=', $range['min']);
+            }
+            if ($range['max'] !== null) {
+                $query->where('prix_vente', '<=', $range['max']);
+            }
         }
 
         match ($this->sort) {

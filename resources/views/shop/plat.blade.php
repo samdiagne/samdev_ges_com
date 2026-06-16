@@ -55,24 +55,24 @@
 @endpush
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
 
     {{-- Breadcrumb --}}
-    <nav class="flex items-center gap-2 text-sm text-gray-400 mb-8">
+    <nav class="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-gray-400 mb-5 sm:mb-8 overflow-x-auto scrollbar-hide">
         <a href="{{ route('shop.home') }}"
-           class="hover:text-primary transition-colors">Accueil</a>
-        <span>›</span>
+           class="hover:text-primary transition-colors flex-shrink-0">Accueil</a>
+        <span class="flex-shrink-0">›</span>
         <a href="{{ route('shop.catalogue') }}"
-           class="hover:text-primary transition-colors">Catalogue</a>
+           class="hover:text-primary transition-colors flex-shrink-0">Catalogue</a>
         @if($plat->categorie)
-            <span>›</span>
+            <span class="flex-shrink-0">›</span>
             <a href="{{ route('shop.catalogue', ['categorie' => $plat->categorie->slug]) }}"
-               class="hover:text-primary transition-colors">
+               class="hover:text-primary transition-colors flex-shrink-0">
                 {{ $plat->categorie->nom }}
             </a>
         @endif
-        <span>›</span>
-        <span class="text-dark font-medium truncate max-w-48">{{ $plat->nom }}</span>
+        <span class="flex-shrink-0">›</span>
+        <span class="text-dark font-medium truncate max-w-32 sm:max-w-48">{{ $plat->nom }}</span>
     </nav>
 
     {{-- Fiche plat --}}
@@ -83,11 +83,11 @@
 
     {{-- Plats similaires --}}
     @if($similaires->count() > 0)
-        <section class="mt-16">
-            <h2 class="text-xl font-bold text-dark mb-6">
+        <section class="mt-10 sm:mt-16">
+            <h2 class="text-lg sm:text-xl font-bold text-dark mb-4 sm:mb-6">
                 Vous aimerez aussi
             </h2>
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                 @foreach($similaires as $similaire)
                     @include('shop.partials.plat-card',
                         ['plat' => $similaire])

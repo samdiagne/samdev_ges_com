@@ -4,10 +4,18 @@
    sm: 640px / md: 768px / lg: 1024px / xl: 1280px
 ═══════════════════════════════════════════ */
 
+/* ── Très petit mobile (< 360px) ────────── */
+@media (max-width: 359px) {
+    main { padding: 0.75rem !important; }
+    header { padding: 0.5rem 0.75rem !important; }
+
+    .max-w-7xl { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+}
+
 /* ── Mobile (< 640px) ──────────────────── */
 @media (max-width: 639px) {
 
-    /* Sidebar */
+    /* Sidebar dashboard — toujours masquée */
     aside { display: none !important; }
 
     /* Topbar */
@@ -16,13 +24,13 @@
     /* Page content */
     main { padding: 1rem !important; }
 
-    /* Cards grids → 1 colonne */
-    .grid-cols-2,
-    .grid-cols-3,
-    .grid-cols-4,
-    .lg\:grid-cols-2,
-    .lg\:grid-cols-3,
-    .lg\:grid-cols-4 {
+    /* Dashboard grids → 1 colonne (pas les grilles shop) */
+    .dashboard-grid.grid-cols-2,
+    .dashboard-grid.grid-cols-3,
+    .dashboard-grid.grid-cols-4,
+    .dashboard-grid.lg\:grid-cols-2,
+    .dashboard-grid.lg\:grid-cols-3,
+    .dashboard-grid.lg\:grid-cols-4 {
         grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
     }
 
@@ -38,7 +46,7 @@
     }
 
     /* POS → colonne unique */
-    .lg\:flex-row { flex-direction: column !important; }
+    .lg\:flex-row.pos-layout { flex-direction: column !important; }
 
     /* Boutons texte raccourci */
     .btn-text-sm span { display: none; }
@@ -56,16 +64,10 @@
     /* Content prend l'espace restant */
     main { padding: 1rem 1.25rem !important; }
 
-    /* Grids 2 colonnes max */
-    .lg\:grid-cols-3,
-    .lg\:grid-cols-4 {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    }
-
     /* POS → colonne sur tablette portrait */
     @media (max-width: 767px) {
-        .lg\:flex-row { flex-direction: column !important; }
-        .lg\:w-80 { width: 100% !important; }
+        .lg\:flex-row.pos-layout { flex-direction: column !important; }
+        .lg\:w-80.pos-sidebar { width: 100% !important; }
     }
 }
 
@@ -129,6 +131,36 @@
     .form-grid-2 {
         grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
     }
+}
+
+/* ═══════════════════════════════════════════
+   SHOP — RESPONSIVE
+═══════════════════════════════════════════ */
+
+/* Carrousel avis infini */
+@keyframes scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+.animate-scroll {
+    animation: scroll 40s linear infinite;
+}
+@media (max-width: 639px) {
+    .animate-scroll {
+        animation-duration: 25s;
+    }
+}
+.animate-scroll:hover {
+    animation-play-state: paused;
+}
+
+/* Masquer scrollbar sur les catégories nav */
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
 }
 
 /* ═══════════════════════════════════════════

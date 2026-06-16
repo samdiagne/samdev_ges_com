@@ -6,168 +6,235 @@
 @section('content')
 
 {{-- ── HERO ───────────────────────────────── --}}
-<section class="relative overflow-hidden -mt-1"
-         style="background: linear-gradient(135deg, #B8510D 0%, #F27B20 55%, #FF9F43 100%);">
+@php
+    $heroPlats = $misEnAvant->take(3);
+    $platVedette = $heroPlats->first();
+@endphp
+<section class="relative overflow-hidden -mt-1 bg-[#FFF9F4]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-0 items-center
+                    min-h-[420px] sm:min-h-[480px] lg:min-h-[560px]">
 
-    {{-- Cercles décoratifs d'arrière-plan --}}
-    <div class="absolute -top-20 -right-20 w-96 h-96 rounded-full pointer-events-none"
-         style="background: radial-gradient(circle, rgba(242,123,32,0.18), transparent 70%);"></div>
-    <div class="absolute -bottom-10 -left-16 w-72 h-72 rounded-full pointer-events-none"
-         style="background: radial-gradient(circle, rgba(255,255,255,0.08), transparent 70%);"></div>
+            {{-- ── TEXTE (gauche) ── --}}
+            <div class="text-center lg:text-left py-10 sm:py-14 lg:py-20 relative z-10">
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 lg:py-16 relative z-10">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-
-            {{-- TEXTE --}}
-            <div class="text-center lg:text-left">
-
-                <div class="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm
-                            text-white px-4 py-1.5 rounded-full text-xs font-semibold mb-5
-                            tracking-wide uppercase border border-white/20">
-                    🔥 Nouvelles arrivées disponibles
+                {{-- Badge --}}
+                <div class="inline-flex items-center gap-1.5 sm:gap-2
+                            px-3 py-1.5 sm:px-4 sm:py-2 rounded-full
+                            text-[10px] sm:text-xs font-bold tracking-wide uppercase
+                            border shadow-sm mb-5 sm:mb-6"
+                     style="background: rgba(242,123,32,0.08); border-color: rgba(242,123,32,0.2); color: #F27B20;">
+                    <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    Ouvert maintenant
                 </div>
 
-                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-[1.1] mb-5">
-                    Le Goût à<br/>
-                    <span style="color: #2DB667;">Votre Porte</span>
+                {{-- Titre --}}
+                <h1 class="text-[1.85rem] sm:text-[2.5rem] md:text-[3rem] lg:text-[3.5rem] xl:text-[4rem]
+                           font-extrabold leading-[1.1] mb-4 sm:mb-5 tracking-tight text-dark">
+                    Commandez<br/>
+                    Vos Plats<br/>
+                    <span style="color: #F27B20;" class="italic">Préférés.</span>
                 </h1>
 
-                <p class="text-white/75 text-base sm:text-lg mb-8 leading-relaxed max-w-md mx-auto lg:mx-0">
-                    Plats faits maison, saveurs authentiques —
-                    qualité garantie, commande en ligne, livraison rapide à Dakar.
+                {{-- Sous-titre --}}
+                <p class="text-gray-500 text-sm sm:text-base lg:text-lg mb-6 sm:mb-8 leading-relaxed
+                          max-w-sm sm:max-w-md mx-auto lg:mx-0">
+                    Saveurs authentiques, ingrédients frais du jour.
+                    Commande simple, livraison rapide à Dakar.
                 </p>
 
-                {{-- CTA --}}
-                <div class="flex flex-wrap justify-center lg:justify-start gap-3 mb-8">
+                {{-- CTAs --}}
+                <div class="flex flex-col sm:flex-row flex-wrap justify-center lg:justify-start gap-3 mb-8">
                     <a href="{{ route('shop.catalogue') }}"
-                       class="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl
-                              font-bold text-sm transition-all shadow-xl
-                              hover:scale-105 hover:brightness-110 active:scale-100"
-                       style="background-color: #2DB667; color: white;">
-                        🛒 Voir le menu
+                       class="group inline-flex items-center justify-center gap-2.5
+                              px-7 py-3.5 sm:px-8 sm:py-4 rounded-full
+                              font-bold text-sm sm:text-base text-white transition-all duration-300
+                              shadow-lg hover:shadow-xl hover:scale-[1.03] active:scale-100"
+                       style="background: linear-gradient(135deg, #F27B20, #E86A10);">
+                        Explorer le Menu
+                        <svg class="w-4 h-4 transition-transform group-hover:translate-x-1"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  stroke-width="2.5" d="M9 5l7 7-7 7"/>
+                        </svg>
                     </a>
 
-                    <a href="{{ route('shop.contact') }}"
-                       class="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl
-                              font-bold text-sm border border-white/30 text-white
-                              hover:bg-white/15 transition-all backdrop-blur-sm">
-                        💬 Nous contacter
+                    @if($parametres->whatsapp)
+                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $parametres->whatsapp) }}"
+                       target="_blank"
+                       class="inline-flex items-center justify-center gap-2
+                              px-6 py-3.5 sm:px-7 sm:py-4 rounded-full
+                              font-bold text-sm border-2 border-gray-200 text-dark
+                              hover:border-green-500 hover:text-green-600
+                              transition-all duration-300">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                        WhatsApp
                     </a>
+                    @endif
                 </div>
 
-                {{-- Badges de confiance --}}
-                <div class="flex flex-wrap justify-center lg:justify-start gap-5">
-                    <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center shrink-0">🚚</div>
-                        <span class="text-white/80 text-sm font-medium">Livraison 24h</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center shrink-0">✅</div>
-                        <span class="text-white/80 text-sm font-medium">Qualité garantie</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center shrink-0">⭐</div>
-                        <span class="text-white/80 text-sm font-medium">+1000 clients satisfaits</span>
-                    </div>
+                {{-- Trust badges --}}
+                <div class="flex flex-wrap justify-center lg:justify-start gap-5 sm:gap-6">
+                    @foreach([
+                        ['icon' => '🚚', 'val' => '30 min', 'label' => 'Livraison'],
+                        ['icon' => '🍽️', 'val' => 'Frais', 'label' => 'Chaque jour'],
+                        ['icon' => '⭐', 'val' => '4.8/5', 'label' => 'Avis clients'],
+                    ] as $badge)
+                        <div class="flex items-center gap-2">
+                            <span class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white
+                                         flex items-center justify-center text-sm sm:text-base
+                                         shadow-sm border border-gray-100">
+                                {{ $badge['icon'] }}
+                            </span>
+                            <div>
+                                <p class="text-dark text-xs sm:text-sm font-bold leading-tight">{{ $badge['val'] }}</p>
+                                <p class="text-gray-400 text-[10px] sm:text-xs">{{ $badge['label'] }}</p>
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
             </div>
 
-            {{-- IMAGE --}}
-            <div class="flex justify-center lg:justify-end">
-                <div class="relative">
+            {{-- ── IMAGE (droite) ── --}}
+            <div class="relative flex items-center justify-center
+                        py-6 sm:py-10 lg:py-0 lg:min-h-[560px]">
 
-                    {{-- Anneau décoratif extérieur --}}
-                    <div class="absolute inset-0 rounded-[2.5rem] border-2 border-white/15
-                                scale-[1.07] pointer-events-none"></div>
+                {{-- Forme colorée derrière --}}
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+                            w-[280px] h-[280px] sm:w-[360px] sm:h-[360px] lg:w-[440px] lg:h-[440px]
+                            rounded-full pointer-events-none"
+                     style="background: linear-gradient(145deg, #F27B20 0%, #FFB347 60%, #FCD34D 100%);
+                            opacity: 0.15;"></div>
 
-                    {{-- Conteneur image : taille fixe, overflow hidden --}}
-                    <div class="w-72 h-72 sm:w-80 sm:h-80 lg:w-[440px] lg:h-[440px]
-                                rounded-[2rem] bg-white/10 backdrop-blur-xl border border-white/20
-                                flex items-center justify-center overflow-hidden shadow-2xl relative">
+                {{-- Forme blob organique --}}
+                <div class="absolute top-1/2 left-1/2 -translate-x-[45%] -translate-y-[48%]
+                            w-[260px] h-[260px] sm:w-[340px] sm:h-[340px] lg:w-[420px] lg:h-[420px]
+                            pointer-events-none hero-morph"
+                     style="background: linear-gradient(135deg, #F27B20 0%, #FB923C 100%);
+                            border-radius: 60% 40% 55% 45% / 50% 60% 40% 50%;
+                            opacity: 0.12;"></div>
 
-                        <div class="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-orange-900/20 pointer-events-none"></div>
-
-                        @php $platVedette = $misEnAvant->first(); @endphp
-
-                        @if($platVedette?->image_principale)
-                            <img src="{{ Storage::url($platVedette->image_principale) }}"
-                                 alt="{{ $platVedette->nom }}"
-                                 class="relative z-10 w-4/5 h-4/5 object-contain
-                                        drop-shadow-[0_20px_40px_rgba(0,0,0,0.35)]
-                                        hover:scale-105 transition-transform duration-500
-                                        animate-[float_4s_ease-in-out_infinite]"/>
-                        @else
-                            <svg class="w-28 h-28 text-white/30" fill="none"
-                                 stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                      stroke-width="1"
-                                      d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                            </svg>
-                        @endif
+                {{-- Plat principal --}}
+                @if($platVedette?->image_principale)
+                    <div class="relative z-20 hero-float">
+                        <img src="{{ Storage::url($platVedette->image_principale) }}"
+                             alt="{{ $platVedette->nom }}"
+                             class="w-52 h-52 sm:w-64 sm:h-64 md:w-72 md:h-72 lg:w-[360px] lg:h-[360px] xl:w-[400px] xl:h-[400px]
+                                    object-contain
+                                    drop-shadow-[0_20px_50px_rgba(242,123,32,0.2)]"/>
                     </div>
-
-                    {{-- Badge haut droite --}}
-                    <div class="absolute -top-4 -right-3 lg:-right-5 bg-white rounded-2xl shadow-xl
-                                px-3 py-1.5 flex items-center gap-1.5">
-                        <span>⚡</span>
-                        <span class="text-xs font-bold text-primary">Nouveautés</span>
+                @else
+                    <div class="relative z-20 w-52 h-52 sm:w-64 sm:h-64 lg:w-80 lg:h-80
+                                rounded-full flex items-center justify-center"
+                         style="background: linear-gradient(135deg, rgba(242,123,32,0.08), rgba(242,123,32,0.03));">
+                        <div class="text-center">
+                            <span class="text-5xl sm:text-6xl">🍽️</span>
+                            <p class="text-gray-400 text-xs font-medium mt-2">Plat vedette</p>
+                        </div>
                     </div>
+                @endif
 
-                    {{-- Badge bas gauche --}}
-                    <div class="absolute -bottom-4 -left-3 lg:-left-5 bg-white rounded-2xl shadow-xl
-                                px-3 py-1.5 flex items-center gap-1.5">
-                        <span>🔥</span>
-                        <span class="text-xs font-bold" style="color: #2DB667;">Meilleurs prix</span>
+                {{-- Mini plats flottants --}}
+                @if($heroPlats->count() > 1 && $heroPlats[1]->image_principale)
+                    <div class="absolute top-4 right-4 sm:top-8 sm:right-8 lg:top-12 lg:right-4 z-30 hero-float-delayed">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-2xl
+                                    bg-white shadow-lg p-2 rotate-6
+                                    hover:rotate-0 hover:scale-110 transition-all duration-500">
+                            <img src="{{ Storage::url($heroPlats[1]->image_principale) }}"
+                                 alt="{{ $heroPlats[1]->nom }}"
+                                 class="w-full h-full object-contain"/>
+                        </div>
                     </div>
+                @endif
 
+                @if($heroPlats->count() > 2 && $heroPlats[2]->image_principale)
+                    <div class="absolute bottom-8 left-4 sm:bottom-12 sm:left-8 lg:bottom-16 lg:left-0 z-30 hero-float-delayed-2">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-2xl
+                                    bg-white shadow-lg p-2 -rotate-6
+                                    hover:rotate-0 hover:scale-110 transition-all duration-500">
+                            <img src="{{ Storage::url($heroPlats[2]->image_principale) }}"
+                                 alt="{{ $heroPlats[2]->nom }}"
+                                 class="w-full h-full object-contain"/>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Badge flottant --}}
+                <div class="absolute bottom-6 right-2 sm:bottom-10 sm:right-6 lg:bottom-20 lg:right-0 z-40 hero-float hidden sm:block">
+                    <div class="bg-white rounded-xl shadow-lg px-3 py-2 flex items-center gap-2 border border-gray-100">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
+                             style="background: #FEF3C7;">⭐</div>
+                        <div>
+                            <p class="text-[11px] font-bold text-dark leading-tight">4.8/5</p>
+                            <p class="text-[9px] text-gray-400">1000+ avis</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
         </div>
     </div>
 
-    {{-- Vague --}}
-    <div class="absolute bottom-[-1px] left-0 right-0">
-        <svg class="block w-full" viewBox="0 0 1440 60" fill="none">
-            <path d="M0 60L1440 60L1440 0C1440 0 1080 60 720 60C360 60 0 0 0 0L0 60Z"
-                fill="#F9FAFB"/>
-        </svg>
-    </div>
+    {{-- Transition --}}
+    <div class="absolute bottom-0 left-0 right-0 h-16 pointer-events-none"
+         style="background: linear-gradient(to top, #F9FAFB, transparent);"></div>
 </section>
 
-{{-- Animation float --}}
+{{-- Hero styles --}}
 <style>
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-12px); }
-}
+    @keyframes heroFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    @keyframes heroFloatDelayed {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-7px); }
+    }
+    @keyframes heroFloatDelayed2 {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+    }
+    .hero-float { animation: heroFloat 4s ease-in-out infinite; }
+    .hero-float-delayed { animation: heroFloatDelayed 5s ease-in-out 0.8s infinite; }
+    .hero-float-delayed-2 { animation: heroFloatDelayed2 6s ease-in-out 1.6s infinite; }
+    @keyframes heroMorph {
+        0%   { border-radius: 60% 40% 55% 45% / 50% 60% 40% 50%; }
+        50%  { border-radius: 45% 55% 40% 60% / 60% 40% 55% 45%; }
+        100% { border-radius: 60% 40% 55% 45% / 50% 60% 40% 50%; }
+    }
+    .hero-morph { animation: heroMorph 8s ease-in-out infinite; }
+    @media (prefers-reduced-motion: reduce) {
+        .hero-float, .hero-float-delayed, .hero-float-delayed-2, .hero-morph { animation: none; }
+    }
 </style>
 
 {{-- ── CATÉGORIES ──────────────────────────── --}}
 @if($categories->count() > 0)
-<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div class="flex items-center justify-between mb-8" data-reveal="up">
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6 sm:mb-8" data-reveal="up">
         <div>
-            <h2 class="text-2xl font-bold text-dark">Nos catégories</h2>
-            <p class="text-gray-400 text-sm mt-1">
-                Trouvez ce que vous cherchez rapidement en filtrant directement la catégorie qui vous interesse
+            <h2 class="text-xl sm:text-2xl font-bold text-dark">Nos catégories</h2>
+            <p class="text-gray-400 text-xs sm:text-sm mt-1 max-w-lg">
+                Trouvez ce que vous cherchez rapidement en filtrant par catégorie
             </p>
         </div>
     </div>
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4" data-reveal="up" data-reveal-delay="100">
+    <div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 sm:gap-4" data-reveal="up" data-reveal-delay="100">
         @foreach($categories as $category)
             <a href="{{ route('shop.catalogue', ['categorie' => $category->slug]) }}"
-               class="group bg-white rounded-2xl p-4 text-center hover:shadow-lg
+               class="group bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center hover:shadow-lg
                       hover:-translate-y-1 transition-all duration-200 border
                       border-gray-100">
-                <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center
-                            justify-center mx-auto mb-3 group-hover:bg-primary/20
+                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-xl sm:rounded-2xl flex items-center
+                            justify-center mx-auto mb-2 sm:mb-3 group-hover:bg-primary/20
                             transition-colors">
                     @if($category->image)
                         <img src="{{ Storage::url($category->image) }}"
-                             class="w-8 h-8 object-contain"/>
+                             class="w-6 h-6 sm:w-8 sm:h-8 object-contain"/>
                     @else
-                        <svg class="w-6 h-6 text-primary" fill="none"
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6 text-primary" fill="none"
                              stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                   stroke-width="2"
@@ -176,11 +243,11 @@
                         </svg>
                     @endif
                 </div>
-                <p class="text-xs font-semibold text-dark group-hover:text-primary
-                          transition-colors">
+                <p class="text-[11px] sm:text-xs font-semibold text-dark group-hover:text-primary
+                          transition-colors leading-tight">
                     {{ $category->nom }}
                 </p>
-                <p class="text-xs text-gray-400 mt-0.5">
+                <p class="text-[10px] sm:text-xs text-gray-400 mt-0.5">
                     {{ $category->plats_actifs_count }} plat(s)
                 </p>
             </a>
@@ -191,22 +258,22 @@
 
 {{-- ── PLATS VEDETTES ───────────────────── --}}
 @if($misEnAvant->count() > 0)
-<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div class="flex items-center justify-between mb-8" data-reveal="up">
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <div class="flex items-center justify-between mb-5 sm:mb-8" data-reveal="up">
         <div>
-            <h2 class="text-2xl font-bold text-dark">
+            <h2 class="text-lg sm:text-2xl font-bold text-dark">
                 ⭐ Plats vedettes
             </h2>
-            <p class="text-gray-400 text-sm mt-1">
+            <p class="text-gray-400 text-xs sm:text-sm mt-0.5 sm:mt-1">
                 Nos meilleures sélections
             </p>
         </div>
         <a href="{{ route('shop.catalogue') }}"
-           class="text-sm font-medium text-primary hover:underline">
+           class="text-xs sm:text-sm font-medium text-primary hover:underline flex-shrink-0 ml-4">
             Voir tout →
         </a>
     </div>
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6" data-reveal="up" data-reveal-delay="100">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" data-reveal="up" data-reveal-delay="100">
         @foreach($misEnAvant as $plat)
             @include('shop.partials.plat-card', compact('plat'))
         @endforeach
@@ -216,21 +283,21 @@
 
 {{-- ── NOUVELLES ARRIVÉES ──────────────────── --}}
 @if($nouveautes->count() > 0)
-<section class="bg-white py-12">
+<section class="bg-white py-8 sm:py-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between mb-8" data-reveal="up">
+        <div class="flex items-center justify-between mb-5 sm:mb-8" data-reveal="up">
             <div>
-                <h2 class="text-2xl font-bold text-dark">🆕 Nouvelles arrivées</h2>
-                <p class="text-gray-400 text-sm mt-1">
+                <h2 class="text-lg sm:text-2xl font-bold text-dark">🆕 Nouvelles arrivées</h2>
+                <p class="text-gray-400 text-xs sm:text-sm mt-0.5 sm:mt-1">
                     Les derniers plats disponibles
                 </p>
             </div>
             <a href="{{ route('shop.catalogue', ['sort' => 'latest']) }}"
-               class="text-sm font-medium text-primary hover:underline">
+               class="text-xs sm:text-sm font-medium text-primary hover:underline flex-shrink-0 ml-4">
                 Voir tout →
             </a>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6" data-reveal="up" data-reveal-delay="100">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" data-reveal="up" data-reveal-delay="100">
             @foreach($nouveautes as $plat)
                 @include('shop.partials.plat-card', compact('plat'))
             @endforeach
@@ -249,12 +316,12 @@
 @endphp
 
 @if($avis->count() > 0)
-<section class="py-12 overflow-hidden bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8" data-reveal="fade">
-        <h2 class="text-2xl font-bold text-dark text-center">
+<section class="py-8 sm:py-12 overflow-hidden bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 sm:mb-8" data-reveal="fade">
+        <h2 class="text-lg sm:text-2xl font-bold text-dark text-center">
             Ce que disent nos clients
         </h2>
-        <p class="text-gray-400 text-sm mt-1 text-center">
+        <p class="text-gray-400 text-xs sm:text-sm mt-1 text-center">
             Des milliers de clients satisfaits à Dakar
         </p>
     </div>
@@ -262,28 +329,28 @@
     {{-- Carrousel infini --}}
     <div class="relative">
         {{-- Gradient fade gauche --}}
-        <div class="absolute left-0 top-0 bottom-0 w-24 z-10
+        <div class="absolute left-0 top-0 bottom-0 w-8 sm:w-24 z-10
                     bg-gradient-to-r from-gray-50 to-transparent pointer-events-none">
         </div>
         {{-- Gradient fade droite --}}
-        <div class="absolute right-0 top-0 bottom-0 w-24 z-10
+        <div class="absolute right-0 top-0 bottom-0 w-8 sm:w-24 z-10
                     bg-gradient-to-l from-gray-50 to-transparent pointer-events-none">
         </div>
 
         {{-- Track défilant --}}
-        <div class="flex gap-4 animate-scroll"
+        <div class="flex gap-3 sm:gap-4 animate-scroll px-4 sm:px-0"
              style="width: max-content;">
 
             {{-- On duplique pour l'effet infini --}}
             @foreach([$avis, $avis] as $batch)
                 @foreach($batch as $review)
-                    <div class="w-72 flex-shrink-0 bg-white rounded-2xl border
-                                border-gray-100 shadow-sm p-5">
+                    <div class="w-60 sm:w-72 flex-shrink-0 bg-white rounded-xl sm:rounded-2xl border
+                                border-gray-100 shadow-sm p-4 sm:p-5">
 
                         {{-- Étoiles --}}
-                        <div class="flex items-center gap-1 mb-3">
+                        <div class="flex items-center gap-0.5 sm:gap-1 mb-2 sm:mb-3">
                             @for($i = 1; $i <= 5; $i++)
-                                <svg class="w-4 h-4 {{ $i <= $review->note
+                                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 {{ $i <= $review->note
                                     ? 'text-yellow-400' : 'text-gray-200' }}"
                                      fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902
@@ -301,22 +368,22 @@
                         </div>
 
                         {{-- Commentaire --}}
-                        <p class="text-sm text-gray-600 leading-relaxed mb-4 line-clamp-3">
+                        <p class="text-xs sm:text-sm text-gray-600 leading-relaxed mb-3 sm:mb-4 line-clamp-3">
                             "{{ $review->commentaire }}"
                         </p>
 
                         {{-- Auteur --}}
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-full bg-primary flex items-center
-                                        justify-center text-white font-bold text-xs
+                        <div class="flex items-center gap-2.5 sm:gap-3">
+                            <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-primary flex items-center
+                                        justify-center text-white font-bold text-[10px] sm:text-xs
                                         flex-shrink-0">
                                 {{ strtoupper(substr($review->nom_auteur, 0, 2)) }}
                             </div>
-                            <div>
-                                <p class="text-sm font-semibold text-dark">
+                            <div class="min-w-0">
+                                <p class="text-xs sm:text-sm font-semibold text-dark truncate">
                                     {{ $review->nom_auteur }}
                                 </p>
-                                <p class="text-xs text-gray-400">
+                                <p class="text-[10px] sm:text-xs text-gray-400 truncate">
                                     {{ $review->plat->nom }}
                                 </p>
                             </div>
@@ -330,20 +397,20 @@
 @endif
 
 {{-- ── FAQ ─────────────────────────────────── --}}
-<section class="py-16 sm:py-20" style="background: #F9FAFB;">
+<section class="py-10 sm:py-16 lg:py-20" style="background: #F9FAFB;">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {{-- En-tête --}}
-        <div class="text-center mb-12" data-reveal="up">
-            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold
-                        uppercase tracking-widest mb-4"
-                 style="background: rgba(30,111,191,0.08); color: #F27B20;">
+        <div class="text-center mb-8 sm:mb-12" data-reveal="up">
+            <div class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-semibold
+                        uppercase tracking-widest mb-3 sm:mb-4"
+                 style="background: rgba(242,123,32,0.08); color: #F27B20;">
                 ❓ Questions fréquentes
             </div>
-            <h2 class="text-3xl sm:text-4xl font-extrabold text-dark mb-3">
+            <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-dark mb-2 sm:mb-3">
                 Tout ce que vous devez savoir
             </h2>
-            <p class="text-gray-500 text-base max-w-xl mx-auto">
+            <p class="text-gray-500 text-sm sm:text-base max-w-xl mx-auto">
                 Des réponses claires à vos questions les plus fréquentes.
             </p>
         </div>
@@ -380,18 +447,18 @@
 
                     {{-- Question --}}
                     <button @click="open = open === {{ $i }} ? null : {{ $i }}"
-                            class="w-full flex items-center gap-4 px-6 py-5 text-left group">
-                        <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0 transition-colors"
+                            class="w-full flex items-center gap-2.5 sm:gap-4 px-4 py-3.5 sm:px-6 sm:py-5 text-left group">
+                        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center text-sm sm:text-lg shrink-0 transition-colors"
                              :class="open === {{ $i }} ? 'bg-primary/10' : 'bg-gray-50 group-hover:bg-primary/5'">
                             {{ $faq['icon'] }}
                         </div>
-                        <span class="flex-1 text-sm font-semibold transition-colors"
+                        <span class="flex-1 text-xs sm:text-sm font-semibold transition-colors leading-snug"
                               :class="open === {{ $i }} ? 'text-primary' : 'text-dark group-hover:text-primary'">
                             {{ $faq['q'] }}
                         </span>
-                        <div class="w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-all duration-200"
+                        <div class="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center shrink-0 transition-all duration-200"
                              :class="open === {{ $i }} ? 'bg-primary rotate-45' : 'bg-gray-100 group-hover:bg-gray-200'">
-                            <svg class="w-3 h-3 transition-colors"
+                            <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 transition-colors"
                                  :class="open === {{ $i }} ? 'text-white' : 'text-gray-500'"
                                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -408,8 +475,8 @@
                          x-transition:leave="transition ease-in duration-150"
                          x-transition:leave-start="opacity-100 translate-y-0"
                          x-transition:leave-end="opacity-0 -translate-y-1">
-                        <div class="px-6 pb-5 pl-[4.25rem]">
-                            <p class="text-sm text-gray-500 leading-relaxed">
+                        <div class="px-4 pb-4 pl-[2.75rem] sm:px-6 sm:pb-5 sm:pl-[4.25rem]">
+                            <p class="text-xs sm:text-sm text-gray-500 leading-relaxed">
                                 {{ $faq['r'] }}
                             </p>
                         </div>
@@ -437,13 +504,13 @@
 </section>
 
 {{-- ── BANNIÈRE CTA ─────────────────────────── --}}
-<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" data-reveal="up">
-    <div class="rounded-3xl p-8 lg:p-12 text-center"
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12" data-reveal="up">
+    <div class="rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-12 text-center"
          style="background: linear-gradient(135deg, #B8510D 0%, #F27B20 100%);">
-        <h2 class="text-2xl lg:text-3xl font-bold text-white mb-3">
+        <h2 class="text-lg sm:text-2xl lg:text-3xl font-bold text-white mb-2 sm:mb-3">
             Vous ne trouvez pas ce que vous cherchez ?
         </h2>
-        <p class="text-white/70 mb-6">
+        <p class="text-white/70 text-sm sm:text-base mb-4 sm:mb-6">
             Contactez-nous directement sur WhatsApp, nous trouverons la solution.
         </p>
             @if($parametres->whatsapp)

@@ -5,20 +5,20 @@
 @php $settings = App\Models\Parametre::first(); @endphp
 
 {{-- Hero --}}
-<div class="relative bg-gradient-to-br from-primary via-primary to-dark overflow-hidden py-20">
+<div class="relative bg-gradient-to-br from-primary via-primary to-dark overflow-hidden py-12 sm:py-20">
     {{-- Décoration --}}
     <div class="absolute inset-0 pointer-events-none">
-        <div class="absolute -top-16 -right-16 w-72 h-72 bg-white/5 rounded-full"></div>
-        <div class="absolute bottom-0 left-0 w-48 h-48 bg-secondary/10 rounded-full -translate-x-1/2 translate-y-1/2"></div>
+        <div class="absolute -top-16 -right-16 w-48 sm:w-72 h-48 sm:h-72 bg-white/5 rounded-full"></div>
+        <div class="absolute bottom-0 left-0 w-32 sm:w-48 h-32 sm:h-48 bg-secondary/10 rounded-full -translate-x-1/2 translate-y-1/2"></div>
     </div>
     <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div class="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/20
-                    px-4 py-1.5 rounded-full text-sm font-medium text-white mb-6">
+        <div class="inline-flex items-center gap-1.5 sm:gap-2 bg-white/15 backdrop-blur-sm border border-white/20
+                    px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium text-white mb-4 sm:mb-6">
             <span class="w-1.5 h-1.5 bg-secondary rounded-full"></span>
             Nous sommes là pour vous
         </div>
-        <h1 class="text-3xl sm:text-4xl font-bold text-white mb-4">Contactez-nous</h1>
-        <p class="text-white/70 text-lg max-w-xl mx-auto">
+        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3 sm:mb-4">Contactez-nous</h1>
+        <p class="text-white/70 text-sm sm:text-lg max-w-xl mx-auto">
             Une question, un devis ou un besoin spécifique ?
             Notre équipe vous répond rapidement.
         </p>
@@ -26,8 +26,8 @@
 </div>
 
 <div class="bg-light">
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <div class="grid grid-cols-1 lg:grid-cols-5 gap-10">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-16">
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 sm:gap-10">
 
         {{-- ── Formulaire ── --}}
         <div class="lg:col-span-3">

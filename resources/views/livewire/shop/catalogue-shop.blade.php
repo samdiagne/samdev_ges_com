@@ -24,8 +24,11 @@
 
             {{-- Toggle filtres mobile --}}
             <button wire:click="$toggle('showFilters')"
-                    class="sm:hidden flex items-center gap-2 px-3 py-2 border
-                           border-gray-200 rounded-xl text-sm bg-white">
+                    @class([
+                        'sm:hidden flex items-center gap-2 px-3 py-2 border rounded-xl text-sm',
+                        'bg-primary/10 border-primary text-primary' => $showFilters,
+                        'bg-white border-gray-200' => !$showFilters,
+                    ])>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor"
                      viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -35,16 +38,88 @@
                              4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0
                              013 6.586V4z"/>
                 </svg>
-                Filtres
+                Plus
             </button>
         </div>
     </div>
 
+    {{-- ── Filtres rapides mobile (toujours visibles) ── --}}
+    <div class="sm:hidden mb-4 space-y-3">
+        {{-- Recherche inline --}}
+        <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
+            </svg>
+            <input wire:model.live.debounce.400ms="search"
+                   type="text" placeholder="Rechercher un plat..."
+                   class="w-full pl-9 pr-4 py-2.5 border border-gray-200
+                          rounded-xl text-sm focus:outline-none
+                          focus:border-primary bg-white"/>
+        </div>
+
+        {{-- Catégories horizontales scrollables --}}
+        <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            <button wire:click="$set('categorie', '')"
+                    @class([
+                        'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors border',
+                        'bg-primary text-white border-primary' => $categorie === '',
+                        'bg-white text-gray-600 border-gray-200' => $categorie !== '',
+                    ])>
+                Tout
+            </button>
+            @foreach($categories as $cat)
+                <button wire:click="$set('categorie', '{{ $cat->slug }}')"
+                        @class([
+                            'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors border whitespace-nowrap',
+                            'bg-primary text-white border-primary' => $categorie === $cat->slug,
+                            'bg-white text-gray-600 border-gray-200' => $categorie !== $cat->slug,
+                        ])>
+                    {{ $cat->nom }}
+                </button>
+            @endforeach
+        </div>
+
+        {{-- Budget chips --}}
+        <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            @foreach(\App\Livewire\Shop\CatalogueShop::BUDGETS as $key => $range)
+                <button wire:click="toggleBudget('{{ $key }}')"
+                        @class([
+                            'flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors border whitespace-nowrap',
+                            'bg-primary text-white border-primary' => $budget === $key,
+                            'bg-white text-gray-600 border-gray-200' => $budget !== $key,
+                        ])>
+                    {{ $range['label'] }}
+                </button>
+            @endforeach
+        </div>
+    </div>
+
+    {{-- ── Panneau filtres mobile (dépliable) ── --}}
+    @if($showFilters)
+        <div class="sm:hidden mb-4 bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-4">
+            <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-dark">En stock uniquement</span>
+                <button wire:click="$toggle('inStockOnly')"
+                        class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200
+                               {{ $inStockOnly ? 'bg-primary' : 'bg-gray-200' }}">
+                    <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200
+                                 {{ $inStockOnly ? 'translate-x-6' : 'translate-x-1' }}"></span>
+                </button>
+            </div>
+            <button wire:click="resetFilters"
+                    class="w-full py-2 text-sm font-medium text-gray-500
+                           hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors">
+                Réinitialiser les filtres
+            </button>
+        </div>
+    @endif
+
     <div class="flex gap-6">
 
-        {{-- ── Sidebar filtres ── --}}
-        <aside class="sm:block
-                       w-full sm:w-64 flex-shrink-0">
+        {{-- ── Sidebar filtres (desktop only) ── --}}
+        <aside class="hidden sm:block w-64 flex-shrink-0">
             <div class="bg-white rounded-2xl border border-gray-100
                         shadow-sm p-5 space-y-6 sticky top-20">
 
@@ -109,27 +184,21 @@
                     </div>
                 </div>
 
-                {{-- Prix --}}
+                {{-- Budget --}}
                 <div>
                     <label class="block text-xs font-bold text-dark uppercase
                                   tracking-wider mb-3">Budget</label>
-                    <div class="space-y-3">
-                        <div>
-                            <label class="text-xs text-gray-400 mb-1 block">
-                                Min : {{ number_format($minPrice, 0, ',', ' ') }} FCFA
-                            </label>
-                            <input wire:model.live="minPrice" type="range"
-                                   min="0" max="5000000" step="10000"
-                                   class="w-full accent-primary"/>
-                        </div>
-                        <div>
-                            <label class="text-xs text-gray-400 mb-1 block">
-                                Max : {{ number_format($maxPrice, 0, ',', ' ') }} FCFA
-                            </label>
-                            <input wire:model.live="maxPrice" type="range"
-                                   min="0" max="5000000" step="10000"
-                                   class="w-full accent-primary"/>
-                        </div>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach(\App\Livewire\Shop\CatalogueShop::BUDGETS as $key => $range)
+                            <button wire:click="toggleBudget('{{ $key }}')"
+                                    @class([
+                                        'px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 border',
+                                        'bg-primary text-white border-primary shadow-sm' => $budget === $key,
+                                        'bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary' => $budget !== $key,
+                                    ])>
+                                {{ $range['label'] }}
+                            </button>
+                        @endforeach
                     </div>
                 </div>
 

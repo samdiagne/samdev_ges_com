@@ -23,7 +23,8 @@
       "Bash(git log *)",
       "Bash(composer show *)",
       "Bash(composer require *)",
-      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://127.0.0.1:8000/shop/catalogue\" -UseBasicParsing -TimeoutSec 10; \"Status: $\\($r.StatusCode\\)\"; \"Length: $\\($r.Content.Length\\)\" } catch { \"Error: $\\($_.Exception.Message\\)\" })"
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://127.0.0.1:8000/shop/catalogue\" -UseBasicParsing -TimeoutSec 10; \"Status: $\\($r.StatusCode\\)\"; \"Length: $\\($r.Content.Length\\)\" } catch { \"Error: $\\($_.Exception.Message\\)\" })",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://127.0.0.1:8000/shop\" -UseBasicParsing; \"Status: $\\($r.StatusCode\\) | Length: $\\($r.Content.Length\\)\"; if \\($r.Content -match 'hero-gradient-text'\\) { \"HERO GRADIENT: OK\" } else { \"HERO GRADIENT: MISSING\" }; if \\($r.Content -match 'hero-float'\\) { \"ANIMATIONS: OK\" } else { \"ANIMATIONS: MISSING\" }; if \\($r.Content -match 'Des saveurs'\\) { \"NEW TITLE: OK\" } else { \"NEW TITLE: MISSING\" } } catch { \"Error: $\\($_.Exception.Message\\)\" })"
     ]
   }
 }
