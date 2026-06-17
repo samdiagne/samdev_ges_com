@@ -100,7 +100,7 @@ class VenteService
 
     private function genererReference(): string
     {
-        $derniere = Vente::withTrashed()->latest()->first();
+        $derniere = Vente::withTrashed()->latest('id')->first();
         $num      = $derniere
             ? (intval(substr($derniere->reference, -4)) + 1)
             : 1;

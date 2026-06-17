@@ -33,6 +33,7 @@ class PointOfSale extends Component
 
     public bool   $afficherModalPaiement = false;
     public bool   $afficherModalSucces   = false;
+    public string $erreurPaiement        = '';
 
     public ?int   $derniereVenteId       = null;
     public string $derniereReference     = '';
@@ -79,9 +80,9 @@ class PointOfSale extends Component
     public function togglePlat(int $platId): void
     {
         foreach ($this->panier as $cle => $item) {
-            if ($item['plat_id'] === $platId) { $this->retirerDuPanier($cle); return; }
+            if ($item['plat_id'] === $platId) { $this->removeFromCart($cle); return; }
         }
-        $this->ajouterAuPanier($platId);
+        $this->addToCart($platId);
     }
 
     public function addToCart(int $platId): void
@@ -226,6 +227,7 @@ class PointOfSale extends Component
     public function openPaymentModal(): void
     {
         if (empty($this->panier)) { session()->flash('pos_error', 'Le panier est vide !'); return; }
+        $this->erreurPaiement        = '';
         $this->montantRecu           = $this->total;
         $this->afficherModalPaiement = true;
     }
@@ -266,8 +268,9 @@ class PointOfSale extends Component
             $this->afficherModalPaiement = false;
             $this->afficherModalSucces   = true;
             $this->clearCart();
+            $this->loadProducts();
         } catch (\Exception $e) {
-            session()->flash('pos_error', 'Erreur : ' . $e->getMessage());
+            $this->erreurPaiement = $e->getMessage();
         }
     }
 

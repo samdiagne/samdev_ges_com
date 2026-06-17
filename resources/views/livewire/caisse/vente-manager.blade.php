@@ -69,8 +69,8 @@
                     class="px-3 py-2 border border-gray-200 rounded-xl text-sm
                            focus:outline-none focus:border-primary bg-gray-50">
                 <option value="">Toutes sources</option>
-                <option value="shop">Boutique</option>
-                <option value="website">Site web</option>
+                <option value="boutique">Boutique</option>
+                <option value="en_ligne">Site web</option>
             </select>
         </div>
     </div>
@@ -155,10 +155,10 @@
                             <td class="px-4 py-3 text-center hidden lg:table-cell">
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-full
                                              text-xs font-medium
-                                             {{ $vente->source === 'shop'
+                                             {{ $vente->source === 'boutique'
                                                 ? 'bg-dark/10 text-dark'
                                                 : 'bg-accent/20 text-primary' }}">
-                                    {{ $vente->source === 'shop' ? '🏪 Boutique' : '🌐 Site web' }}
+                                    {{ $vente->source === 'boutique' ? '🏪 Boutique' : '🌐 Site web' }}
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-right">
