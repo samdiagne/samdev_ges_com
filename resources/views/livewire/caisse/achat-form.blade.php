@@ -23,7 +23,7 @@
 
                     {{-- En-têtes colonnes --}}
                     <div class="hidden sm:grid grid-cols-12 gap-2 mb-2 px-1">
-                        <p class="col-span-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        <p class="col-span-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                             Description
                         </p>
 
@@ -31,8 +31,12 @@
                             Qté
                         </p>
 
-                        <p class="col-span-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">
-                            Montant
+                        <p class="col-span-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">
+                            PU
+                        </p>
+
+                        <p class="col-span-2 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">
+                            Total
                         </p>
 
                         <div class="col-span-1"></div>
@@ -44,7 +48,7 @@
                             <div class="grid grid-cols-12 gap-2 items-center bg-gray-50 rounded-xl px-3 py-2.5 group">
 
                                 {{-- Description --}}
-                                <div class="col-span-12 sm:col-span-5">
+                                <div class="col-span-12 sm:col-span-4">
                                     <input
                                         type="text"
                                         wire:change="updateLine({{ $index }}, 'description', $event.target.value)"
@@ -60,7 +64,7 @@
                                 </div>
 
                                 {{-- Quantité --}}
-                                <div class="col-span-4 sm:col-span-2">
+                                <div class="col-span-3 sm:col-span-2">
                                     <input
                                         type="number"
                                         wire:change="updateLine({{ $index }}, 'quantity', $event.target.value)"
@@ -71,8 +75,8 @@
                                             transition-colors font-medium"/>
                                 </div>
 
-                                {{-- Montant --}}
-                                <div class="col-span-7 sm:col-span-4 relative">
+                                {{-- PU --}}
+                                <div class="col-span-4 sm:col-span-3 relative">
                                     <input
                                         type="number"
                                         wire:change="updateLine({{ $index }}, 'unit_price', $event.target.value)"
@@ -87,6 +91,13 @@
                                     <span class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">
                                         FCFA
                                     </span>
+                                </div>
+
+                                {{-- Total --}}
+                                <div class="col-span-4 sm:col-span-2 text-right">
+                                    <p class="text-sm font-bold text-primary py-1.5">
+                                        {{ number_format(($ligne['quantity'] ?? 1) * ($ligne['unit_price'] ?? 0), 0, ',', ' ') }}
+                                    </p>
                                 </div>
 
                                 {{-- Supprimer --}}

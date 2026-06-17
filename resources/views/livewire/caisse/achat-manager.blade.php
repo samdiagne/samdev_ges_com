@@ -116,6 +116,10 @@
                         <th class="text-center text-xs font-semibold text-gray-500
                                    uppercase tracking-wider px-4 py-3">Statut</th>
                         <th class="text-right text-xs font-semibold text-gray-500
+                                   uppercase tracking-wider px-4 py-3 hidden md:table-cell">PU</th>
+                        <th class="text-center text-xs font-semibold text-gray-500
+                                   uppercase tracking-wider px-4 py-3 hidden md:table-cell">Qté</th>
+                        <th class="text-right text-xs font-semibold text-gray-500
                                    uppercase tracking-wider px-4 py-3">Total</th>
                         <th class="text-right text-xs font-semibold text-gray-500
                                    uppercase tracking-wider px-4 py-3 hidden lg:table-cell">
@@ -166,6 +170,17 @@
                                              {{ $statusColors[$achat->statut] ?? 'bg-gray-100 text-gray-600' }}">
                                     {{ $statusLabels[$achat->statut] ?? $achat->statut }}
                                 </span>
+                            </td>
+                            <td class="px-4 py-3 text-right hidden md:table-cell">
+                                <p class="text-sm text-dark">
+                                    {{ number_format($achat->lignes->first()?->prix_unitaire ?? 0, 0, ',', ' ') }}
+                                    <span class="text-xs text-gray-400">FCFA</span>
+                                </p>
+                            </td>
+                            <td class="px-4 py-3 text-center hidden md:table-cell">
+                                <p class="text-sm text-dark">
+                                    {{ $achat->lignes->first()?->quantite ?? '-' }}
+                                </p>
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <p class="text-sm font-bold text-dark">
@@ -232,7 +247,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-4 py-12 text-center">
+                            <td colspan="9" class="px-4 py-12 text-center">
                                 <p class="text-sm text-gray-400">Aucun achat trouvé</p>
                             </td>
                         </tr>
@@ -284,15 +299,20 @@
                         <div class="overflow-hidden rounded-xl border border-gray-100">
 
                             <div class="grid grid-cols-12 bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-500 uppercase">
-                                <div class="col-span-7">Description</div>
+                                <div class="col-span-4">Description</div>
+                                <div class="col-span-3 text-right">PU</div>
                                 <div class="col-span-2 text-center">Qté</div>
                                 <div class="col-span-3 text-right">Montant</div>
                             </div>
 
                             @foreach($voirAchat->lignes as $item)
                                 <div class="grid grid-cols-12 px-3 py-3 border-t border-gray-100 bg-white">
-                                    <div class="col-span-7 text-sm text-dark">
+                                    <div class="col-span-4 text-sm text-dark">
                                         {{ $item->description }}
+                                    </div>
+
+                                    <div class="col-span-3 text-right text-sm text-gray-500">
+                                        {{ number_format($item->prix_unitaire, 0, ',', ' ') }}
                                     </div>
 
                                     <div class="col-span-2 text-center text-sm text-dark">
