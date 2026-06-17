@@ -153,6 +153,63 @@
                     </div>
                 </div>
 
+                {{-- Prix dégressif --}}
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                    <h3 class="text-sm font-bold text-dark mb-4 flex items-center gap-2">
+                        <span class="w-6 h-6 bg-indigo-100 rounded-lg flex items-center
+                                     justify-center text-indigo-600 text-xs">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                            </svg>
+                        </span>
+                        Prix dégressif
+                    </h3>
+                    <p class="text-xs text-gray-400 mb-4">
+                        Appliquer un prix réduit à partir d'une certaine quantité achetée.
+                    </p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-dark mb-1.5">
+                                À partir de (qté)
+                            </label>
+                            <input wire:model="quantite_palier" type="number" min="2" step="1"
+                                   placeholder="Ex: 25"
+                                   class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm
+                                          bg-gray-50 focus:outline-none focus:border-primary
+                                          focus:bg-white transition-colors"/>
+                            @error('quantite_palier')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-dark mb-1.5">
+                                Prix unitaire
+                            </label>
+                            <div class="relative">
+                                <input wire:model="prix_palier" type="number" min="0" step="1"
+                                       placeholder="Ex: 400"
+                                       class="w-full px-3 py-2.5 pr-16 border border-gray-200 rounded-xl
+                                              text-sm bg-gray-50 focus:outline-none focus:border-primary
+                                              focus:bg-white transition-colors"/>
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2
+                                             text-xs text-gray-400 font-medium">FCFA</span>
+                            </div>
+                            @error('prix_palier')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                    @if($quantite_palier && $prix_palier && $prix_vente)
+                        <div class="mt-3 p-3 bg-indigo-50 rounded-xl text-xs text-indigo-700">
+                            <span class="font-semibold">Résumé :</span>
+                            {{ number_format($prix_vente, 0, ',', ' ') }} FCFA/u,
+                            puis {{ number_format($prix_palier, 0, ',', ' ') }} FCFA/u
+                            à partir de {{ $quantite_palier }} unités
+                        </div>
+                    @endif
+                </div>
+
                 {{-- Promotion --}}
                 <div class="bg-white rounded-2xl border shadow-sm p-6 transition-colors
                             {{ $en_promo ? 'border-red-200 bg-red-50/30' : 'border-gray-100' }}">

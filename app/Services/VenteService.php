@@ -46,7 +46,7 @@ class VenteService
                 'reference'      => $this->genererReference(),
                 'client_id'      => $clientId,
                 'user_id' => Auth::id(),
-                'source'         => 'pos',
+                'source'         => 'boutique',
                 'statut'         => 'completee',
                 'total'          => $total,
                 'remise'         => $remise,

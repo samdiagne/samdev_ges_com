@@ -25,6 +25,8 @@ class Plat extends Model
         'prix_achat',
         'prix_vente',
         'ancien_prix',
+        'quantite_palier',
+        'prix_palier',
         'stock',
         'seuil_alerte_stock',
         'est_actif',
@@ -39,6 +41,8 @@ class Plat extends Model
             'prix_achat'        => 'decimal:2',
             'prix_vente'        => 'decimal:2',
             'ancien_prix'       => 'decimal:2',
+            'quantite_palier'   => 'integer',
+            'prix_palier'       => 'decimal:2',
             'est_actif'         => 'boolean',
             'est_mis_en_avant'  => 'boolean',
         ];
@@ -106,5 +110,14 @@ class Plat extends Model
     public function noteMoyenne(): float
     {
         return round($this->avisApprouves()->avg('note') ?? 0, 1);
+    }
+
+    public function prixPourQuantite(int $quantite): float
+    {
+        if ($this->quantite_palier && $this->prix_palier && $quantite >= $this->quantite_palier) {
+            return (float) $this->prix_palier;
+        }
+
+        return (float) $this->prix_vente;
     }
 }

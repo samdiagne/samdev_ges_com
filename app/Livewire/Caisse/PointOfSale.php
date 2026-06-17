@@ -61,12 +61,14 @@ class PointOfSale extends Component
             ->orderBy('nom')
             ->get()
             ->map(fn($p) => [
-                'id'         => $p->id,
-                'nom'        => $p->nom,
-                'prix_vente' => (float) $p->prix_vente,
-                'stock'      => $p->stock,
-                'image'      => $p->image_principale,
-                'categorie'  => $p->categorie?->nom,
+                'id'               => $p->id,
+                'nom'              => $p->nom,
+                'prix_vente'       => (float) $p->prix_vente,
+                'stock'            => $p->stock,
+                'image'            => $p->image_principale,
+                'categorie'        => $p->categorie?->nom,
+                'quantite_palier'  => $p->quantite_palier,
+                'prix_palier'      => $p->prix_palier ? (float) $p->prix_palier : null,
             ])
             ->toArray();
     }
@@ -96,19 +98,24 @@ class PointOfSale extends Component
             }
             $this->panier[$cleTrouvee]['quantite']++;
             $this->recalcLine($cleTrouvee);
+            $this->recalcTotals();
+            return;
         } else {
             $plat = Plat::find($platId);
             if (! $plat || $plat->stock <= 0) {
                 session()->flash('pos_error', 'Plat indisponible !'); return;
             }
             $this->panier[] = [
-                'plat_id'       => $plat->id,
-                'nom'           => $plat->nom,
-                'prix_unitaire' => (float) $plat->prix_vente,
-                'quantite'      => 1,
-                'remise'        => 0,
-                'total'         => (float) $plat->prix_vente,
-                'stock_max'     => $plat->stock,
+                'plat_id'          => $plat->id,
+                'nom'              => $plat->nom,
+                'prix_unitaire'    => (float) $plat->prix_vente,
+                'quantite'         => 1,
+                'remise'           => 0,
+                'total'            => (float) $plat->prix_vente,
+                'stock_max'        => $plat->stock,
+                'quantite_palier'  => $plat->quantite_palier,
+                'prix_palier'      => $plat->prix_palier ? (float) $plat->prix_palier : null,
+                'prix_base'        => (float) $plat->prix_vente,
             ];
         }
         $this->recalcTotals();
@@ -153,8 +160,19 @@ class PointOfSale extends Component
     private function recalcLine(int $index): void
     {
         $item = $this->panier[$index];
+
+        $palierQte = $item['quantite_palier'] ?? null;
+        $palierPrix = $item['prix_palier'] ?? null;
+        $prixBase = $item['prix_base'] ?? $item['prix_unitaire'];
+
+        if ($palierQte && $palierPrix && $item['quantite'] >= $palierQte) {
+            $this->panier[$index]['prix_unitaire'] = $palierPrix;
+        } else {
+            $this->panier[$index]['prix_unitaire'] = $prixBase;
+        }
+
         $this->panier[$index]['total'] = round(
-            ($item['prix_unitaire'] * $item['quantite']) - $item['remise'], 2
+            ($this->panier[$index]['prix_unitaire'] * $item['quantite']) - $item['remise'], 2
         );
     }
 

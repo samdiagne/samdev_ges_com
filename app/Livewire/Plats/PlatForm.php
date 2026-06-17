@@ -28,6 +28,10 @@ class PlatForm extends Component
     // Prix
     public ?float $prix_vente  = 0;
 
+    // Prix dégressif
+    public ?int   $quantite_palier = null;
+    public ?float $prix_palier     = null;
+
     // Promotion
     public bool   $en_promo    = false;
     public ?float $ancien_prix = null;
@@ -55,6 +59,8 @@ class PlatForm extends Component
             'prix_vente'           => 'required|numeric|min:1',
             'stock'                => 'required|integer|min:0',
             'seuil_alerte_stock'   => 'required|integer|min:0',
+            'quantite_palier'      => 'nullable|integer|min:2',
+            'prix_palier'          => 'nullable|numeric|min:0|required_with:quantite_palier',
             'imagePrincipale'      => 'nullable|image|max:3072',
             'imagesGalerie.*'      => 'nullable|image|max:3072',
         ];
@@ -98,6 +104,8 @@ class PlatForm extends Component
         $this->ingredients        = $plat->ingredients ?? [];
         $this->prix_vente         = (float) $plat->prix_vente;
         $this->ancien_prix        = $plat->ancien_prix ? (float) $plat->ancien_prix : null;
+        $this->quantite_palier    = $plat->quantite_palier;
+        $this->prix_palier        = $plat->prix_palier ? (float) $plat->prix_palier : null;
         $this->en_promo           = $plat->ancien_prix !== null && $plat->ancien_prix > $plat->prix_vente;
         $this->stock              = $plat->stock;
         $this->seuil_alerte_stock = $plat->seuil_alerte_stock;
@@ -146,6 +154,8 @@ class PlatForm extends Component
             'ingredients'        => array_values(array_filter($this->ingredients, fn($i) => trim($i) !== '')),
             'prix_vente'         => $this->prix_vente,
             'ancien_prix'        => ($this->en_promo && $this->ancien_prix > 0) ? $this->ancien_prix : null,
+            'quantite_palier'    => $this->quantite_palier ?: null,
+            'prix_palier'        => ($this->quantite_palier && $this->prix_palier > 0) ? $this->prix_palier : null,
             'stock'              => $this->stock,
             'seuil_alerte_stock' => $this->seuil_alerte_stock,
             'est_actif'          => $this->est_actif,
