@@ -131,7 +131,7 @@
         </div>
 
         {{-- BOUTON --}}
-        @if($plat->stock > 0)
+        @if($plat->sur_commande || $plat->stock > 0)
             <div class="mt-2 sm:mt-3"
                  x-data="{ loading: false, done: false }"
                  @click.stop>
@@ -173,7 +173,7 @@
             </div>
         @else
             <div class="mt-2 sm:mt-3 w-full py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-sm font-semibold
-                        text-center bg-gray-100 text-gray-400">
+                        text-center bg-red-50 text-red-400">
                 Rupture de stock
             </div>
         @endif
