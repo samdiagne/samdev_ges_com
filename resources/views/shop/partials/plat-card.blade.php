@@ -81,7 +81,7 @@
                     class="w-full text-white text-xs py-2 rounded-xl font-semibold
                            shadow-lg transition disabled:opacity-70"
                     :class="done ? 'bg-green-500' : 'bg-primary hover:scale-105'">
-                <span x-show="!loading && !done">{{ $plat->sur_commande ? 'Commandez maintenant' : '🛒 Ajouter au panier' }}</span>
+                <span x-show="!loading && !done">{{ $plat->sur_commande ? 'Voir' : '🛒 Ajouter au panier' }}</span>
                 <span x-show="loading">
                     <svg class="w-3.5 h-3.5 animate-spin inline" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
@@ -161,7 +161,7 @@
                                border-primary text-primary hover:bg-primary hover:text-white
                                disabled:opacity-70 disabled:cursor-not-allowed"
                         :class="done ? 'bg-green-500 border-green-500 text-white hover:bg-green-500 hover:text-white' : ''">
-                    <span x-show="!loading && !done">{{ $plat->sur_commande ? 'Voir' : '🛒 Ajouter au panier' }}</span>
+                    <span x-show="!loading && !done">{{ $plat->sur_commande ? 'Commandez maintenant' : '🛒 Ajouter au panier' }}</span>
                     <span x-show="loading">
                         <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
