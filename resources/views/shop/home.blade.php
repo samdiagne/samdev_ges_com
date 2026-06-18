@@ -9,6 +9,7 @@
 @php
     $heroPlats = $misEnAvant->take(3);
     $platVedette = $heroPlats->first();
+    $carouselImages = $misEnAvant->filter(fn($p) => $p->image_principale)->pluck('image_principale')->values();
 @endphp
 <section class="relative overflow-hidden -mt-1 bg-[#FFF9F4]">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -97,7 +98,7 @@
                 </div>
             </div>
 
-            {{-- ── IMAGE (droite) ── --}}
+            {{-- ── CARROUSEL FONDU (droite) ── --}}
             <div class="relative flex items-center justify-center
                         py-6 sm:py-10 lg:py-0 lg:min-h-[560px]">
 
@@ -116,9 +117,46 @@
                             border-radius: 60% 40% 55% 45% / 50% 60% 40% 50%;
                             opacity: 0.12;"></div>
 
-                {{-- Plat principal --}}
-                @if($platVedette?->image_principale)
-                    <div class="relative z-20 hero-float">
+                @if($carouselImages->count() > 1)
+                    {{-- Carrousel fondu Alpine --}}
+                    <div class="relative z-20"
+                         x-data="{
+                            current: 0,
+                            images: {{ $carouselImages->map(fn($img) => Storage::url($img))->toJson() }},
+                            total: {{ $carouselImages->count() }},
+                            init() {
+                                setInterval(() => {
+                                    this.current = (this.current + 1) % this.total;
+                                }, 4000);
+                            }
+                         }">
+                        <div class="relative w-52 h-52 sm:w-64 sm:h-64 md:w-72 md:h-72
+                                    lg:w-[360px] lg:h-[360px] xl:w-[400px] xl:h-[400px]">
+                            <template x-for="(img, index) in images" :key="index">
+                                <img :src="img"
+                                     alt="Plat vedette"
+                                     class="absolute inset-0 w-full h-full object-contain
+                                            drop-shadow-[0_20px_50px_rgba(242,123,32,0.2)]
+                                            transition-opacity duration-1000 ease-in-out"
+                                     :class="current === index ? 'opacity-100' : 'opacity-0'"/>
+                            </template>
+                        </div>
+
+                        {{-- Indicateurs --}}
+                        <div class="flex justify-center gap-2 mt-4">
+                            <template x-for="(img, index) in images" :key="'dot-'+index">
+                                <button @click="current = index"
+                                        class="w-2 h-2 rounded-full transition-all duration-300"
+                                        :class="current === index
+                                            ? 'bg-[#F27B20] w-6'
+                                            : 'bg-gray-300 hover:bg-gray-400'">
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                @elseif($platVedette?->image_principale)
+                    {{-- Image unique --}}
+                    <div class="relative z-20">
                         <img src="{{ Storage::url($platVedette->image_principale) }}"
                              alt="{{ $platVedette->nom }}"
                              class="w-52 h-52 sm:w-64 sm:h-64 md:w-72 md:h-72 lg:w-[360px] lg:h-[360px] xl:w-[400px] xl:h-[400px]
@@ -132,31 +170,6 @@
                         <div class="text-center">
                             <span class="text-5xl sm:text-6xl">🍽️</span>
                             <p class="text-gray-400 text-xs font-medium mt-2">Plat vedette</p>
-                        </div>
-                    </div>
-                @endif
-
-                {{-- Mini plats flottants --}}
-                @if($heroPlats->count() > 1 && $heroPlats[1]->image_principale)
-                    <div class="absolute top-4 right-4 sm:top-8 sm:right-8 lg:top-12 lg:right-4 z-30 hero-float-delayed">
-                        <div class="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-2xl
-                                    bg-white shadow-lg p-2 rotate-6
-                                    hover:rotate-0 hover:scale-110 transition-all duration-500">
-                            <img src="{{ Storage::url($heroPlats[1]->image_principale) }}"
-                                 alt="{{ $heroPlats[1]->nom }}"
-                                 class="w-full h-full object-contain"/>
-                        </div>
-                    </div>
-                @endif
-
-                @if($heroPlats->count() > 2 && $heroPlats[2]->image_principale)
-                    <div class="absolute bottom-8 left-4 sm:bottom-12 sm:left-8 lg:bottom-16 lg:left-0 z-30 hero-float-delayed-2">
-                        <div class="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-2xl
-                                    bg-white shadow-lg p-2 -rotate-6
-                                    hover:rotate-0 hover:scale-110 transition-all duration-500">
-                            <img src="{{ Storage::url($heroPlats[2]->image_principale) }}"
-                                 alt="{{ $heroPlats[2]->nom }}"
-                                 class="w-full h-full object-contain"/>
                         </div>
                     </div>
                 @endif
@@ -188,17 +201,7 @@
         0%, 100% { transform: translateY(0); }
         50% { transform: translateY(-10px); }
     }
-    @keyframes heroFloatDelayed {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-7px); }
-    }
-    @keyframes heroFloatDelayed2 {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-5px); }
-    }
     .hero-float { animation: heroFloat 4s ease-in-out infinite; }
-    .hero-float-delayed { animation: heroFloatDelayed 5s ease-in-out 0.8s infinite; }
-    .hero-float-delayed-2 { animation: heroFloatDelayed2 6s ease-in-out 1.6s infinite; }
     @keyframes heroMorph {
         0%   { border-radius: 60% 40% 55% 45% / 50% 60% 40% 50%; }
         50%  { border-radius: 45% 55% 40% 60% / 60% 40% 55% 45%; }
@@ -206,7 +209,7 @@
     }
     .hero-morph { animation: heroMorph 8s ease-in-out infinite; }
     @media (prefers-reduced-motion: reduce) {
-        .hero-float, .hero-float-delayed, .hero-float-delayed-2, .hero-morph { animation: none; }
+        .hero-float, .hero-morph { animation: none; }
     }
 </style>
 
