@@ -69,7 +69,7 @@ class CatalogueShop extends Component
         }
 
         if ($this->inStockOnly) {
-            $query->where('stock', '>', 0);
+            $query->where(fn($q) => $q->where('stock', '>', 0)->orWhere('sur_commande', true));
         }
 
         if ($this->budget && isset(self::BUDGETS[$this->budget])) {

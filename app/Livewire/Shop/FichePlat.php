@@ -33,7 +33,7 @@ class FichePlat extends Component
 
     public function incrementQty(): void
     {
-        if ($this->quantity < $this->plat->stock) {
+        if ($this->plat->sur_commande || $this->quantity < $this->plat->stock) {
             $this->quantity++;
         }
     }
@@ -54,14 +54,14 @@ class FichePlat extends Component
 
     public function addToCart(): void
     {
-        if ($this->plat->stock <= 0) return;
+        if (! $this->plat->sur_commande && $this->plat->stock <= 0) return;
 
         $panier = session('panier', []);
         $cle    = 'plat_' . $this->plat->id;
 
         if (isset($panier[$cle])) {
             $nouvelle = $panier[$cle]['quantite'] + $this->quantity;
-            $panier[$cle]['quantite'] = min($nouvelle, $this->plat->stock);
+            $panier[$cle]['quantite'] = $this->plat->sur_commande ? $nouvelle : min($nouvelle, $this->plat->stock);
         } else {
             $panier[$cle] = [
                 'plat_id'  => $this->plat->id,

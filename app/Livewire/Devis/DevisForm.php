@@ -57,7 +57,7 @@ class DevisForm extends Component
     public function loadPlats(): void
     {
         $this->allPlats = Plat::where('est_actif', true)
-            ->where('stock', '>', 0)
+            ->where(fn($q) => $q->where('stock', '>', 0)->orWhere('sur_commande', true))
             ->with('categorie')
             ->when($this->filterCategorie, fn($q) =>
                 $q->where('categorie_id', $this->filterCategorie)
@@ -280,7 +280,7 @@ class DevisForm extends Component
     {
         $categories = Categorie::where('est_active', true)
             ->whereHas('plats', fn($q) =>
-                $q->where('est_actif', true)->where('stock', '>', 0)
+                $q->where('est_actif', true)->where(fn($sq) => $sq->where('stock', '>', 0)->orWhere('sur_commande', true))
             )
             ->get(['id', 'nom']);
 

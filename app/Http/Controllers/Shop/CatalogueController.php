@@ -33,7 +33,7 @@ class CatalogueController extends Controller
         $similaires = Plat::where('est_actif', true)
             ->where('categorie_id', $plat->categorie_id)
             ->where('id', '!=', $plat->id)
-            ->where('stock', '>', 0)
+            ->where(fn($q) => $q->where('stock', '>', 0)->orWhere('sur_commande', true))
             ->limit(4)
             ->get();
 

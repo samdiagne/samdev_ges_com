@@ -82,13 +82,13 @@
                                         duration-150 overflow-hidden group
                                         hover:-translate-y-0.5',
                                         'opacity-50 cursor-not-allowed'
-                                            => $plat['stock'] <= 0,
+                                            => ! $plat['sur_commande'] && $plat['stock'] <= 0,
                                         'bg-green-50 border-green-400 ring-2 ring-green-300/40 shadow-md shadow-green-100'
                                             => $isSelected,
                                         'bg-white border-gray-100 hover:shadow-lg hover:border-primary/30'
-                                            => !$isSelected && $plat['stock'] > 0,
+                                            => !$isSelected && ($plat['sur_commande'] || $plat['stock'] > 0),
                                     ])
-                                    {{ $plat['stock'] <= 0 ? 'disabled' : '' }}>
+                                    {{ ! $plat['sur_commande'] && $plat['stock'] <= 0 ? 'disabled' : '' }}>
 
                                 {{-- Image --}}
                                 <div class="aspect-square flex items-center
@@ -122,8 +122,14 @@
                                         </div>
                                     @endif
 
-                                    {{-- Badge stock bas --}}
-                                    @if($plat['stock'] > 0 && $plat['stock'] <= 3)
+                                    {{-- Badge stock bas / sur commande --}}
+                                    @if($plat['sur_commande'])
+                                        <div class="absolute top-1.5 right-1.5 bg-blue-500
+                                                    text-white text-xs font-bold px-1.5 py-0.5
+                                                    rounded-lg">
+                                            Cde
+                                        </div>
+                                    @elseif($plat['stock'] > 0 && $plat['stock'] <= 3)
                                         <div class="absolute top-1.5 right-1.5 bg-orange-500
                                                     text-white text-xs font-bold px-1.5 py-0.5
                                                     rounded-lg">
@@ -223,7 +229,7 @@
                                    wire:change="updateQuantity({{ $index }}, $event.target.value)"
                                    value="{{ $item['quantite'] }}"
                                    min="1"
-                                   max="{{ $item['stock_max'] }}"
+                                   @if($item['stock_max'] !== null) max="{{ $item['stock_max'] }}" @endif
                                    class="w-12 text-center text-sm font-bold border border-gray-200
                                           rounded-lg py-1 focus:outline-none focus:border-primary"/>
                             <button wire:click="updateQuantity({{ $index }}, {{ $item['quantite'] + 1 }})"

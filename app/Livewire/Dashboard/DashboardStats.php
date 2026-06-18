@@ -57,8 +57,8 @@ class DashboardStats extends Component
             'panier_moyen'   => $nbVentes > 0 ? round($ca / $nbVentes) : 0,
             'total_plats'    => Plat::where('est_actif', true)->count(),
             'total_clients'  => Client::count(),
-            'stock_faible'   => Plat::whereColumn('stock', '<=', 'seuil_alerte_stock')->where('stock', '>', 0)->count(),
-            'stock_rupture'  => Plat::where('stock', '<=', 0)->count(),
+            'stock_faible'   => Plat::whereColumn('stock', '<=', 'seuil_alerte_stock')->where('stock', '>', 0)->where('sur_commande', false)->count(),
+            'stock_rupture'  => Plat::where('stock', '<=', 0)->where('sur_commande', false)->count(),
             'cash_total'     => (clone $ventesQuery)->where('mode_paiement', 'cash')->sum('total'),
             'wave_total'     => (clone $ventesQuery)->where('mode_paiement', 'wave')->sum('total'),
             'om_total'       => (clone $ventesQuery)->where('mode_paiement', 'om')->sum('total'),
@@ -111,9 +111,10 @@ class DashboardStats extends Component
             'stock_faible' => Plat::with('categorie')
                 ->whereColumn('stock', '<=', 'seuil_alerte_stock')
                 ->where('stock', '>', 0)
+                ->where('sur_commande', false)
                 ->orderBy('stock')->limit(5)->get(),
             'stock_rupture' => Plat::with('categorie')
-                ->where('stock', '<=', 0)->limit(5)->get(),
+                ->where('stock', '<=', 0)->where('sur_commande', false)->limit(5)->get(),
         ];
     }
 

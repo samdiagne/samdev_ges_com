@@ -20,7 +20,11 @@
         {{-- BADGES --}}
         <div class="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 flex flex-col gap-1">
 
-            @if($plat->stock <= 0)
+            @if($plat->sur_commande)
+                <span class="bg-blue-500 text-white text-[9px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg font-bold whitespace-nowrap">
+                    Sur commande
+                </span>
+            @elseif($plat->stock <= 0)
                 <span class="bg-red-500 text-white text-[9px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg font-bold whitespace-nowrap">
                     Rupture
                 </span>
@@ -48,7 +52,7 @@
         @endif
 
         {{-- QUICK ADD (hover desktop) --}}
-        @if($plat->stock > 0)
+        @if($plat->sur_commande || $plat->stock > 0)
         <div class="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 opacity-0
                     group-hover:opacity-100 transition duration-300 w-[90%] hidden sm:block"
              x-data="{ loading: false, done: false }"

@@ -51,7 +51,7 @@ class PointOfSale extends Component
     public function loadProducts(): void
     {
         $this->plats = Plat::where('est_actif', true)
-            ->where('stock', '>', 0)
+            ->where(fn($q) => $q->where('stock', '>', 0)->orWhere('sur_commande', true))
             ->with('categorie')
             ->when($this->filtreCategorie, fn($q) =>
                 $q->where('categorie_id', $this->filtreCategorie)
@@ -66,6 +66,7 @@ class PointOfSale extends Component
                 'nom'              => $p->nom,
                 'prix_vente'       => (float) $p->prix_vente,
                 'stock'            => $p->stock,
+                'sur_commande'     => $p->sur_commande,
                 'image'            => $p->image_principale,
                 'categorie'        => $p->categorie?->nom,
                 'quantite_palier'  => $p->quantite_palier,
@@ -94,7 +95,7 @@ class PointOfSale extends Component
 
         if ($cleTrouvee !== null) {
             $plat = Plat::find($platId);
-            if ($this->panier[$cleTrouvee]['quantite'] >= $plat->stock) {
+            if (! $plat->sur_commande && $this->panier[$cleTrouvee]['quantite'] >= $plat->stock) {
                 session()->flash('pos_error', 'Stock insuffisant !'); return;
             }
             $this->panier[$cleTrouvee]['quantite']++;
@@ -103,7 +104,7 @@ class PointOfSale extends Component
             return;
         } else {
             $plat = Plat::find($platId);
-            if (! $plat || $plat->stock <= 0) {
+            if (! $plat || (! $plat->sur_commande && $plat->stock <= 0)) {
                 session()->flash('pos_error', 'Plat indisponible !'); return;
             }
             $this->panier[] = [
@@ -113,7 +114,7 @@ class PointOfSale extends Component
                 'quantite'         => 1,
                 'remise'           => 0,
                 'total'            => (float) $plat->prix_vente,
-                'stock_max'        => $plat->stock,
+                'stock_max'        => $plat->sur_commande ? null : $plat->stock,
                 'quantite_palier'  => $plat->quantite_palier,
                 'prix_palier'      => $plat->prix_palier ? (float) $plat->prix_palier : null,
                 'prix_base'        => (float) $plat->prix_vente,
@@ -125,8 +126,9 @@ class PointOfSale extends Component
     public function updateQuantity(int $index, int $quantite): void
     {
         if ($quantite <= 0) { $this->retirerDuPanier($index); return; }
-        if ($quantite > $this->panier[$index]['stock_max']) {
-            $quantite = $this->panier[$index]['stock_max'];
+        $stockMax = $this->panier[$index]['stock_max'];
+        if ($stockMax !== null && $quantite > $stockMax) {
+            $quantite = $stockMax;
         }
         $this->panier[$index]['quantite'] = $quantite;
         $this->recalcLine($index);
@@ -277,7 +279,7 @@ class PointOfSale extends Component
     public function render()
     {
         $categories = Categorie::where('est_active', true)
-            ->whereHas('plats', fn($q) => $q->where('est_actif', true)->where('stock', '>', 0))
+            ->whereHas('plats', fn($q) => $q->where('est_actif', true)->where(fn($sq) => $sq->where('stock', '>', 0)->orWhere('sur_commande', true)))
             ->get(['id', 'nom']);
         return view('livewire.caisse.point-of-sale', compact('categories'));
     }

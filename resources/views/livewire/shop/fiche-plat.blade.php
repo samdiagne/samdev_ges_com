@@ -133,7 +133,12 @@
                 @endif
                 {{-- Stock --}}
                 <div class="flex items-center gap-2 mt-2">
-                    @if($plat->stock <= 0)
+                    @if($plat->sur_commande)
+                        <span class="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600">
+                            <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                            Sur commande
+                        </span>
+                    @elseif($plat->stock <= 0)
                         <span class="inline-flex items-center gap-1.5 text-sm font-medium text-red-600">
                             <span class="w-2 h-2 rounded-full bg-red-500"></span>
                             Rupture de stock
@@ -177,7 +182,7 @@
             @endif
 
             {{-- Sélecteur quantité + Ajouter panier --}}
-            @if($plat->stock > 0)
+            @if($plat->sur_commande || $plat->stock > 0)
                 <div class="space-y-3">
                     <div class="flex items-center gap-4">
                         <span class="text-sm font-medium text-dark">Quantité :</span>
@@ -194,8 +199,8 @@
                                     @class([
                                         'w-8 h-8 rounded-lg flex items-center justify-center
                                          transition-colors font-bold',
-                                        'bg-white shadow text-dark' => $quantity < $plat->stock,
-                                        'text-gray-300 cursor-not-allowed' => $quantity >= $plat->stock,
+                                        'bg-white shadow text-dark' => $plat->sur_commande || $quantity < $plat->stock,
+                                        'text-gray-300 cursor-not-allowed' => ! $plat->sur_commande && $quantity >= $plat->stock,
                                     ])>+</button>
                         </div>
                         @if($quantity > 1)
@@ -262,7 +267,7 @@
                     @endif
                 </div>
             @else
-                {{-- Rupture --}}
+                {{-- Rupture (uniquement pour les plats non sur commande) --}}
                 <div class="bg-red-50 border border-red-100 rounded-2xl p-4 text-center">
                     <p class="text-red-600 font-medium text-sm mb-3">
                         Ce plat est actuellement indisponible

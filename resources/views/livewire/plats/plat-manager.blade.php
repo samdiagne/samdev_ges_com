@@ -176,7 +176,13 @@
 
                             {{-- Stock --}}
                             <td class="px-4 py-3 text-center">
-                                @if($plat->stock <= 0)
+                                @if($plat->sur_commande)
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1
+                                                 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                                        <span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                                        Sur commande
+                                    </span>
+                                @elseif($plat->stock <= 0)
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1
                                                  bg-red-100 text-red-700 rounded-full text-xs font-medium">
                                         <span class="w-1.5 h-1.5 bg-red-500 rounded-full"></span>

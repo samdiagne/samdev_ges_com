@@ -333,6 +333,18 @@
                         Stock
                     </h3>
                     <div class="space-y-4">
+                        <div class="flex items-center gap-3 p-3 bg-blue-50 border border-blue-100 rounded-xl">
+                            <input wire:model.live="sur_commande" type="checkbox" id="sur_commande"
+                                   class="w-4 h-4 text-blue-600 rounded border-gray-300
+                                          focus:ring-blue-500"/>
+                            <label for="sur_commande" class="text-sm font-medium text-dark cursor-pointer">
+                                Sur commande
+                            </label>
+                            <span class="text-xs text-gray-500">
+                                — Ce plat n'est pas stocké, il est préparé à la demande
+                            </span>
+                        </div>
+                        @if(! $sur_commande)
                         <div>
                             <label class="block text-sm font-medium text-dark mb-1.5">
                                 Portions disponibles
@@ -354,6 +366,7 @@
                                 Alerte quand stock ≤ ce seuil
                             </p>
                         </div>
+                        @endif
                     </div>
                 </div>
 

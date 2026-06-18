@@ -27,7 +27,7 @@ class PanierController extends Controller
 
         $plat = Plat::findOrFail($request->plat_id);
 
-        if ($plat->stock <= 0) {
+        if (! $plat->sur_commande && $plat->stock <= 0) {
             return back()->with('error', 'Ce plat est en rupture de stock.');
         }
 
@@ -48,8 +48,7 @@ class PanierController extends Controller
             ];
         }
 
-        // Limiter au stock disponible
-        if ($panier[$cle]['quantite'] > $plat->stock) {
+        if (! $plat->sur_commande && $panier[$cle]['quantite'] > $plat->stock) {
             $panier[$cle]['quantite'] = $plat->stock;
         }
 

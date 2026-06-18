@@ -78,13 +78,13 @@ class PlatManager extends Component
                 $q->where('est_actif', $this->filtreStatut === '1')
             )
             ->when($this->filtreStock === 'faible', fn($q) =>
-                $q->whereColumn('stock', '<=', 'seuil_alerte_stock')->where('stock', '>', 0)
+                $q->whereColumn('stock', '<=', 'seuil_alerte_stock')->where('stock', '>', 0)->where('sur_commande', false)
             )
             ->when($this->filtreStock === 'rupture', fn($q) =>
-                $q->where('stock', '<=', 0)
+                $q->where('stock', '<=', 0)->where('sur_commande', false)
             )
             ->when($this->filtreStock === 'ok', fn($q) =>
-                $q->whereColumn('stock', '>', 'seuil_alerte_stock')
+                $q->where(fn($sq) => $sq->whereColumn('stock', '>', 'seuil_alerte_stock')->orWhere('sur_commande', true))
             )
             ->orderBy($this->triPar, $this->triDir)
             ->paginate(12);
@@ -94,8 +94,8 @@ class PlatManager extends Component
         $stats = [
             'total'   => Plat::count(),
             'actifs'  => Plat::where('est_actif', true)->count(),
-            'faible'  => Plat::whereColumn('stock', '<=', 'seuil_alerte_stock')->where('stock', '>', 0)->count(),
-            'rupture' => Plat::where('stock', '<=', 0)->count(),
+            'faible'  => Plat::whereColumn('stock', '<=', 'seuil_alerte_stock')->where('stock', '>', 0)->where('sur_commande', false)->count(),
+            'rupture' => Plat::where('stock', '<=', 0)->where('sur_commande', false)->count(),
         ];
 
         return view('livewire.plats.plat-manager', compact('plats', 'categories', 'stats'));

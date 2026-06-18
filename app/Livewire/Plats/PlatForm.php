@@ -37,8 +37,9 @@ class PlatForm extends Component
     public ?float $ancien_prix = null;
 
     // Stock
-    public int $stock                = 0;
-    public int $seuil_alerte_stock   = 5;
+    public int  $stock                = 0;
+    public int  $seuil_alerte_stock   = 5;
+    public bool $sur_commande         = false;
 
     // Visibilité
     public bool $est_actif          = true;
@@ -84,6 +85,14 @@ class PlatForm extends Component
         'imagePrincipale.max'    => 'L\'image ne doit pas dépasser 3 Mo.',
     ];
 
+    public function updatedSurCommande(): void
+    {
+        if ($this->sur_commande) {
+            $this->stock = 0;
+            $this->seuil_alerte_stock = 0;
+        }
+    }
+
     public function mount(?int $platId = null): void
     {
         if ($platId) {
@@ -109,6 +118,7 @@ class PlatForm extends Component
         $this->en_promo           = $plat->ancien_prix !== null && $plat->ancien_prix > $plat->prix_vente;
         $this->stock              = $plat->stock;
         $this->seuil_alerte_stock = $plat->seuil_alerte_stock;
+        $this->sur_commande       = $plat->sur_commande;
         $this->est_actif          = $plat->est_actif;
         $this->est_mis_en_avant   = $plat->est_mis_en_avant;
         $this->imageActuelle      = $plat->image_principale;
@@ -158,6 +168,7 @@ class PlatForm extends Component
             'prix_palier'        => ($this->quantite_palier && $this->prix_palier > 0) ? $this->prix_palier : null,
             'stock'              => $this->stock,
             'seuil_alerte_stock' => $this->seuil_alerte_stock,
+            'sur_commande'       => $this->sur_commande,
             'est_actif'          => $this->est_actif,
             'est_mis_en_avant'   => $this->est_mis_en_avant,
             'image_principale'   => $cheminImage,

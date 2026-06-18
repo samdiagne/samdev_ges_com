@@ -25,6 +25,7 @@ class ProduitsImport implements ToCollection
         'seuil_alerte'  => ['seuil_alerte', 'seuil alerte', 'alerte', 'stock_min', 'minimum'],
         'description'   => ['description', 'desc', 'details', 'détails', 'observations', 'notes'],
         'ingredients'   => ['ingredients', 'ingrédients', 'allergenes', 'allergènes', 'composition'],
+        'sur_commande'  => ['sur_commande', 'sur commande', 'on_demand', 'made_to_order'],
     ];
 
     public function collection(Collection $rows): void
@@ -85,6 +86,9 @@ class ProduitsImport implements ToCollection
             $desc        = trim($this->get($data, $map, 'description')) ?: null;
             $ingredients = trim($this->get($data, $map, 'ingredients')) ?: null;
 
+            $surCommandeRaw = trim($this->get($data, $map, 'sur_commande'));
+            $surCommande    = in_array(mb_strtolower($surCommandeRaw), ['1', 'oui', 'yes', 'true', 'x'], true);
+
             $platData = [
                 'categorie_id'        => $categorie->id,
                 'nom'                 => $nom,
@@ -95,6 +99,7 @@ class ProduitsImport implements ToCollection
                 'prix_vente'          => $prixVente,
                 'stock'               => $stock,
                 'seuil_alerte_stock'  => $seuil,
+                'sur_commande'        => $surCommande,
                 'est_actif'           => true,
             ];
 

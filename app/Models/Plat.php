@@ -29,6 +29,7 @@ class Plat extends Model
         'prix_palier',
         'stock',
         'seuil_alerte_stock',
+        'sur_commande',
         'est_actif',
         'est_mis_en_avant',
         'image_principale',
@@ -43,6 +44,7 @@ class Plat extends Model
             'ancien_prix'       => 'decimal:2',
             'quantite_palier'   => 'integer',
             'prix_palier'       => 'decimal:2',
+            'sur_commande'      => 'boolean',
             'est_actif'         => 'boolean',
             'est_mis_en_avant'  => 'boolean',
         ];
@@ -88,11 +90,13 @@ class Plat extends Model
 
     public function estEnRuptureDeStock(): bool
     {
+        if ($this->sur_commande) return false;
         return $this->stock <= 0;
     }
 
     public function estStockFaible(): bool
     {
+        if ($this->sur_commande) return false;
         return $this->stock > 0 && $this->stock <= $this->seuil_alerte_stock;
     }
 

@@ -143,9 +143,9 @@ class EtatController extends Controller
         $stats = [
             'total_produits'    => $plats->count(),
             'valeur_vente'      => $plats->sum(fn($p) => $p->stock * $p->prix_vente),
-            'ruptures'          => $plats->where('stock', '<=', 0)->count(),
+            'ruptures'          => $plats->where('stock', '<=', 0)->where('sur_commande', false)->count(),
             'stock_bas'         => $plats->filter(fn($p) =>
-                $p->stock > 0 && $p->stock <= $p->seuil_alerte_stock
+                ! $p->sur_commande && $p->stock > 0 && $p->stock <= $p->seuil_alerte_stock
             )->count(),
         ];
 

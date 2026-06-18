@@ -98,7 +98,9 @@
                     <td>{{ $plat->categorie?->nom ?? '—' }}</td>
                     <td class="right">{{ number_format($plat->prix_vente, 0, ',', ' ') }}</td>
                     <td class="center">
-                        @if($plat->stock <= 0)
+                        @if($plat->sur_commande)
+                            <span class="badge-ok">—</span>
+                        @elseif($plat->stock <= 0)
                             <span class="badge-out">{{ $plat->stock }}</span>
                         @elseif($plat->estStockFaible())
                             <span class="badge-low">{{ $plat->stock }}</span>
@@ -107,10 +109,12 @@
                         @endif
                     </td>
                     <td class="right">
-                        {{ number_format($plat->stock * $plat->prix_vente, 0, ',', ' ') }}
+                        {{ $plat->sur_commande ? '—' : number_format($plat->stock * $plat->prix_vente, 0, ',', ' ') }}
                     </td>
                     <td class="center">
-                        @if($plat->stock <= 0)
+                        @if($plat->sur_commande)
+                            <span style="color:#3B82F6;font-weight:bold;">Sur cde</span>
+                        @elseif($plat->stock <= 0)
                             <span class="badge-out">Rupture</span>
                         @elseif($plat->estStockFaible())
                             <span class="badge-low">Bas</span>
