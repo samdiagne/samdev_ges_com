@@ -84,16 +84,15 @@ class CategoryManager extends Component
             session()->flash('success', 'Catégorie modifiée avec succès !');
         } else {
             $slug     = Str::slug($this->nom);
-            $existing = Categorie::withTrashed()->where('slug', $slug)->first();
+            $existing = Categorie::where('slug', $slug)->first();
 
-            if ($existing && $existing->trashed()) {
-                $existing->restore();
-                $existing->update(['nom' => $this->nom, 'description' => $this->description, 'est_active' => $this->est_active, 'image' => $cheminImage ?? $existing->image]);
-                session()->flash('success', 'Catégorie restaurée avec succès !');
-            } else {
-                Categorie::create(['nom' => $this->nom, 'description' => $this->description, 'est_active' => $this->est_active, 'image' => $cheminImage]);
-                session()->flash('success', 'Catégorie créée avec succès !');
+            if ($existing) {
+                $this->addError('nom', 'Une catégorie avec ce nom existe déjà.');
+                return;
             }
+
+            Categorie::create(['nom' => $this->nom, 'description' => $this->description, 'est_active' => $this->est_active, 'image' => $cheminImage]);
+            session()->flash('success', 'Catégorie créée avec succès !');
         }
 
         $this->closeModal();
