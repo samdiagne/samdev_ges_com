@@ -54,10 +54,10 @@
             </div>
             <input wire:model.live="filtreMonth"
                    type="month"
-                   class="px-3 py-2 border border-gray-200 rounded-xl text-sm
+                   class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm
                           focus:outline-none focus:border-primary bg-gray-50"/>
             <select wire:model.live="filtrePaiement"
-                    class="px-3 py-2 border border-gray-200 rounded-xl text-sm
+                    class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm
                            focus:outline-none focus:border-primary bg-gray-50">
                 <option value="">Tous paiements</option>
                 <option value="cash">Cash</option>
@@ -66,7 +66,7 @@
                 <option value="carte">Carte bancaire</option>
             </select>
             <select wire:model.live="filtreSource"
-                    class="px-3 py-2 border border-gray-200 rounded-xl text-sm
+                    class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm
                            focus:outline-none focus:border-primary bg-gray-50">
                 <option value="">Toutes sources</option>
                 <option value="boutique">Boutique</option>

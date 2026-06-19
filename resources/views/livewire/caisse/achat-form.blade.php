@@ -226,11 +226,11 @@
                                     class="w-full px-3 py-2.5 border border-gray-200 rounded-xl
                                            text-sm bg-gray-50 focus:outline-none focus:border-primary
                                            transition-colors">
-                                <option value="cash">💵 Cash</option>
-                                <option value="wave">🌊 Wave</option>
-                                <option value="om">🟠 Orange Money</option>
-                                <option value="virement">🏦 Virement</option>
-                                <option value="credit">📝 Crédit</option>
+                                <option value="cash">Cash</option>
+                                <option value="wave">Wave</option>
+                                <option value="om">Orange Money</option>
+                                <option value="virement">Virement</option>
+                                <option value="credit">Crédit</option>
                             </select>
                         </div>
 

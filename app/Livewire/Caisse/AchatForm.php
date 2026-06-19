@@ -77,7 +77,7 @@ class AchatForm extends Component
             'description' => $l->description,
             'quantity'    => $l->quantite,
             'unit'        => $l->unite ?? '',
-            'unit_price'  => (float) $l->total,
+            'unit_price'  => (float) $l->prix_unitaire,
         ])->toArray();
 
         $this->recalcTotals();
@@ -112,8 +112,11 @@ class AchatForm extends Component
 
     public function recalcTotals(): void
     {
-        $this->montantTotal = round(array_sum(array_column($this->lignes, 'unit_price')), 2);
-        $this->montantDu    = round($this->montantTotal - ($this->montant_paye ?? 0), 2);
+        $this->montantTotal = round(array_sum(array_map(
+            fn($l) => ($l['unit_price'] ?? 0) * ($l['quantity'] ?? 1),
+            $this->lignes
+        )), 2);
+        $this->montantDu = round($this->montantTotal - ($this->montant_paye ?? 0), 2);
     }
 
     public function updatedMontantPaye(): void { $this->recalcTotals(); }
@@ -151,7 +154,7 @@ class AchatForm extends Component
                     'quantite'      => $ligne['quantity'],
                     'unite'         => $ligne['unit'] ?: null,
                     'prix_unitaire' => $ligne['unit_price'],
-                    'total'         => $ligne['unit_price'],
+                    'total'         => $ligne['unit_price'] * $ligne['quantity'],
                 ]);
             }
         });

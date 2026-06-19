@@ -83,10 +83,10 @@
                               text-sm focus:outline-none focus:border-primary bg-gray-50"/>
             </div>
             <input wire:model.live="filtreMonth" type="month"
-                   class="px-3 py-2 border border-gray-200 rounded-xl text-sm
+                   class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm
                           focus:outline-none focus:border-primary bg-gray-50"/>
             <select wire:model.live="filtreCategorie"
-                    class="px-3 py-2 border border-gray-200 rounded-xl text-sm
+                    class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm
                            focus:outline-none focus:border-primary bg-gray-50">
                 <option value="">Toutes catégories</option>
                 @foreach($depenseCategories as $cat)

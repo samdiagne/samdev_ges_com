@@ -207,8 +207,8 @@
                              x-transition:leave-start="opacity-100 translate-y-0"
                              x-transition:leave-end="opacity-0 translate-y-1"
                              @click.outside="open = false"
-                             class="absolute left-0 sm:left-auto sm:right-0 top-full mt-2
-                                    w-64 bg-white rounded-2xl shadow-2xl border border-gray-100
+                             class="absolute left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-0 top-full mt-2
+                                    w-64 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-100
                                     p-2 z-50">
                             <p class="text-xs font-semibold text-gray-400 px-3 py-1.5">Choisissez un sujet :</p>
                             @foreach($sujets as $sujet)
