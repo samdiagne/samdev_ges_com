@@ -90,8 +90,8 @@ style="height: 100dvh;">
     ═══════════════════════════════════════════ --}}
     <aside :class="sidebarOpen ? 'w-[260px]' : 'w-[68px]'"
            :style="darkMode
-               ? 'background: linear-gradient(180deg, #0C0A09 0%, #1C1917 100%)'
-               : 'background: linear-gradient(180deg, #1C1917 0%, #292524 100%)'"
+               ? 'background: linear-gradient(180deg, #1F0D04 0%, #3B1A08 100%)'
+               : 'background: linear-gradient(180deg, #3B1A08 0%, #6B3010 100%)'"
            class="hidden lg:flex flex-col text-white flex-shrink-0
                   transition-all duration-300 ease-in-out relative overflow-hidden">
 
@@ -255,8 +255,8 @@ style="height: 100dvh;">
            x-transition:leave-start="translate-x-0"
            x-transition:leave-end="-translate-x-full"
            :style="darkMode
-               ? 'background: linear-gradient(180deg, #0C0A09 0%, #1C1917 100%)'
-               : 'background: linear-gradient(180deg, #1C1917 0%, #292524 100%)'"
+               ? 'background: linear-gradient(180deg, #1F0D04 0%, #3B1A08 100%)'
+               : 'background: linear-gradient(180deg, #3B1A08 0%, #6B3010 100%)'"
            class="fixed inset-y-0 left-0 z-50 w-[270px] text-white flex flex-col lg:hidden
                   overflow-hidden">
 

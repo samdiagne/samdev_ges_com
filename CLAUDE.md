@@ -62,10 +62,11 @@ Middleware aliases registered in `bootstrap/app.php`:
 - `gestionnaire` → `EnsureUserIsGestionnaire` (checks `role in ['admin', 'gestionnaire']`)
 - `active` → `EnsureUserIsActive`
 
-### Two Sales Systems (Important Distinction)
+### Three Sales Flows (Important Distinction)
 
-- **`Vente` + `VenteLigne`**: POS counter sales from `/caisse/pos`. Created via `VenteService::creerVente()`. Each sale auto-generates a `Facture`. References prefixed `VNT-`.
+- **`Vente` + `VenteLigne`**: POS counter sales from `/caisse/pos`. Created via `VenteService::creerVente()`. Each sale auto-generates a `Facture`. References prefixed `VNT-`. `source` field is `boutique` (direct POS) or `devis` (converted from a quote).
 - **`Commande` + `CommandeLigne`**: E-commerce orders from `/shop/commande`. Created via `CheckoutController::store()`. Includes Paydunya payment tokens, delivery info, statuses (`en_attente`/`confirmee`/`expediee`/`livree`/`annulee`). References prefixed `CMD-`.
+- **`Quote` + `QuoteItem`**: Quotes/estimates from `/devis`. Created via `DevisForm` Livewire component. References prefixed `DEV-`. Statuses: `draft`, `sent`, `accepted`, `refused`. Can be converted to a `Vente` via `QuoteService::convertToSale()`, which also decrements stock and generates a `Facture`.
 
 A `Commande` can link to a `Vente` via `commande.vente_id`, but they are created independently.
 
@@ -75,6 +76,7 @@ Business logic is in `app/Services/`:
 - **`VenteService`** — Creates POS sales: builds `Vente` + `VenteLigne` records, decrements stock, auto-generates `Facture`, all in a DB transaction.
 - **`StockService`** — All stock mutations (`incrementerStock`, `decrementerStock`, `ajusterStock`) go through this service, which creates `MouvementStock` audit records.
 - **`FactureService`** — Generates invoice PDFs via DomPDF. Uses absolute file paths for logo/stamp/signature (DomPDF can't access URLs).
+- **`QuoteService`** — Generates quote PDFs (`generatePdf`), streams downloads (`download`), and converts a quote to a `Vente` + `Facture` (`convertToSale`).
 
 ### Stock Tracking
 
@@ -84,7 +86,10 @@ Every stock change creates a `MouvementStock` record with `type` (entree/sortie)
 
 Most admin UI is Livewire 4.2 components in `app/Livewire/`. Routes often render simple Blade views that mount a Livewire component (e.g., `Route::get('/plats', fn() => view('plats.index'))` where `plats.index` mounts `<livewire:plats.plat-manager />`).
 
-Key component: `Caisse\PointOfSale` — the full POS interface with cart management, client search/quick-create, payment modal, and receipt generation.
+Key components:
+- `Caisse\PointOfSale` — full POS interface with cart, client search/quick-create, payment modal, receipt generation
+- `Devis\DevisForm` — quote builder with product search, free-form lines, tiered pricing, and quick client creation
+- `Shop\CartDrawer` / `Shop\CartIcon` — Alpine.js-driven cart sidebar on the public shop
 
 ### Payment Integration (Paydunya)
 
@@ -107,6 +112,39 @@ Company branding (logo, stamp, signature) loaded from `Parametre` model and embe
 ### Company Settings
 
 The `Parametre` model (singleton row) holds all company config: name, NINEA, RC, contact info, logo/signature/stamp paths, invoice prefix/counter, social links, and currency. Accessed via `Parametre::first()` throughout the app.
+
+`ViewServiceProvider` registers `SettingsComposer` on every view, so `$parametres` is automatically available in all Blade templates without needing to pass it from each controller.
+
+### Purchases (Achats)
+
+`Achat` + `AchatLigne` records supplier purchases managed via the `Caisse\AchatManager` Livewire component at `/caisse/achats`. References prefixed `ACH-`. `fournisseur_id` is nullable (purchases can be recorded without a supplier). Statuses: `en_attente`, `recu`, `annule`.
+
+### Email Notifications
+
+Queued mailable classes in `app/Mail/`:
+- `OrderConfirmationMail` / `NewOrderAdminMail` — sent on successful Paydunya payment
+- `OrderDeliveredMail` — sent when a `Commande` is marked `livree`
+- `NewReviewAdminMail` — sent when a customer submits an `Avis`
+
+Emails are queued (the `queue:listen` process in `composer run dev` must be running). Admin email address is configured via `MAIL_ADMIN_ADDRESS` env var, read as `config('mail.admin_address')`.
+
+### Plat Features
+
+- `sur_commande` (boolean) — made-to-order items bypass stock checks in POS and shop
+- Tiered pricing: `quantite_palier` + `prix_palier` — use `$plat->prixPourQuantite($qty)` to get the correct price
+- `est_mis_en_avant` — featured/highlighted on the public shop hero section
+- `PlatImage` — ordered gallery images (separate from `image_principale`)
+- `Avis` (reviews) require admin approval (`est_approuve`) before showing publicly
+
+### Artisan Import Commands
+
+```bash
+# Import purchases and expenses from an MAFFOOD-format Excel file
+php artisan import:achats-depenses {fichier}
+
+# Import historical sales from Excel
+php artisan import:ventes {fichier}
+```
 
 ### Route Organization
 

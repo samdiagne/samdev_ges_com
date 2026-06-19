@@ -9,7 +9,7 @@
 
     {{-- ── Barre principale ── --}}
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center gap-2.5 sm:gap-4" style="height: 60px;" class="sm:!h-[72px]">
+        <div class="flex items-center gap-2.5 sm:gap-4 h-[60px] sm:h-[72px]">
 
             {{-- Logo --}}
             <a href="{{ route('shop.home') }}"
