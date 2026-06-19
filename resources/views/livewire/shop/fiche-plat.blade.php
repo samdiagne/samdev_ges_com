@@ -141,17 +141,12 @@
                     @elseif($plat->stock <= 0)
                         <span class="inline-flex items-center gap-1.5 text-sm font-medium text-red-600">
                             <span class="w-2 h-2 rounded-full bg-red-500"></span>
-                            Rupture de stock
-                        </span>
-                    @elseif($plat->estStockFaible())
-                        <span class="inline-flex items-center gap-1.5 text-sm font-medium text-orange-600">
-                            <span class="w-2 h-2 rounded-full bg-orange-500"></span>
-                            Stock limité — {{ $plat->stock }} restant(s)
+                            Épuisé
                         </span>
                     @else
                         <span class="inline-flex items-center gap-1.5 text-sm font-medium text-green-600">
                             <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                            En stock
+                            Disponible
                         </span>
                     @endif
                 </div>

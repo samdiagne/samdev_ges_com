@@ -10,7 +10,7 @@
             <img src="{{ Storage::url($plat->image_principale) }}"
                  alt="{{ $plat->nom }} à Dakar"
                  loading="lazy"
-                 class="w-full h-full object-contain p-3 sm:p-5
+                 class="w-full h-full object-cover
                         group-hover:scale-110 transition duration-500"/>
         @endif
 
