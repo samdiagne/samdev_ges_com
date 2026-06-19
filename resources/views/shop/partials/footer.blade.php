@@ -20,8 +20,8 @@
                 </div>
 
                 <p class="text-xs sm:text-sm leading-relaxed mb-4 sm:mb-5" style="color: #a8a29e;">
-                    Votre restaurant de plats faits maison à Dakar.
-                    Qualité garantie, livraison rapide.
+                    Des plats cuisinés avec passion par des professionnels,
+                    livrés directement chez vous à Dakar.
                 </p>
 
                 {{-- Badges confiance --}}
