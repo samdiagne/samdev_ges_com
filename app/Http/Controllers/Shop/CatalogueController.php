@@ -34,6 +34,7 @@ class CatalogueController extends Controller
             ->where('categorie_id', $plat->categorie_id)
             ->where('id', '!=', $plat->id)
             ->where(fn($q) => $q->where('stock', '>', 0)->orWhere('sur_commande', true))
+            ->with('avisApprouves')
             ->limit(4)
             ->get();
 

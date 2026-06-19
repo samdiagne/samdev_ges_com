@@ -14,7 +14,7 @@ class HomeController extends Controller
         $misEnAvant = Plat::where('est_actif', true)
             ->where('est_mis_en_avant', true)
             ->where(fn($q) => $q->where('stock', '>', 0)->orWhere('sur_commande', true))
-            ->with('categorie')
+            ->with(['categorie', 'avisApprouves'])
             ->limit(8)
             ->get();
 
@@ -26,7 +26,7 @@ class HomeController extends Controller
 
         $nouveautes = Plat::where('est_actif', true)
             ->where(fn($q) => $q->where('stock', '>', 0)->orWhere('sur_commande', true))
-            ->with('categorie')
+            ->with(['categorie', 'avisApprouves'])
             ->latest()
             ->limit(8)
             ->get();

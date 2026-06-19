@@ -53,7 +53,7 @@ class CatalogueShop extends Component
 
     public function render()
     {
-        $query = Plat::where('est_actif', true)->with('categorie');
+        $query = Plat::where('est_actif', true)->with(['categorie', 'avisApprouves']);
 
         if ($this->search) {
             $query->where(fn($q) =>

@@ -10,6 +10,9 @@
     $heroPlats = $misEnAvant->take(3);
     $platVedette = $heroPlats->first();
     $carouselImages = $misEnAvant->filter(fn($p) => $p->image_principale)->pluck('image_principale')->values();
+    $avisStats = App\Models\Avis::where('est_approuve', true)->selectRaw('COUNT(*) as total, ROUND(AVG(note), 1) as moyenne')->first();
+    $avisMoyenne = $avisStats->moyenne ?? null;
+    $avisTotal   = $avisStats->total ?? 0;
 @endphp
 <section class="relative overflow-hidden -mt-1 bg-[#FFF9F4]">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -79,9 +82,9 @@
                 {{-- Trust badges --}}
                 <div class="flex flex-wrap justify-center lg:justify-start gap-5 sm:gap-6">
                     @foreach([
-                        ['icon' => '🚚', 'val' => '30 min', 'label' => 'Livraison'],
+                        ['icon' => '🚚', 'val' => 'Rapide', 'label' => 'Livraison'],
                         ['icon' => '🍽️', 'val' => 'Frais', 'label' => 'Chaque jour'],
-                        ['icon' => '⭐', 'val' => '4.8/5', 'label' => 'Avis clients'],
+                        ['icon' => '⭐', 'val' => $avisMoyenne ? $avisMoyenne . '/5' : '★★★★★', 'label' => $avisTotal > 0 ? $avisTotal . ' avis' : 'Avis clients'],
                     ] as $badge)
                         <div class="flex items-center gap-2">
                             <span class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white
@@ -180,8 +183,8 @@
                         <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
                              style="background: #FEF3C7;">⭐</div>
                         <div>
-                            <p class="text-[11px] font-bold text-dark leading-tight">4.8/5</p>
-                            <p class="text-[9px] text-gray-400">1000+ avis</p>
+                            <p class="text-[11px] font-bold text-dark leading-tight">{{ $avisMoyenne ? $avisMoyenne . '/5' : '★★★★★' }}</p>
+                            <p class="text-[9px] text-gray-400">{{ $avisTotal > 0 ? $avisTotal . ' avis' : 'Nos clients' }}</p>
                         </div>
                     </div>
                 </div>

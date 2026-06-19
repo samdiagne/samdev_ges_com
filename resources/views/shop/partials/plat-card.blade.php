@@ -110,10 +110,16 @@
         </h3>
 
         {{-- Rating --}}
-        <div class="flex items-center gap-0.5 sm:gap-1 text-yellow-400 text-[10px] sm:text-xs mb-1.5 sm:mb-2">
-            ⭐⭐⭐⭐☆
-            <span class="text-gray-400">(12)</span>
-        </div>
+        @php
+            $nbAvis  = $plat->avisApprouves->count();
+            $moyenne = $nbAvis > 0 ? round($plat->avisApprouves->avg('note'), 1) : null;
+        @endphp
+        @if($nbAvis > 0)
+            <div class="flex items-center gap-0.5 sm:gap-1 text-yellow-400 text-[10px] sm:text-xs mb-1.5 sm:mb-2">
+                @for($i = 1; $i <= 5; $i++){{ $i <= round($moyenne) ? '⭐' : '☆' }}@endfor
+                <span class="text-gray-400">({{ $nbAvis }})</span>
+            </div>
+        @endif
 
         {{-- PRIX --}}
         <div>
