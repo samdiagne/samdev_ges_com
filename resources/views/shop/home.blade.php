@@ -239,7 +239,7 @@
 
         <div class="flex gap-3 sm:gap-4 animate-scroll"
              style="width: max-content;">
-            @foreach([$platCarousel, $platCarousel] as $batch)
+            @foreach([$platCarousel, $platCarousel, $platCarousel, $platCarousel] as $batch)
                 @foreach($batch as $plat)
                     <a href="{{ route('shop.plat', $plat->slug) }}"
                        class="group flex-shrink-0 w-40 sm:w-52 bg-white rounded-2xl border

@@ -32,10 +32,8 @@ class HomeController extends Controller
             ->get();
 
         $platCarousel = Plat::where('est_actif', true)
-            ->where(fn($q) => $q->where('stock', '>', 0)->orWhere('sur_commande', true))
             ->with('categorie')
             ->inRandomOrder()
-            ->limit(16)
             ->get();
 
         $sectionsCategories = Categorie::where('est_active', true)
