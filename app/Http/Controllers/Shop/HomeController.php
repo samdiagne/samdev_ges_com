@@ -31,10 +31,32 @@ class HomeController extends Controller
             ->limit(8)
             ->get();
 
+        $platCarousel = Plat::where('est_actif', true)
+            ->where(fn($q) => $q->where('stock', '>', 0)->orWhere('sur_commande', true))
+            ->with('categorie')
+            ->inRandomOrder()
+            ->limit(16)
+            ->get();
+
+        $sectionsCategories = Categorie::where('est_active', true)
+            ->orderBy('ordre')
+            ->get()
+            ->map(fn($cat) => [
+                'categorie' => $cat,
+                'plats'     => Plat::where('est_actif', true)
+                    ->where('categorie_id', $cat->id)
+                    ->where(fn($q) => $q->where('stock', '>', 0)->orWhere('sur_commande', true))
+                    ->with('avisApprouves')
+                    ->limit(8)
+                    ->get(),
+            ])
+            ->filter(fn($s) => $s['plats']->isNotEmpty())
+            ->values();
+
         $parametres = Parametre::first();
 
         return view('shop.home', compact(
-            'misEnAvant', 'categories', 'nouveautes', 'parametres'
+            'misEnAvant', 'categories', 'nouveautes', 'sectionsCategories', 'platCarousel', 'parametres'
         ));
     }
 }

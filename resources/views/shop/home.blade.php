@@ -216,48 +216,65 @@
     }
 </style>
 
-{{-- ── CATÉGORIES ──────────────────────────── --}}
-@if($categories->count() > 0)
-<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6 sm:mb-8" data-reveal="up">
-        <div>
-            <h2 class="text-xl sm:text-2xl font-bold text-dark">Nos catégories</h2>
-            <p class="text-gray-400 text-xs sm:text-sm mt-1 max-w-lg">
-                Trouvez ce que vous cherchez rapidement en filtrant par catégorie
-            </p>
-        </div>
+{{-- ── CARROUSEL PRODUITS ───────────────────── --}}
+@if($platCarousel->count() > 0)
+<section class="py-8 sm:py-12 overflow-hidden bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 sm:mb-8" data-reveal="fade">
+        <h2 class="text-lg sm:text-2xl font-bold text-dark text-center">
+            Découvrez nos produits
+        </h2>
+        <p class="text-gray-400 text-xs sm:text-sm mt-1 text-center">
+            Une sélection variée pour tous les goûts
+        </p>
     </div>
-    <div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 sm:gap-4" data-reveal="up" data-reveal-delay="100">
-        @foreach($categories as $category)
-            <a href="{{ route('shop.catalogue', ['categorie' => $category->slug]) }}"
-               class="group bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center hover:shadow-lg
-                      hover:-translate-y-1 transition-all duration-200 border
-                      border-gray-100">
-                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-xl sm:rounded-2xl flex items-center
-                            justify-center mx-auto mb-2 sm:mb-3 group-hover:bg-primary/20
-                            transition-colors">
-                    @if($category->image)
-                        <img src="{{ Storage::url($category->image) }}"
-                             class="w-6 h-6 sm:w-8 sm:h-8 object-contain"/>
-                    @else
-                        <svg class="w-5 h-5 sm:w-6 sm:h-6 text-primary" fill="none"
-                             stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                  stroke-width="2"
-                                  d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0
-                                     00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                        </svg>
-                    @endif
-                </div>
-                <p class="text-[11px] sm:text-xs font-semibold text-dark group-hover:text-primary
-                          transition-colors leading-tight">
-                    {{ $category->nom }}
-                </p>
-                <p class="text-[10px] sm:text-xs text-gray-400 mt-0.5">
-                    {{ $category->plats_actifs_count }} plat(s)
-                </p>
-            </a>
-        @endforeach
+
+    <div class="relative">
+        {{-- Dégradés latéraux --}}
+        <div class="absolute left-0 top-0 bottom-0 w-12 sm:w-24 z-10
+                    pointer-events-none"
+             style="background: linear-gradient(to right, white, transparent);"></div>
+        <div class="absolute right-0 top-0 bottom-0 w-12 sm:w-24 z-10
+                    pointer-events-none"
+             style="background: linear-gradient(to left, white, transparent);"></div>
+
+        <div class="flex gap-3 sm:gap-4 animate-scroll"
+             style="width: max-content;">
+            @foreach([$platCarousel, $platCarousel] as $batch)
+                @foreach($batch as $plat)
+                    <a href="{{ route('shop.plat', $plat->slug) }}"
+                       class="group flex-shrink-0 w-40 sm:w-52 bg-white rounded-2xl border
+                              border-gray-100 overflow-hidden hover:shadow-lg
+                              hover:-translate-y-1 transition-all duration-300">
+                        {{-- Image --}}
+                        <div class="aspect-square bg-gray-50 overflow-hidden">
+                            @if($plat->image_principale)
+                                <img src="{{ Storage::url($plat->image_principale) }}"
+                                     alt="{{ $plat->nom }}"
+                                     loading="lazy"
+                                     class="w-full h-full object-cover group-hover:scale-105 transition duration-500"/>
+                            @else
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <span class="text-3xl">🍽️</span>
+                                </div>
+                            @endif
+                        </div>
+                        {{-- Infos --}}
+                        <div class="p-2.5 sm:p-3">
+                            <p class="text-[10px] sm:text-xs text-primary font-medium truncate">
+                                {{ $plat->categorie->nom ?? '' }}
+                            </p>
+                            <p class="text-xs sm:text-sm font-semibold text-dark truncate mt-0.5">
+                                {{ $plat->nom }}
+                            </p>
+                            <p class="text-xs sm:text-sm font-bold text-dark mt-1">
+                                {{ number_format($plat->prix_vente, 0, ',', ' ') }}
+                                <span class="text-[10px] font-normal text-gray-400">FCFA</span>
+                            </p>
+                        </div>
+                    </a>
+                @endforeach
+            @endforeach
+        </div>
     </div>
 </section>
 @endif
@@ -287,7 +304,8 @@
 </section>
 @endif
 
-{{-- ── NOUVELLES ARRIVÉES ──────────────────── --}}
+{{-- ── NOUVELLES ARRIVÉES (commenté) ──────────────────── --}}
+{{--
 @if($nouveautes->count() > 0)
 <section class="bg-white py-8 sm:py-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -311,6 +329,36 @@
     </div>
 </section>
 @endif
+--}}
+
+{{-- ── SECTIONS PAR CATÉGORIE ─────────────── --}}
+@foreach($sectionsCategories as $index => $section)
+<section class="{{ $index % 2 === 0 ? 'bg-[#FFF9F4]' : 'bg-white' }} py-8 sm:py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between mb-5 sm:mb-8" data-reveal="up">
+            <div>
+                <h2 class="text-lg sm:text-2xl font-bold text-dark">
+                    {{ $section['categorie']->nom }}
+                </h2>
+                @if($section['categorie']->description)
+                    <p class="text-gray-400 text-xs sm:text-sm mt-0.5 sm:mt-1">
+                        {{ $section['categorie']->description }}
+                    </p>
+                @endif
+            </div>
+            <a href="{{ route('shop.catalogue', ['categorie' => $section['categorie']->slug]) }}"
+               class="text-xs sm:text-sm font-medium text-primary hover:underline flex-shrink-0 ml-4">
+                Voir tout →
+            </a>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" data-reveal="up" data-reveal-delay="100">
+            @foreach($section['plats'] as $plat)
+                @include('shop.partials.plat-card', compact('plat'))
+            @endforeach
+        </div>
+    </div>
+</section>
+@endforeach
 
 {{-- ── AVIS DÉFILANTS ─────────────────────── --}}
 @php
