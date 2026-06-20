@@ -218,8 +218,8 @@
 
 {{-- ── CARROUSEL PRODUITS ───────────────────── --}}
 @if($platCarousel->count() > 0)
-<section class="py-8 sm:py-12 overflow-hidden bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 sm:mb-8" data-reveal="fade">
+<section class="py-8 sm:py-12 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 sm:mb-8">
         <h2 class="text-lg sm:text-2xl font-bold text-dark text-center">
             Découvrez nos produits
         </h2>
@@ -228,24 +228,44 @@
         </p>
     </div>
 
-    <div class="relative">
+    <div class="relative overflow-hidden"
+         x-data="{
+            paused: false,
+            rafId: null,
+            pos: 0,
+            speed: 0.6,
+            start() {
+                const inner = this.$refs.inner;
+                const step = () => {
+                    if (!this.paused) {
+                        this.pos += this.speed;
+                        const half = inner.scrollWidth / 2;
+                        if (this.pos >= half) this.pos = 0;
+                        inner.style.transform = 'translateX(-' + this.pos + 'px)';
+                    }
+                    this.rafId = requestAnimationFrame(step);
+                };
+                this.rafId = requestAnimationFrame(step);
+            }
+         }"
+         x-init="$nextTick(() => start())"
+         @mouseenter="paused = true"
+         @mouseleave="paused = false">
+
         {{-- Dégradés latéraux --}}
-        <div class="absolute left-0 top-0 bottom-0 w-12 sm:w-24 z-10
-                    pointer-events-none"
+        <div class="absolute left-0 top-0 bottom-0 w-12 sm:w-20 z-10 pointer-events-none"
              style="background: linear-gradient(to right, white, transparent);"></div>
-        <div class="absolute right-0 top-0 bottom-0 w-12 sm:w-24 z-10
-                    pointer-events-none"
+        <div class="absolute right-0 top-0 bottom-0 w-12 sm:w-20 z-10 pointer-events-none"
              style="background: linear-gradient(to left, white, transparent);"></div>
 
-        <div class="flex gap-3 sm:gap-4 animate-scroll"
-             style="width: max-content;">
-            @foreach([$platCarousel, $platCarousel, $platCarousel, $platCarousel] as $batch)
+        {{-- Track : items dupliqués pour la boucle infinie --}}
+        <div x-ref="inner" class="flex gap-3 sm:gap-4 py-2" style="width: max-content; will-change: transform;">
+            @foreach([$platCarousel, $platCarousel] as $batch)
                 @foreach($batch as $plat)
                     <a href="{{ route('shop.plat', $plat->slug) }}"
                        class="group flex-shrink-0 w-40 sm:w-52 bg-white rounded-2xl border
-                              border-gray-100 overflow-hidden hover:shadow-lg
+                              border-gray-100 overflow-hidden shadow-sm hover:shadow-lg
                               hover:-translate-y-1 transition-all duration-300">
-                        {{-- Image --}}
                         <div class="aspect-square bg-gray-50 overflow-hidden">
                             @if($plat->image_principale)
                                 <img src="{{ Storage::url($plat->image_principale) }}"
@@ -258,7 +278,6 @@
                                 </div>
                             @endif
                         </div>
-                        {{-- Infos --}}
                         <div class="p-2.5 sm:p-3">
                             <p class="text-[10px] sm:text-xs text-primary font-medium truncate">
                                 {{ $plat->categorie->nom ?? '' }}
