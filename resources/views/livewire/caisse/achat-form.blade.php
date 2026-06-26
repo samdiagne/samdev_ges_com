@@ -82,7 +82,7 @@
                                         wire:change="updateLine({{ $index }}, 'unit_price', $event.target.value)"
                                         value="{{ $ligne['unit_price'] }}"
                                         min="0"
-                                        step="100"
+                                        step="1"
                                         placeholder="0"
                                         class="w-full px-2 py-1.5 pr-8 text-sm text-right border border-gray-200
                                             rounded-lg bg-white focus:outline-none focus:border-primary

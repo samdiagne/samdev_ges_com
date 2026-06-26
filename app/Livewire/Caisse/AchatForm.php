@@ -169,9 +169,13 @@ class AchatForm extends Component
 
     private function generateRef(): string
     {
-        $dernier = Achat::withTrashed()->latest()->first();
-        $num     = $dernier ? intval(substr($dernier->reference, -4)) + 1 : 1;
-        return 'ACH-' . date('Y') . '-' . str_pad($num, 4, '0', STR_PAD_LEFT);
+        $annee   = date('Y');
+        $dernier = Achat::withTrashed()
+            ->where('reference', 'like', "ACH-{$annee}-%")
+            ->orderBy('reference', 'desc')
+            ->value('reference');
+        $num = $dernier ? intval(substr($dernier, -4)) + 1 : 1;
+        return 'ACH-' . $annee . '-' . str_pad($num, 4, '0', STR_PAD_LEFT);
     }
 
     public function render()
