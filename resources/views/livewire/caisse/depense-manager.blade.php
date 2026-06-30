@@ -473,12 +473,12 @@
                                             border border-gray-200"/>
                             </div>
                         @endif
-                        <input wire:model="receipt" type="file" accept="image/*"
+                        <input wire:model="justificatif" type="file" accept="image/*"
                                class="w-full text-sm text-gray-500 file:mr-3 file:py-2
                                       file:px-3 file:rounded-lg file:border-0 file:text-xs
                                       file:font-medium file:bg-primary/10 file:text-primary
                                       hover:file:bg-primary/20 cursor-pointer"/>
-                        @error('receipt')
+                        @error('justificatif')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>

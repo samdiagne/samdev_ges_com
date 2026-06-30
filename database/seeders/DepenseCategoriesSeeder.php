@@ -25,11 +25,10 @@ class DepenseCategoriesSeeder extends Seeder
         ];
 
         foreach ($categories as $nom) {
-            DB::table('depense_categories')->insertOrIgnore([
-                'nom'        => $nom,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            DB::table('depense_categories')->updateOrInsert(
+                ['nom' => $nom],
+                ['updated_at' => now(), 'created_at' => now()]
+            );
         }
     }
 }

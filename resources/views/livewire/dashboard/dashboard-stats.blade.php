@@ -3,9 +3,8 @@
     <div class="flex flex-wrap gap-2 mb-6">
         <a href="{{ route('caisse.pos') }}"
            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold
-                  text-white shadow-lg shadow-primary/25 hover:brightness-110
-                  transition-all hover:-translate-y-0.5"
-           style="background-color: #F27B20;">
+                  bg-primary text-white shadow-lg shadow-primary/25 hover:bg-primary/90
+                  transition-all hover:-translate-y-0.5">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184
@@ -268,7 +267,7 @@
                 @endif
             </div>
 
-            @if($alertes['stock_faible']->count() > 0)
+            @if($alertes['stock_rupture']->count() > 0)
                 <p class="text-xs font-semibold text-red-500 uppercase tracking-wider mb-2">
                     🔴 Rupture
                 </p>
@@ -276,7 +275,7 @@
                     @foreach($alertes['stock_rupture'] as $plat)
                         <div class="flex items-center justify-between p-2 bg-red-50 rounded-xl">
                             <p class="text-xs font-medium text-dark truncate">{{ $plat->nom }}</p>
-                            <span class="text-xs font-bold text-red-600 ml-2">0</span>
+                            <span class="text-xs font-bold text-red-600 ml-2">{{ $plat->stock }}</span>
                         </div>
                     @endforeach
                 </div>
@@ -413,7 +412,7 @@
                     datasets: [{
                         label: 'CA (FCFA)',
                         data: data,
-                        backgroundColor: 'rgba(30, 111, 191, 0.15)',
+                        backgroundColor: 'rgba(242, 123, 32, 0.15)',
                         borderColor: '#F27B20',
                         borderWidth: 2,
                         borderRadius: 8,
@@ -491,7 +490,7 @@
                         label: 'CA mensuel',
                         data: data,
                         borderColor: '#F27B20',
-                        backgroundColor: 'rgba(30, 111, 191, 0.08)',
+                        backgroundColor: 'rgba(242, 123, 32, 0.08)',
                         borderWidth: 2.5,
                         pointBackgroundColor: '#F27B20',
                         pointRadius: 4,

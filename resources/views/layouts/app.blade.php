@@ -43,14 +43,14 @@
         @keyframes pl-spin { to { transform: rotate(360deg); } }
         #page-loader.fade-out { opacity: 0; pointer-events: none; }
 
-        /* Sidebar premium */
-        .sidebar-glow { background: radial-gradient(ellipse at 30% 0%, rgba(242,123,32,0.08) 0%, transparent 60%); }
+        /* Sidebar */
+        .sidebar-glow { background: radial-gradient(ellipse at 30% 0%, rgba(255,255,255,0.08) 0%, transparent 60%); }
         .nav-item-active { position: relative; }
         .nav-item-active::before {
             content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
             width: 3px; height: 60%; border-radius: 0 4px 4px 0;
-            background: linear-gradient(180deg, #F27B20, #FFB347);
-            box-shadow: 0 0 8px rgba(242,123,32,0.4);
+            background: linear-gradient(180deg, #ffffff, rgba(255,255,255,0.6));
+            box-shadow: 0 0 8px rgba(255,255,255,0.4);
         }
     </style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -89,9 +89,7 @@ style="height: 100dvh;">
          SIDEBAR DESKTOP
     ═══════════════════════════════════════════ --}}
     <aside :class="sidebarOpen ? 'w-[260px]' : 'w-[68px]'"
-           :style="darkMode
-               ? 'background: linear-gradient(180deg, #1F0D04 0%, #3B1A08 100%)'
-               : 'background: linear-gradient(180deg, #3B1A08 0%, #6B3010 100%)'"
+           style="background: linear-gradient(180deg, #F27B20 0%, #E06010 100%)"
            class="hidden lg:flex flex-col text-white flex-shrink-0
                   transition-all duration-300 ease-in-out relative overflow-hidden">
 
@@ -101,22 +99,23 @@ style="height: 100dvh;">
         <div class="relative z-10 flex items-center justify-between px-4 py-5">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3 min-w-0">
                 @if($logo && file_exists(storage_path('app/public/' . $logo)))
-                    <img src="{{ Storage::url($logo) }}"
-                         :class="sidebarOpen ? 'h-10 w-10' : 'h-9 w-9'"
-                         class="object-contain flex-shrink-0 rounded-xl ring-2 ring-white/10
-                                transition-all duration-300"/>
+                    <div :class="sidebarOpen ? 'h-12 w-12' : 'h-10 w-10'"
+                         class="flex-shrink-0 rounded-xl bg-white p-1 shadow-sm transition-all duration-300">
+                        <img src="{{ Storage::url($logo) }}"
+                             class="w-full h-full object-contain"/>
+                    </div>
                 @else
                     <div class="h-10 w-10 rounded-xl flex items-center justify-center
                                 font-extrabold text-white text-sm flex-shrink-0
-                                ring-2 ring-white/10"
-                         style="background: linear-gradient(135deg, #F27B20, #FF9F43);">
+                                ring-2 ring-white/30"
+                         style="background: rgba(255,255,255,0.2);">
                         MF
                     </div>
                 @endif
                 <div x-show="sidebarOpen" x-transition.opacity class="overflow-hidden min-w-0">
                     <p class="font-bold text-[15px] text-white truncate leading-tight tracking-tight">Maffood</p>
                     <p class="text-[11px] font-medium truncate tracking-wide uppercase"
-                       style="color: #F2A05B;">Tableau de bord</p>
+                       style="color: white;">Tableau de bord</p>
                 </div>
             </a>
 
@@ -127,7 +126,7 @@ style="height: 100dvh;">
                            hover:bg-white/[0.12] flex items-center justify-center
                            transition-all duration-200 ml-2 group">
                 <svg :class="sidebarOpen ? 'rotate-180' : ''"
-                     class="w-3.5 h-3.5 text-white/40 group-hover:text-white/70 transition-all duration-300"
+                     class="w-3.5 h-3.5 text-white/70 group-hover:text-white transition-all duration-300"
                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round"
                           stroke-width="2" d="M15 19l-7-7 7-7"/>
@@ -153,25 +152,25 @@ style="height: 100dvh;">
                 <div class="relative flex-shrink-0">
                     <div class="w-9 h-9 rounded-xl flex items-center justify-center
                                 text-white font-bold text-xs"
-                         style="background: linear-gradient(135deg, #F27B20, #E86A10);">
+                         style="background: rgba(255,255,255,0.2);">
                         {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
                     </div>
                     <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2
-                                border-stone-900" style="background-color: #2DB667;"></div>
+                                border-white/40" style="background-color: #2DB667;"></div>
                 </div>
                 <div x-show="sidebarOpen" x-transition.opacity
                      class="overflow-hidden flex-1 min-w-0 text-left">
-                    <p class="text-sm font-semibold text-white/90 truncate leading-tight
-                              group-hover:text-white transition-colors">
+                    <p class="text-sm font-semibold text-white truncate leading-tight
+                              transition-colors">
                         {{ Auth::user()->name }}
                     </p>
-                    <p class="text-[11px] text-white/35 truncate capitalize">
+                    <p class="text-[11px] text-white/70 truncate capitalize">
                         {{ Auth::user()->roles->first()?->name ?? 'utilisateur' }}
                     </p>
                 </div>
                 <svg x-show="sidebarOpen" x-transition.opacity
                      :class="userMenuOpen ? 'rotate-180' : ''"
-                     class="w-3.5 h-3.5 text-white/20 group-hover:text-white/40
+                     class="w-3.5 h-3.5 text-white/60 group-hover:text-white
                             transition-all duration-200 flex-shrink-0"
                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -254,9 +253,7 @@ style="height: 100dvh;">
            x-transition:leave="transition transform duration-200 ease-in"
            x-transition:leave-start="translate-x-0"
            x-transition:leave-end="-translate-x-full"
-           :style="darkMode
-               ? 'background: linear-gradient(180deg, #1F0D04 0%, #3B1A08 100%)'
-               : 'background: linear-gradient(180deg, #3B1A08 0%, #6B3010 100%)'"
+           style="background: linear-gradient(180deg, #F27B20 0%, #E06010 100%)"
            class="fixed inset-y-0 left-0 z-50 w-[270px] text-white flex flex-col lg:hidden
                   overflow-hidden">
 
@@ -265,26 +262,28 @@ style="height: 100dvh;">
         <div class="relative z-10 flex items-center justify-between px-4 py-5">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3 min-w-0">
                 @if($logo && file_exists(storage_path('app/public/' . $logo)))
-                    <img src="{{ Storage::url($logo) }}"
-                         class="h-10 w-10 object-contain flex-shrink-0 rounded-xl ring-2 ring-white/10"/>
+                    <div class="h-12 w-12 flex-shrink-0 rounded-xl bg-white p-1 shadow-sm">
+                        <img src="{{ Storage::url($logo) }}"
+                             class="w-full h-full object-contain"/>
+                    </div>
                 @else
                     <div class="h-10 w-10 rounded-xl flex items-center justify-center
                                 font-extrabold text-white text-sm flex-shrink-0
-                                ring-2 ring-white/10"
-                         style="background: linear-gradient(135deg, #F27B20, #FF9F43);">
+                                ring-2 ring-white/30"
+                         style="background: rgba(255,255,255,0.2);">
                         MF
                     </div>
                 @endif
                 <div>
                     <p class="font-bold text-[15px] text-white leading-tight tracking-tight">Maffood</p>
                     <p class="text-[11px] font-medium tracking-wide uppercase"
-                       style="color: #F2A05B;">Tableau de bord</p>
+                       style="color: white;">Tableau de bord</p>
                 </div>
             </a>
             <button @click="sidebarMobile = false"
                     class="w-8 h-8 rounded-lg bg-white/[0.06] hover:bg-white/[0.12]
                            flex items-center justify-center transition-all duration-200">
-                <svg class="w-4 h-4 text-white/50" fill="none" stroke="currentColor"
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor"
                      viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round"
                           stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -307,22 +306,22 @@ style="height: 100dvh;">
                 <div class="relative flex-shrink-0">
                     <div class="w-9 h-9 rounded-xl flex items-center justify-center
                                 text-white font-bold text-xs"
-                         style="background: linear-gradient(135deg, #F27B20, #E86A10);">
+                         style="background: rgba(255,255,255,0.2);">
                         {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
                     </div>
                     <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2
-                                border-stone-900" style="background-color: #2DB667;"></div>
+                                border-white/40" style="background-color: #2DB667;"></div>
                 </div>
                 <div class="overflow-hidden flex-1 min-w-0 text-left">
-                    <p class="text-sm font-semibold text-white/90 truncate leading-tight">
+                    <p class="text-sm font-semibold text-white truncate leading-tight">
                         {{ Auth::user()->name }}
                     </p>
-                    <p class="text-[11px] text-white/35 truncate capitalize">
+                    <p class="text-[11px] text-white/70 truncate capitalize">
                         {{ Auth::user()->roles->first()?->name ?? 'utilisateur' }}
                     </p>
                 </div>
                 <svg :class="userMenuOpen ? 'rotate-180' : ''"
-                     class="w-3.5 h-3.5 text-white/20 group-hover:text-white/40
+                     class="w-3.5 h-3.5 text-white/60 group-hover:text-white
                             transition-all duration-200 flex-shrink-0"
                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round"

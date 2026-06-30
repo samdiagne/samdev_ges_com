@@ -1,6 +1,6 @@
 <div>
     {{-- Stats --}}
-    <div class="grid grid-cols-3 gap-4 mb-6">
+    <div class="grid grid-cols-2 gap-4 mb-6">
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
             <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Factures</p>
             <p class="text-2xl font-bold text-dark mt-1">{{ $stats['count'] }}</p>
@@ -42,7 +42,11 @@
              x-init="setTimeout(() => show = false, 3000)"
              class="mb-4 flex items-center gap-3 bg-green-50 border border-green-200
                     text-green-800 px-4 py-3 rounded-xl text-sm font-medium">
-            ✅ {{ session('success') }}
+            <svg class="w-4 h-4 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0"/>
+            </svg>
+            {{ session('success') }}
         </div>
     @endif
 

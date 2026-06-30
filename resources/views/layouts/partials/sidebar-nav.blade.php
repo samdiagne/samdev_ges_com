@@ -148,7 +148,7 @@
         @if($group['label'])
             <div x-show="sidebarOpen" x-transition.opacity
                  class="px-3 pt-5 pb-2">
-                <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-white/25">
+                <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-white/60">
                     {{ $group['label'] }}
                 </p>
             </div>
@@ -166,10 +166,10 @@
                        'group flex items-center gap-3 px-3 py-2.5 mx-1 rounded-xl
                         transition-all duration-200 relative',
                        'nav-item-active bg-white/[0.08] text-white shadow-sm' => $isActive,
-                       'text-white/50 hover:bg-white/[0.05] hover:text-white/80' => !$isActive,
+                       'text-white hover:bg-white/[0.1] hover:text-white' => !$isActive,
                    ])
                    @if($isActive)
-                   style="box-shadow: inset 0 0 20px rgba(242,123,32,0.06);"
+                   style="box-shadow: inset 0 0 20px rgba(255,255,255,0.06);"
                    @endif>
 
                     {{-- Icône --}}
@@ -177,10 +177,10 @@
                         'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
                          transition-all duration-200',
                         'text-white' => $isActive,
-                        'text-white/40 group-hover:text-white/70' => !$isActive,
+                        'text-white group-hover:text-white' => !$isActive,
                     ])
                     @if($isActive)
-                    style="background: linear-gradient(135deg, rgba(242,123,32,0.2), rgba(242,123,32,0.08));"
+                    style="background: rgba(255,255,255,0.2);"
                     @endif>
                         <div class="w-[18px] h-[18px]">
                             @include('layouts.partials.icons.' . $item['icon'])
@@ -211,7 +211,7 @@
                         </span>
                         <span x-show="!(sidebarOpen ?? true)"
                               class="absolute top-1.5 right-1.5 w-2 h-2
-                                     bg-red-500 rounded-full ring-2 ring-stone-900">
+                                     bg-red-500 rounded-full ring-2 ring-white/30">
                         </span>
                     @endif
                 </a>
