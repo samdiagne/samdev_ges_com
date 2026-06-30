@@ -251,7 +251,7 @@
                     <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
                         @foreach($produits as $produit)
                             @include('shop.partials.produit-card',
-                                compact('Produit'))
+                                compact('produit'))
                         @endforeach
                     </div>
 

@@ -12,7 +12,7 @@ class PointOfSale extends Component
 {
     public string $rechercherPlat        = '';
     public string $filtreCategorie       = '';
-    public array  $plats                 = [];
+    public array  $produits               = [];
     public array  $panier                = [];
 
     public string $rechercherClient      = '';
@@ -51,7 +51,7 @@ class PointOfSale extends Component
 
     public function loadProducts(): void
     {
-        $this->plats = Produit::where('est_actif', true)
+        $this->produits = Produit::where('est_actif', true)
             ->where(fn($q) => $q->where('stock', '>', 0)->orWhere('sur_commande', true))
             ->with('categorie')
             ->when($this->filtreCategorie, fn($q) =>
@@ -79,10 +79,10 @@ class PointOfSale extends Component
     public function updatedFiltreCategorie(): void { $this->loadProducts(); }
     public function updatedRechercherPlat(): void   { $this->loadProducts(); }
 
-    public function togglePlat(int $platId): void
+    public function toggleProduit(int $platId): void
     {
         foreach ($this->panier as $cle => $item) {
-            if ($item['plat_id'] === $platId) { $this->removeFromCart($cle); return; }
+            if ($item['produit_id'] === $platId) { $this->removeFromCart($cle); return; }
         }
         $this->addToCart($platId);
     }
@@ -91,7 +91,7 @@ class PointOfSale extends Component
     {
         $cleTrouvee = null;
         foreach ($this->panier as $cle => $item) {
-            if ($item['plat_id'] === $platId) { $cleTrouvee = $cle; break; }
+            if ($item['produit_id'] === $platId) { $cleTrouvee = $cle; break; }
         }
 
         if ($cleTrouvee !== null) {
@@ -109,7 +109,7 @@ class PointOfSale extends Component
                 session()->flash('pos_error', 'Plat indisponible !'); return;
             }
             $this->panier[] = [
-                'plat_id'          => $plat->id,
+                'produit_id'       => $plat->id,
                 'nom'              => $plat->nom,
                 'prix_unitaire'    => (float) $plat->prix_vente,
                 'quantite'         => 1,

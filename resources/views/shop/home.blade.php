@@ -317,7 +317,7 @@
     </div>
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" data-reveal="up" data-reveal-delay="100">
         @foreach($misEnAvant as $produit)
-            @include('shop.partials.produit-card', compact('Produit'))
+            @include('shop.partials.produit-card', compact('produit'))
         @endforeach
     </div>
 </section>
@@ -342,7 +342,7 @@
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" data-reveal="up" data-reveal-delay="100">
             @foreach($nouveautes as $produit)
-                @include('shop.partials.produit-card', compact('Produit'))
+                @include('shop.partials.produit-card', compact('produit'))
             @endforeach
         </div>
     </div>
@@ -371,8 +371,8 @@
             </a>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" data-reveal="up" data-reveal-delay="100">
-            @foreach($section['Produits'] as $produit)
-                @include('shop.partials.produit-card', compact('Produit'))
+            @foreach($section['produits'] as $produit)
+                @include('shop.partials.produit-card', compact('produit'))
             @endforeach
         </div>
     </div>

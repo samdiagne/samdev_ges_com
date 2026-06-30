@@ -57,7 +57,7 @@
             'mois'        => 'Ce mois',
             'annee'       => 'Cette année',
         ] as $value => $label)
-            <button wire:click="$set('periode', '{{ $value }}')"
+            <button wire:click="setPeriode('{{ $value }}')"
                     @class([
                         'px-4 py-2 rounded-xl text-sm font-medium transition-all',
                         'bg-primary text-white shadow-lg shadow-primary/25' => $periode === $value,
@@ -382,8 +382,9 @@
 
     {{-- Chart.js --}}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    @script
     <script>
-        const chartInstances = {};
+        let chartInstances = {};
 
         function theme() {
             const dark = document.documentElement.classList.contains('dark');
@@ -533,14 +534,11 @@
             }, 50);
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            initAllCharts(@json($charts));
-        });
+        initAllCharts(@json($charts));
 
-        document.addEventListener('livewire:initialized', () => {
-            Livewire.on('chartsUpdated', ({ charts }) => {
-                initAllCharts(charts);
-            });
+        $wire.on('chartsUpdated', ({ charts }) => {
+            initAllCharts(charts);
         });
     </script>
+    @endscript
 </div>

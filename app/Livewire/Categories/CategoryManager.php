@@ -145,7 +145,7 @@ class CategoryManager extends Component
 
     public function render()
     {
-        $categories = Categorie::withCount('plats')
+        $categories = Categorie::withCount('produits')
             ->when($this->search, fn($q) =>
                 $q->where('nom', 'like', '%' . $this->search . '%')
             )

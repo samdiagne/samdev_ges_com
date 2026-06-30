@@ -18,7 +18,7 @@ class VenteService
     /**
      * Créer une vente (POS) avec ses lignes, sa facture et les mouvements de stock.
      *
-     * @param  array   $panier     Tableau de lignes [{plat_id, nom, prix_unitaire, quantite, remise, total}]
+     * @param  array   $panier     Tableau de lignes [{produit_id, nom, prix_unitaire, quantite, remise, total}]
      * @param  array   $paiement   [{mode_paiement, montant_recu, remise, notes, date_vente}]
      * @param  int|null $clientId
      */
@@ -61,7 +61,7 @@ class VenteService
             foreach ($panier as $item) {
                 VenteLigne::create([
                     'vente_id'      => $vente->id,
-                    'produit_id'    => $item['plat_id'],
+                    'produit_id'    => $item['produit_id'],
                     'nom_produit'   => $item['nom'],
                     'prix_unitaire' => $item['prix_unitaire'],
                     'quantite'      => $item['quantite'],
@@ -69,7 +69,7 @@ class VenteService
                     'total'         => $item['total'],
                 ]);
 
-                $plat = Produit::find($item['plat_id']);
+                $plat = Produit::find($item['produit_id']);
                 if ($plat) {
                     $this->stockService->decrementerStock(
                         $plat,

@@ -16,14 +16,18 @@ class DashboardStats extends Component
 {
     public string $periode = 'mois';
 
+    public function setPeriode(string $periode): void
+    {
+        $this->periode = $periode;
+        $this->dispatch('chartsUpdated', charts: $this->getChartData());
+    }
+
     public function render()
     {
-        $stats  = $this->getStats();
-        $charts = $this->getChartData();
+        $stats   = $this->getStats();
+        $charts  = $this->getChartData();
         $alertes = $this->getAlertes();
-        $recent = $this->getActiviteRecente();
-
-        $this->dispatch('chartsUpdated', charts: $charts);
+        $recent  = $this->getActiviteRecente();
 
         return view('livewire.dashboard.dashboard-stats',
             compact('stats', 'charts', 'alertes', 'recent'));
