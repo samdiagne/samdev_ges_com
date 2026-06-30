@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
-use App\Models\Plat;
+use App\Models\Produit;
 use App\Models\Parametre;
 use Illuminate\Http\Request;
 
@@ -21,24 +21,24 @@ class PanierController extends Controller
     public function add(Request $request)
     {
         $request->validate([
-            'plat_id'  => 'required|exists:plats,id',
-            'quantite' => 'required|integer|min:1',
+            'produit_id' => 'required|exists:produits,id',
+            'quantite'   => 'required|integer|min:1',
         ]);
 
-        $plat = Plat::findOrFail($request->plat_id);
+        $plat = Produit::findOrFail($request->produit_id);
 
         if (! $plat->sur_commande && $plat->stock <= 0) {
-            return back()->with('error', 'Ce plat est en rupture de stock.');
+            return back()->with('error', 'Ce produit est en rupture de stock.');
         }
 
         $panier = session('panier', []);
-        $cle    = 'plat_' . $plat->id;
+        $cle    = 'produit_' . $plat->id;
 
         if (isset($panier[$cle])) {
             $panier[$cle]['quantite'] += $request->quantite;
         } else {
             $panier[$cle] = [
-                'plat_id'  => $plat->id,
+                'produit_id' => $plat->id,
                 'nom'      => $plat->nom,
                 'prix'     => $plat->prix_vente,
                 'image'    => $plat->image_principale,
@@ -67,12 +67,12 @@ class PanierController extends Controller
     public function update(Request $request)
     {
         $request->validate([
-            'plat_id'  => 'required',
-            'quantite' => 'required|integer|min:0',
+            'produit_id' => 'required',
+            'quantite'   => 'required|integer|min:0',
         ]);
 
         $panier = session('panier', []);
-        $cle    = 'plat_' . $request->plat_id;
+        $cle    = 'produit_' . $request->produit_id;
 
         if ($request->quantite <= 0) {
             unset($panier[$cle]);
@@ -88,10 +88,10 @@ class PanierController extends Controller
     public function remove(Request $request)
     {
         $panier = session('panier', []);
-        $cle    = 'plat_' . $request->plat_id;
+        $cle    = 'produit_' . $request->produit_id;
         unset($panier[$cle]);
         session(['panier' => $panier]);
 
-        return back()->with('success', 'Plat retiré du panier.');
+        return back()->with('success', 'Produit retiré du panier.');
     }
 }

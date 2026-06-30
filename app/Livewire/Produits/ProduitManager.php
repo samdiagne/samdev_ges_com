@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Livewire\Plats;
+namespace App\Livewire\Produits;
 
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\Plat;
+use App\Models\Produit;
 use App\Models\Categorie;
 
-class PlatManager extends Component
+class ProduitManager extends Component
 {
     use WithPagination;
 
@@ -51,8 +51,8 @@ class PlatManager extends Component
 
     public function delete(): void
     {
-        Plat::findOrFail($this->suppressionId)->delete();
-        session()->flash('success', 'Plat supprimé avec succès !');
+        Produit::findOrFail($this->suppressionId)->delete();
+        session()->flash('success', 'Produit supprimé avec succès !');
         $this->afficherModalSuppression = false;
         $this->suppressionId            = null;
         $this->resetPage();
@@ -60,14 +60,14 @@ class PlatManager extends Component
 
     public function toggleStatus(int $id): void
     {
-        $plat = Plat::findOrFail($id);
-        $plat->update(['est_actif' => ! $plat->est_actif]);
+        $produit = Produit::findOrFail($id);
+        $produit->update(['est_actif' => ! $produit->est_actif]);
         session()->flash('success', 'Statut mis à jour !');
     }
 
     public function render()
     {
-        $plats = Plat::with('categorie')
+        $produits = Produit::with('categorie')
             ->when($this->search, fn($q) =>
                 $q->where('nom', 'like', '%' . $this->search . '%')
             )
@@ -92,12 +92,12 @@ class PlatManager extends Component
         $categories = Categorie::where('est_active', true)->orderBy('nom')->get();
 
         $stats = [
-            'total'   => Plat::count(),
-            'actifs'  => Plat::where('est_actif', true)->count(),
-            'faible'  => Plat::whereColumn('stock', '<=', 'seuil_alerte_stock')->where('stock', '>', 0)->where('sur_commande', false)->count(),
-            'rupture' => Plat::where('stock', '<=', 0)->where('sur_commande', false)->count(),
+            'total'   => Produit::count(),
+            'actifs'  => Produit::where('est_actif', true)->count(),
+            'faible'  => Produit::whereColumn('stock', '<=', 'seuil_alerte_stock')->where('stock', '>', 0)->where('sur_commande', false)->count(),
+            'rupture' => Produit::where('stock', '<=', 0)->where('sur_commande', false)->count(),
         ];
 
-        return view('livewire.plats.plat-manager', compact('plats', 'categories', 'stats'));
+        return view('livewire.produits.produit-manager', compact('produits', 'categories', 'stats'));
     }
 }

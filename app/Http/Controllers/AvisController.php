@@ -8,12 +8,12 @@ class AvisController extends Controller
 {
     public function index()
     {
-        $enAttente = Avis::with('plat')
+        $enAttente = Avis::with('produit')
             ->where('est_approuve', false)
             ->latest()
             ->get();
 
-        $approuves = Avis::with('plat')
+        $approuves = Avis::with('produit')
             ->where('est_approuve', true)
             ->latest()
             ->limit(20)

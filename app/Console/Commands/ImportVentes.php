@@ -6,7 +6,7 @@ use App\Models\Categorie;
 use App\Models\Client;
 use App\Models\Facture;
 use App\Models\Parametre;
-use App\Models\Plat;
+use App\Models\Produit;
 use App\Models\Vente;
 use App\Models\VenteLigne;
 use App\Services\StockService;
@@ -107,7 +107,7 @@ class ImportVentes extends Command
 
         $produits = [];
         foreach ($definitions as $cle => $def) {
-            $produits[$cle] = Plat::firstOrCreate(
+            $produits[$cle] = Produit::firstOrCreate(
                 ['nom' => $def['nom']],
                 array_merge($def, [
                     'categorie_id' => $catJus->id,
@@ -309,9 +309,9 @@ class ImportVentes extends Command
                 $ligneTotal = $ligne['prix'] * $ligne['quantite'];
 
                 VenteLigne::create([
-                    'vente_id' => $vente->id,
-                    'plat_id' => $plat->id,
-                    'nom_plat' => $plat->nom,
+                    'vente_id'    => $vente->id,
+                    'produit_id'  => $plat->id,
+                    'nom_produit' => $plat->nom,
                     'prix_unitaire' => $ligne['prix'],
                     'quantite' => $ligne['quantite'],
                     'remise' => 0,

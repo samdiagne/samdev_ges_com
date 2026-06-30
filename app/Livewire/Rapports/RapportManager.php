@@ -7,7 +7,7 @@ use App\Models\Vente;
 use App\Models\VenteLigne;
 use App\Models\Achat;
 use App\Models\Depense;
-use App\Models\Plat;
+use App\Models\Produit;
 use App\Models\Client;
 use Carbon\Carbon;
 
@@ -30,7 +30,7 @@ class RapportManager extends Component
 
         $rapport = match ($this->typeRapport) {
             'ventes'     => $this->rapportVentes($from, $to),
-            'plats'      => $this->rapportPlats($from, $to),
+            'produits'   => $this->rapportProduits($from, $to),
             'clients'    => $this->rapportClients($from, $to),
             'achats'     => $this->rapportAchats($from, $to),
             'tresorerie' => $this->rapportTresorerie($from, $to),
@@ -60,14 +60,14 @@ class RapportManager extends Component
         ];
     }
 
-    private function rapportPlats(Carbon $from, Carbon $to): array
+    private function rapportProduits(Carbon $from, Carbon $to): array
     {
-        $lignes = VenteLigne::with('plat.categorie')
+        $lignes = VenteLigne::with('produit.categorie')
             ->whereHas('vente', fn($q) =>
                 $q->where('statut', 'completee')->whereBetween('vendu_le', [$from, $to])
             )
-            ->selectRaw('plat_id, nom_plat, SUM(quantite) as total_qte, SUM(total) as total_ca')
-            ->groupBy('plat_id', 'nom_plat')
+            ->selectRaw('produit_id, nom_produit, SUM(quantite) as total_qte, SUM(total) as total_ca')
+            ->groupBy('produit_id', 'nom_produit')
             ->orderByDesc('total_ca')
             ->get();
 
@@ -75,7 +75,7 @@ class RapportManager extends Component
             'lignes'         => $lignes,
             'total_ca'       => $lignes->sum('total_ca'),
             'total_portions' => $lignes->sum('total_qte'),
-            'par_categorie'  => $lignes->groupBy(fn($l) => $l->plat?->categorie?->nom ?? 'Non catégorisé')
+            'par_categorie'  => $lignes->groupBy(fn($l) => $l->produit?->categorie?->nom ?? 'Non catégorisé')
                 ->map(fn($g) => ['ca' => $g->sum('total_ca'), 'qte' => $g->sum('total_qte')]),
         ];
     }

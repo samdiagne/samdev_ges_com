@@ -6,7 +6,7 @@ use App\Models\Vente;
 use App\Models\VenteLigne;
 use App\Models\Facture;
 use App\Models\Parametre;
-use App\Models\Plat;
+use App\Models\Produit;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -61,15 +61,15 @@ class VenteService
             foreach ($panier as $item) {
                 VenteLigne::create([
                     'vente_id'      => $vente->id,
-                    'plat_id'       => $item['plat_id'],
-                    'nom_plat'      => $item['nom'],
+                    'produit_id'    => $item['plat_id'],
+                    'nom_produit'   => $item['nom'],
                     'prix_unitaire' => $item['prix_unitaire'],
                     'quantite'      => $item['quantite'],
                     'remise'        => $item['remise'] ?? 0,
                     'total'         => $item['total'],
                 ]);
 
-                $plat = Plat::find($item['plat_id']);
+                $plat = Produit::find($item['plat_id']);
                 if ($plat) {
                     $this->stockService->decrementerStock(
                         $plat,

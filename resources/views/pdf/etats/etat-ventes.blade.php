@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8"/>
@@ -130,7 +130,7 @@
                     <td>{{ $vente->vendu_le->format('d/m/Y H:i') }}</td>
                     <td style="text-transform:uppercase;">{{ $vente->mode_paiement }}</td>
                     <td style="color:#666;">
-                        {{ $vente->lignes->map(fn($l) => $l->nom_plat . ' x' . $l->quantite)->join(', ') }}
+                        {{ $vente->lignes->map(fn($l) => $l->nom_produit . ' x' . $l->quantite)->join(', ') }}
                     </td>
                     <td class="right"><strong>{{ number_format($vente->total, 0, ',', ' ') }}</strong></td>
                 </tr>

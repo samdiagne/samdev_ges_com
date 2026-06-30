@@ -1,4 +1,4 @@
-@extends('layouts.shop')
+﻿@extends('layouts.shop')
 @section('title', 'Mes commandes')
 
 @section('content')
@@ -98,13 +98,13 @@
                                 @endif
                             </div>
 
-                            {{-- Plats --}}
+                            {{-- Produits --}}
                             <div class="flex flex-wrap items-center gap-2 mb-3">
                                 @foreach($commande->lignes->take(3) as $ligne)
                                     <div class="flex items-center gap-1.5">
-                                        @if($ligne->plat?->image_principale)
-                                            <img src="{{ Storage::url($ligne->plat->image_principale) }}"
-                                                 alt="{{ $ligne->nom_plat }}"
+                                        @if($ligne->Produit?->image_principale)
+                                            <img src="{{ Storage::url($ligne->Produit->image_principale) }}"
+                                                 alt="{{ $ligne->nom_produit }}"
                                                  class="w-7 h-7 rounded-lg object-contain bg-gray-50 border border-gray-100 shrink-0"/>
                                         @else
                                             <div class="w-7 h-7 rounded-lg bg-gray-100 shrink-0 flex items-center justify-center">
@@ -115,7 +115,7 @@
                                             </div>
                                         @endif
                                         <span class="text-xs text-gray-600">
-                                            {{ $ligne->nom_plat }}
+                                            {{ $ligne->nom_produit }}
                                             <span class="text-gray-400">×{{ $ligne->quantite }}</span>
                                         </span>
                                     </div>

@@ -5,7 +5,7 @@ namespace App\Livewire\Devis;
 use Livewire\Component;
 use App\Models\Quote;
 use App\Models\QuoteItem;
-use App\Models\Plat;
+use App\Models\Produit;
 use App\Models\Client;
 use App\Models\Categorie;
 use Illuminate\Support\Facades\Auth;
@@ -28,9 +28,9 @@ class DevisForm extends Component
     public string $valid_until = '';
     public float  $discount    = 0;
 
-    public string $searchPlat      = '';
+    public string $searchProduit   = '';
     public string $filterCategorie = '';
-    public array  $allPlats        = [];
+    public array  $allProduits     = [];
 
     public array $items = [];
 
@@ -45,7 +45,7 @@ class DevisForm extends Component
     public function mount(?int $quoteId = null): void
     {
         $this->valid_until = now()->addDays(30)->format('Y-m-d');
-        $this->loadPlats();
+        $this->loadProduits();
 
         if ($quoteId) {
             $this->isEditing = true;
@@ -54,16 +54,16 @@ class DevisForm extends Component
         }
     }
 
-    public function loadPlats(): void
+    public function loadProduits(): void
     {
-        $this->allPlats = Plat::where('est_actif', true)
+        $this->allProduits = Produit::where('est_actif', true)
             ->where(fn($q) => $q->where('stock', '>', 0)->orWhere('sur_commande', true))
             ->with('categorie')
             ->when($this->filterCategorie, fn($q) =>
                 $q->where('categorie_id', $this->filterCategorie)
             )
-            ->when($this->searchPlat, fn($q) =>
-                $q->where('nom', 'like', '%' . $this->searchPlat . '%')
+            ->when($this->searchProduit, fn($q) =>
+                $q->where('nom', 'like', '%' . $this->searchProduit . '%')
             )
             ->orderBy('nom')
             ->get()
@@ -79,8 +79,8 @@ class DevisForm extends Component
             ->toArray();
     }
 
-    public function updatedFilterCategorie(): void { $this->loadPlats(); }
-    public function updatedSearchPlat(): void { $this->loadPlats(); }
+    public function updatedFilterCategorie(): void { $this->loadProduits(); }
+    public function updatedSearchProduit(): void { $this->loadProduits(); }
 
     private function loadQuote(int $id): void
     {
@@ -93,7 +93,7 @@ class DevisForm extends Component
         $this->discount   = (float) $quote->remise;
 
         $this->items = $quote->items->map(fn($item) => [
-            'plat_id'       => $item->plat_id,
+            'produit_id'    => $item->produit_id,
             'description'   => $item->description,
             'prix_unitaire' => (float) $item->prix_unitaire,
             'quantite'      => $item->quantite,
@@ -105,28 +105,28 @@ class DevisForm extends Component
         $this->recalculateTotals();
     }
 
-    public function togglePlat(int $platId): void
+    public function toggleProduit(int $produitId): void
     {
         foreach ($this->items as $key => $item) {
-            if ($item['plat_id'] === $platId) {
+            if (($item['produit_id'] ?? null) === $produitId) {
                 $this->removeItem($key);
                 return;
             }
         }
-        $this->addPlatItem($platId);
+        $this->addProduitItem($produitId);
     }
 
-    public function addPlatItem(int $platId): void
+    public function addProduitItem(int $produitId): void
     {
-        $plat = Plat::findOrFail($platId);
+        $produit = Produit::findOrFail($produitId);
 
         $this->items[] = [
-            'plat_id'       => $plat->id,
-            'description'   => $plat->nom,
-            'prix_unitaire' => (float) $plat->prix_vente,
+            'produit_id'    => $produit->id,
+            'description'   => $produit->nom,
+            'prix_unitaire' => (float) $produit->prix_vente,
             'quantite'      => 1,
             'remise'        => 0,
-            'total'         => (float) $plat->prix_vente,
+            'total'         => (float) $produit->prix_vente,
             'is_free_line'  => false,
         ];
 
@@ -140,7 +140,7 @@ class DevisForm extends Component
         }
 
         $this->items[] = [
-            'plat_id'       => null,
+            'produit_id'    => null,
             'description'   => $this->freeLineDescription,
             'prix_unitaire' => $this->freeLinePrice,
             'quantite'      => $this->freeLineQty,
@@ -260,7 +260,7 @@ class DevisForm extends Component
             foreach ($this->items as $item) {
                 QuoteItem::create([
                     'quote_id'      => $quote->id,
-                    'plat_id'       => $item['plat_id'],
+                    'produit_id'    => $item['produit_id'] ?? null,
                     'description'   => $item['description'],
                     'prix_unitaire' => $item['prix_unitaire'],
                     'quantite'      => $item['quantite'],
@@ -279,7 +279,7 @@ class DevisForm extends Component
     public function render()
     {
         $categories = Categorie::where('est_active', true)
-            ->whereHas('plats', fn($q) =>
+            ->whereHas('produits', fn($q) =>
                 $q->where('est_actif', true)->where(fn($sq) => $sq->where('stock', '>', 0)->orWhere('sur_commande', true))
             )
             ->get(['id', 'nom']);

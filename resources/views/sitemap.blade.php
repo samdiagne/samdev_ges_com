@@ -1,4 +1,4 @@
-<?php echo '<?xml version="1.0" encoding="UTF-8"?>'; ?>
+﻿<?php echo '<?xml version="1.0" encoding="UTF-8"?>'; ?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
     {{-- Pages statiques --}}
@@ -38,11 +38,11 @@
     </url>
     @endforeach
 
-    {{-- Plats --}}
-    @foreach($plats as $plat)
+    {{-- Produits --}}
+    @foreach($produits as $produit)
     <url>
-        <loc>{{ route('shop.plat', $plat->slug) }}</loc>
-        <lastmod>{{ $plat->updated_at->toAtomString() }}</lastmod>
+        <loc>{{ route('shop.produit', $produit->slug) }}</loc>
+        <lastmod>{{ $produit->updated_at->toAtomString() }}</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>

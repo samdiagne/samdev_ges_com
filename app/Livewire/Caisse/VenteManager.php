@@ -73,7 +73,7 @@ class VenteManager extends Component
         ];
 
         $voirVente = $this->voirVenteId
-            ? Vente::with(['client', 'user', 'lignes.plat', 'facture'])->find($this->voirVenteId)
+            ? Vente::with(['client', 'user', 'lignes.produit', 'facture'])->find($this->voirVenteId)
             : null;
 
         return view('livewire.caisse.vente-manager', compact('ventes', 'stats', 'voirVente'));

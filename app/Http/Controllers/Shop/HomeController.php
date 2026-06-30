@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
-use App\Models\Plat;
+use App\Models\Produit;
 use App\Models\Categorie;
 use App\Models\Parametre;
 
@@ -11,25 +11,25 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $misEnAvant = Plat::where('est_actif', true)
+        $misEnAvant = Produit::where('est_actif', true)
             ->where('est_mis_en_avant', true)
             ->with(['categorie', 'avisApprouves'])
             ->limit(8)
             ->get();
 
         $categories = Categorie::where('est_active', true)
-            ->withCount(['platsActifs'])
-            ->having('plats_actifs_count', '>', 0)
+            ->withCount(['produitsActifs'])
+            ->having('produits_actifs_count', '>', 0)
             ->orderBy('ordre')
             ->get();
 
-        $nouveautes = Plat::where('est_actif', true)
+        $nouveautes = Produit::where('est_actif', true)
             ->with(['categorie', 'avisApprouves'])
             ->latest()
             ->limit(8)
             ->get();
 
-        $platCarousel = Plat::where('est_actif', true)
+        $platCarousel = Produit::where('est_actif', true)
             ->with('categorie')
             ->inRandomOrder()
             ->get();
@@ -39,13 +39,13 @@ class HomeController extends Controller
             ->get()
             ->map(fn($cat) => [
                 'categorie' => $cat,
-                'plats'     => Plat::where('est_actif', true)
+                'produits'  => Produit::where('est_actif', true)
                     ->where('categorie_id', $cat->id)
                     ->with('avisApprouves')
                     ->limit(8)
                     ->get(),
             ])
-            ->filter(fn($s) => $s['plats']->isNotEmpty())
+            ->filter(fn($s) => $s['produits']->isNotEmpty())
             ->values();
 
         $parametres = Parametre::first();

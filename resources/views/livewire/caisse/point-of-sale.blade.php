@@ -1,4 +1,4 @@
-<div class="lg:h-full flex flex-col lg:flex-row gap-4">
+﻿<div class="lg:h-full flex flex-col lg:flex-row gap-4">
 
     {{-- ════════════════════════════════════════
          COLONNE GAUCHE — Recherche & Produits
@@ -33,7 +33,7 @@
                             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
                     </svg>
                     <input wire:model.live.debounce.300ms="rechercherPlat"
-                        type="text" placeholder="Rechercher un plat..."
+                        type="text" placeholder="Rechercher un Produit..."
                         class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl
                                 text-sm focus:outline-none focus:border-primary bg-gray-50"/>
                 </div>
@@ -69,33 +69,33 @@
 
             {{-- Grille produits --}}
             <div class="overflow-y-auto p-4 max-h-72 lg:max-h-none lg:flex-1">
-                @if(count($plats) > 0)
+                @if(count($produits) > 0)
                     @php
-                        $panierPlatIds = array_column($panier, 'plat_id');
+                        $panierproduitIds = array_column($panier, 'produit_id');
                     @endphp
                     <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
-                        @foreach($plats as $plat)
-                            @php $isSelected = in_array($plat['id'], $panierPlatIds); @endphp
-                            <button wire:click="togglePlat({{ $plat['id'] }})"
+                        @foreach($produits as $produit)
+                            @php $isSelected = in_array($produit['id'], $panierproduitIds); @endphp
+                            <button wire:click="toggleProduit({{ $produit['id'] }})"
                                     @class([
                                         'rounded-2xl border text-left transition-all
                                         duration-150 overflow-hidden group
                                         hover:-translate-y-0.5',
                                         'opacity-50 cursor-not-allowed'
-                                            => ! $plat['sur_commande'] && $plat['stock'] <= 0,
+                                            => ! $produit['sur_commande'] && $produit['stock'] <= 0,
                                         'bg-green-50 border-green-400 ring-2 ring-green-300/40 shadow-md shadow-green-100'
                                             => $isSelected,
                                         'bg-white border-gray-100 hover:shadow-lg hover:border-primary/30'
-                                            => !$isSelected && ($plat['sur_commande'] || $plat['stock'] > 0),
+                                            => !$isSelected && ($produit['sur_commande'] || $produit['stock'] > 0),
                                     ])
-                                    {{ ! $plat['sur_commande'] && $plat['stock'] <= 0 ? 'disabled' : '' }}>
+                                    {{ ! $produit['sur_commande'] && $produit['stock'] <= 0 ? 'disabled' : '' }}>
 
                                 {{-- Image --}}
                                 <div class="aspect-square flex items-center
                                             justify-center p-3 relative overflow-hidden
                                             {{ $isSelected ? 'bg-green-100/60' : 'bg-gray-50' }}">
-                                    @if($plat['image'])
-                                        <img src="{{ Storage::url($plat['image']) }}"
+                                    @if($produit['image'])
+                                        <img src="{{ Storage::url($produit['image']) }}"
                                             class="w-full h-full object-contain
                                                     group-hover:scale-105 transition-transform
                                                     duration-300"/>
@@ -123,17 +123,17 @@
                                     @endif
 
                                     {{-- Badge stock bas / sur commande --}}
-                                    @if($plat['sur_commande'])
+                                    @if($produit['sur_commande'])
                                         <div class="absolute top-1.5 right-1.5 bg-blue-500
                                                     text-white text-xs font-bold px-1.5 py-0.5
                                                     rounded-lg">
                                             Cde
                                         </div>
-                                    @elseif($plat['stock'] > 0 && $plat['stock'] <= 3)
+                                    @elseif($produit['stock'] > 0 && $produit['stock'] <= 3)
                                         <div class="absolute top-1.5 right-1.5 bg-orange-500
                                                     text-white text-xs font-bold px-1.5 py-0.5
                                                     rounded-lg">
-                                            {{ $plat['stock'] }}
+                                            {{ $produit['stock'] }}
                                         </div>
                                     @endif
                                 </div>
@@ -142,15 +142,15 @@
                                 <div class="p-3">
                                     <p class="text-xs truncate mb-0.5
                                               {{ $isSelected ? 'text-green-600' : 'text-gray-400' }}">
-                                        {{ $plat['categorie'] ?? '' }}
+                                        {{ $produit['categorie'] ?? '' }}
                                     </p>
                                     <p class="text-sm font-semibold truncate transition-colors
                                               {{ $isSelected ? 'text-green-700' : 'text-dark group-hover:text-primary' }}">
-                                        {{ $plat['nom'] }}
+                                        {{ $produit['nom'] }}
                                     </p>
                                     <p class="text-sm font-bold mt-1
                                               {{ $isSelected ? 'text-green-600' : 'text-primary' }}">
-                                        {{ number_format($plat['prix_vente'], 0, ',', ' ') }}
+                                        {{ number_format($produit['prix_vente'], 0, ',', ' ') }}
                                         <span class="text-xs font-normal text-gray-400">FCFA</span>
                                     </p>
                                 </div>
@@ -165,7 +165,7 @@
                                 stroke-width="1.5"
                                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
                         </svg>
-                        <p class="text-sm">Aucun plat trouvé</p>
+                        <p class="text-sm">Aucun Produit trouvé</p>
                     </div>
                 @endif
             </div>
@@ -272,7 +272,7 @@
                         </div>
                         <p class="text-sm font-medium text-gray-400">Panier vide</p>
                         <p class="text-xs text-gray-300 mt-1">
-                            Recherchez un plat pour commencer
+                            Recherchez un Produit pour commencer
                         </p>
                     </div>
                 @endforelse

@@ -2,14 +2,14 @@
 
 namespace App\Services;
 
-use App\Models\Plat;
+use App\Models\Produit;
 use App\Models\MouvementStock;
 use Illuminate\Support\Facades\Auth;
 
 class StockService
 {
     public function decrementerStock(
-        Plat    $plat,
+        Produit $plat,
         int     $quantite,
         string  $source,
         ?int    $sourceId = null,
@@ -21,8 +21,8 @@ class StockService
         $plat->update(['stock' => $apres]);
 
         MouvementStock::create([
-            'plat_id'             => $plat->id,
-            'user_id'      => Auth::id(),
+            'produit_id'          => $plat->id,
+            'user_id'             => Auth::id(),
             'type'                => 'sortie',
             'source'              => $source,
             'source_id'           => $sourceId,
@@ -35,7 +35,7 @@ class StockService
     }
 
     public function incrementerStock(
-        Plat    $plat,
+        Produit $plat,
         int     $quantite,
         string  $source,
         ?int    $sourceId = null,
@@ -47,8 +47,8 @@ class StockService
         $plat->update(['stock' => $apres]);
 
         MouvementStock::create([
-            'plat_id'             => $plat->id,
-            'user_id'      => Auth::id(),
+            'produit_id'          => $plat->id,
+            'user_id'             => Auth::id(),
             'type'                => 'entree',
             'source'              => $source,
             'source_id'           => $sourceId,
@@ -61,7 +61,7 @@ class StockService
     }
 
     public function ajusterStock(
-        Plat    $plat,
+        Produit $plat,
         int     $nouvelleQuantite,
         ?string $motif = null
     ): void {
@@ -72,8 +72,8 @@ class StockService
         $plat->update(['stock' => $nouvelleQuantite]);
 
         MouvementStock::create([
-            'plat_id'             => $plat->id,
-            'user_id'      => Auth::id(),
+            'produit_id'          => $plat->id,
+            'user_id'             => Auth::id(),
             'type'                => $type,
             'source'              => 'ajustement',
             'source_id'           => null,

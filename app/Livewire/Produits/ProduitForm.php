@@ -1,22 +1,22 @@
 <?php
 
-namespace App\Livewire\Plats;
+namespace App\Livewire\Produits;
 
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use App\Models\Plat;
-use App\Models\PlatImage;
+use App\Models\Produit;
+use App\Models\ProduitImage;
 use App\Models\Categorie;
 use App\Models\MouvementStock;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
-class PlatForm extends Component
+class ProduitForm extends Component
 {
     use WithFileUploads;
 
     public bool   $isEditing  = false;
-    public ?int   $platId     = null;
+    public ?int   $produitId  = null;
 
     // Infos générales
     public string $nom                = '';
@@ -74,7 +74,7 @@ class PlatForm extends Component
     }
 
     protected $messages = [
-        'nom.required'           => 'Le nom du plat est obligatoire.',
+        'nom.required'           => 'Le nom du produit est obligatoire.',
         'categorie_id.required'  => 'Veuillez sélectionner une catégorie.',
         'categorie_id.exists'    => 'Catégorie invalide.',
         'prix_vente.required'    => 'Le prix de vente est obligatoire.',
@@ -93,35 +93,35 @@ class PlatForm extends Component
         }
     }
 
-    public function mount(?int $platId = null): void
+    public function mount(?int $produitId = null): void
     {
-        if ($platId) {
-            $this->isEditing = true;
-            $this->platId    = $platId;
-            $this->chargerPlat($platId);
+        if ($produitId) {
+            $this->isEditing  = true;
+            $this->produitId  = $produitId;
+            $this->chargerProduit($produitId);
         }
     }
 
-    private function chargerPlat(int $id): void
+    private function chargerProduit(int $id): void
     {
-        $plat = Plat::findOrFail($id);
+        $produit = Produit::findOrFail($id);
 
-        $this->nom                = $plat->nom;
-        $this->categorie_id       = $plat->categorie_id;
-        $this->description        = $plat->description ?? '';
-        $this->description_courte = $plat->description_courte ?? '';
-        $this->ingredients        = $plat->ingredients ?? [];
-        $this->prix_vente         = (float) $plat->prix_vente;
-        $this->ancien_prix        = $plat->ancien_prix ? (float) $plat->ancien_prix : null;
-        $this->quantite_palier    = $plat->quantite_palier;
-        $this->prix_palier        = $plat->prix_palier ? (float) $plat->prix_palier : null;
-        $this->en_promo           = $plat->ancien_prix !== null && $plat->ancien_prix > $plat->prix_vente;
-        $this->stock              = $plat->stock;
-        $this->seuil_alerte_stock = $plat->seuil_alerte_stock;
-        $this->sur_commande       = $plat->sur_commande;
-        $this->est_actif          = $plat->est_actif;
-        $this->est_mis_en_avant   = $plat->est_mis_en_avant;
-        $this->imageActuelle      = $plat->image_principale;
+        $this->nom                = $produit->nom;
+        $this->categorie_id       = $produit->categorie_id;
+        $this->description        = $produit->description ?? '';
+        $this->description_courte = $produit->description_courte ?? '';
+        $this->ingredients        = $produit->ingredients ?? [];
+        $this->prix_vente         = (float) $produit->prix_vente;
+        $this->ancien_prix        = $produit->ancien_prix ? (float) $produit->ancien_prix : null;
+        $this->quantite_palier    = $produit->quantite_palier;
+        $this->prix_palier        = $produit->prix_palier ? (float) $produit->prix_palier : null;
+        $this->en_promo           = $produit->ancien_prix !== null && $produit->ancien_prix > $produit->prix_vente;
+        $this->stock              = $produit->stock;
+        $this->seuil_alerte_stock = $produit->seuil_alerte_stock;
+        $this->sur_commande       = $produit->sur_commande;
+        $this->est_actif          = $produit->est_actif;
+        $this->est_mis_en_avant   = $produit->est_mis_en_avant;
+        $this->imageActuelle      = $produit->image_principale;
     }
 
     public function addIngredient(): void
@@ -137,8 +137,8 @@ class PlatForm extends Component
 
     public function removeGalleryImage(int $id): void
     {
-        $image = PlatImage::find($id);
-        if ($image && $image->plat_id === $this->platId) {
+        $image = ProduitImage::find($id);
+        if ($image && $image->produit_id === $this->produitId) {
             Storage::disk('public')->delete($image->chemin);
             $image->delete();
         }
@@ -153,7 +153,7 @@ class PlatForm extends Component
             if ($this->imageActuelle) {
                 Storage::disk('public')->delete($this->imageActuelle);
             }
-            $cheminImage = $this->imagePrincipale->store('plats', 'public');
+            $cheminImage = $this->imagePrincipale->store('produits', 'public');
         }
 
         $data = [
@@ -175,63 +175,63 @@ class PlatForm extends Component
         ];
 
         if ($this->isEditing) {
-            $plat     = Plat::findOrFail($this->platId);
-            $stockAvant = $plat->stock;
-            $plat->update($data);
+            $produit    = Produit::findOrFail($this->produitId);
+            $stockAvant = $produit->stock;
+            $produit->update($data);
 
             if ($stockAvant !== $this->stock) {
                 MouvementStock::create([
-                    'plat_id'            => $plat->id,
-                    'user_id'     => Auth::id(),
-                    'type'               => $this->stock > $stockAvant ? 'entree' : 'sortie',
-                    'source'             => 'ajustement',
-                    'stock_avant'        => $stockAvant,
-                    'quantite_changement'=> abs($this->stock - $stockAvant),
-                    'stock_apres'        => $this->stock,
-                    'motif'              => 'Ajustement manuel',
-                    'effectue_le'        => now(),
+                    'produit_id'          => $produit->id,
+                    'user_id'             => Auth::id(),
+                    'type'                => $this->stock > $stockAvant ? 'entree' : 'sortie',
+                    'source'              => 'ajustement',
+                    'stock_avant'         => $stockAvant,
+                    'quantite_changement' => abs($this->stock - $stockAvant),
+                    'stock_apres'         => $this->stock,
+                    'motif'               => 'Ajustement manuel',
+                    'effectue_le'         => now(),
                 ]);
             }
 
-            session()->flash('success', 'Plat modifié avec succès !');
+            session()->flash('success', 'Produit modifié avec succès !');
         } else {
-            $plat = Plat::create($data);
+            $produit = Produit::create($data);
 
             if ($this->stock > 0) {
                 MouvementStock::create([
-                    'plat_id'            => $plat->id,
-                    'user_id'     => Auth::id(),
-                    'type'               => 'entree',
-                    'source'             => 'ajustement',
-                    'stock_avant'        => 0,
-                    'quantite_changement'=> $this->stock,
-                    'stock_apres'        => $this->stock,
-                    'motif'              => 'Stock initial',
-                    'effectue_le'        => now(),
+                    'produit_id'          => $produit->id,
+                    'user_id'             => Auth::id(),
+                    'type'                => 'entree',
+                    'source'              => 'ajustement',
+                    'stock_avant'         => 0,
+                    'quantite_changement' => $this->stock,
+                    'stock_apres'         => $this->stock,
+                    'motif'               => 'Stock initial',
+                    'effectue_le'         => now(),
                 ]);
             }
 
-            session()->flash('success', 'Plat créé avec succès !');
+            session()->flash('success', 'Produit créé avec succès !');
         }
 
         foreach ($this->imagesGalerie as $img) {
-            $chemin = $img->store('plats/galerie', 'public');
-            PlatImage::create([
-                'plat_id' => $plat->id,
-                'chemin'  => $chemin,
-                'ordre'   => PlatImage::where('plat_id', $plat->id)->count(),
+            $chemin = $img->store('produits/galerie', 'public');
+            ProduitImage::create([
+                'produit_id' => $produit->id,
+                'chemin'     => $chemin,
+                'ordre'      => ProduitImage::where('produit_id', $produit->id)->count(),
             ]);
         }
 
-        $this->redirect(route('plats.index'));
+        $this->redirect(route('produits.index'));
     }
 
     public function render()
     {
-        return view('livewire.plats.plat-form', [
-            'categories'      => Categorie::where('est_active', true)->orderBy('nom')->get(),
-            'galerieExistante' => $this->platId
-                ? PlatImage::where('plat_id', $this->platId)->orderBy('ordre')->get()
+        return view('livewire.produits.produit-form', [
+            'categories'       => Categorie::where('est_active', true)->orderBy('nom')->get(),
+            'galerieExistante' => $this->produitId
+                ? ProduitImage::where('produit_id', $this->produitId)->orderBy('ordre')->get()
                 : collect(),
         ]);
     }

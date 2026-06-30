@@ -77,8 +77,8 @@ class CheckoutController extends Controller
             foreach ($panier as $item) {
                 CommandeLigne::create([
                     'commande_id'   => $commande->id,
-                    'plat_id'       => $item['plat_id'],
-                    'nom_plat'      => $item['nom'],
+                    'produit_id'    => $item['produit_id'],
+                    'nom_produit'   => $item['nom'],
                     'prix_unitaire' => $item['prix'],
                     'quantite'      => $item['quantite'],
                     'total'         => $item['prix'] * $item['quantite'],

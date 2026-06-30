@@ -1,4 +1,4 @@
-<div class="max-w-4xl mx-auto">
+﻿<div class="max-w-4xl mx-auto">
     <form wire:submit="save" class="space-y-6">
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -18,7 +18,7 @@
                         {{-- Nom --}}
                         <div>
                             <label class="block text-sm font-medium text-dark mb-1.5">
-                                Nom du plat <span class="text-red-500">*</span>
+                                Nom du Produit <span class="text-red-500">*</span>
                             </label>
                             <input wire:model="nom" type="text"
                                    placeholder="Ex: Thiéboudienne, Yassa poulet..."
@@ -50,7 +50,7 @@
                                 Description complète
                             </label>
                             <textarea wire:model="description" rows="4"
-                                      placeholder="Détails du plat, accompagnements..."
+                                      placeholder="Détails du Produit, accompagnements..."
                                       class="w-full px-3 py-2.5 border border-gray-200 rounded-xl
                                              text-sm bg-gray-50 focus:outline-none
                                              focus:border-primary focus:bg-white
@@ -286,7 +286,7 @@
                         </div>
                     @else
                         <p class="text-xs text-gray-400">
-                            Activez pour afficher un badge promo et un prix barré sur ce plat.
+                            Activez pour afficher un badge promo et un prix barré sur ce Produit.
                         </p>
                     @endif
                 </div>
@@ -341,7 +341,7 @@
                                 Sur commande
                             </label>
                             <span class="text-xs text-gray-500">
-                                — Ce plat n'est pas stocké, il est préparé à la demande
+                                — Ce Produit n'est pas stocké, il est préparé à la demande
                             </span>
                         </div>
                         @if(! $sur_commande)
@@ -468,7 +468,7 @@
                     <div class="space-y-3">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-dark">Plat actif</p>
+                                <p class="text-sm font-medium text-dark">Produit actif</p>
                                 <p class="text-xs text-gray-400">Visible en caisse et sur le menu</p>
                             </div>
                             <button type="button" wire:click="$toggle('est_actif')"
@@ -504,7 +504,7 @@
         {{-- Boutons action --}}
         <div class="flex items-center justify-between bg-white rounded-2xl
                     border border-gray-100 shadow-sm px-6 py-4">
-            <a href="{{ route('plats.index') }}"
+            <a href="{{ route('produits.index') }}"
                class="px-4 py-2 text-sm font-medium text-gray-600
                       hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-colors">
                 ← Retour
@@ -519,7 +519,7 @@
                     <path class="opacity-75" fill="currentColor"
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                 </svg>
-                {{ $isEditing ? 'Enregistrer les modifications' : 'Créer le plat' }}
+                {{ $isEditing ? 'Enregistrer les modifications' : 'Créer le Produit' }}
             </button>
         </div>
     </form>

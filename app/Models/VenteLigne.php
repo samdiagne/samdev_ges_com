@@ -11,8 +11,8 @@ class VenteLigne extends Model
 
     protected $fillable = [
         'vente_id',
-        'plat_id',
-        'nom_plat',
+        'produit_id',
+        'nom_produit',
         'prix_unitaire',
         'quantite',
         'remise',
@@ -35,8 +35,8 @@ class VenteLigne extends Model
         return $this->belongsTo(Vente::class, 'vente_id');
     }
 
-    public function plat(): BelongsTo
+    public function produit(): BelongsTo
     {
-        return $this->belongsTo(Plat::class, 'plat_id');
+        return $this->belongsTo(Produit::class, 'produit_id');
     }
 }

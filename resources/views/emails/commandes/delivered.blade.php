@@ -1,4 +1,4 @@
-<x-mail::message>
+﻿<x-mail::message>
 # 🎉 Commande livrée — Merci pour votre confiance !
 
 Bonjour **{{ $commande->nom_client }}**,
@@ -8,17 +8,17 @@ Votre commande **{{ $commande->reference }}** vient d'être marquée comme **liv
 ---
 
 <x-mail::table>
-| Plat | Qté | Prix |
+| Produit | Qté | Prix |
 |:--------|:---:|-----:|
 @foreach($commande->lignes as $item)
-| {{ $item->nom_plat }} | {{ $item->quantite }} | {{ number_format($item->total, 0, ',', ' ') }} FCFA |
+| {{ $item->nom_produit }} | {{ $item->quantite }} | {{ number_format($item->total, 0, ',', ' ') }} FCFA |
 @endforeach
 | **Total** | | **{{ number_format($commande->total, 0, ',', ' ') }} FCFA** |
 </x-mail::table>
 
 ---
 
-Votre avis compte beaucoup pour nous et pour nos futurs clients. Si vous êtes satisfait de vos achats, **laissez-nous un avis** sur chaque plat — cela ne prend que quelques secondes !
+Votre avis compte beaucoup pour nous et pour nos futurs clients. Si vous êtes satisfait de vos achats, **laissez-nous un avis** sur chaque Produit — cela ne prend que quelques secondes !
 
 <x-mail::button :url="route('compte.commandes')" color="success">
 ⭐ Laisser un avis 

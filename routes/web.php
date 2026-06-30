@@ -20,7 +20,7 @@ require __DIR__.'/auth.php';
 Route::prefix('shop')->name('shop.')->group(function () {
     Route::get('/',                        [App\Http\Controllers\Shop\HomeController::class, 'index'])->name('home');
     Route::get('/menu',                    [App\Http\Controllers\Shop\CatalogueController::class, 'index'])->name('catalogue');
-    Route::get('/plat/{slug}',             [App\Http\Controllers\Shop\CatalogueController::class, 'show'])->name('plat');
+    Route::get('/produit/{slug}',           [App\Http\Controllers\Shop\CatalogueController::class, 'show'])->name('produit');
     Route::get('/panier',                  [App\Http\Controllers\Shop\PanierController::class, 'index'])->name('panier');
     Route::get('/commande',                [App\Http\Controllers\Shop\CheckoutController::class, 'index'])->name('checkout');
     Route::post('/commande',               [App\Http\Controllers\Shop\CheckoutController::class, 'store'])->name('checkout.store');
@@ -82,12 +82,12 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/depenses', fn() => view('caisse.depenses.index'))->name('depenses.index');
     });
 
-    // ── Plats ─────────────────────────────────────────────────────────────
-    Route::get('/plats',                  fn() => view('plats.index'))->name('plats.index');
-    Route::get('/plats/create',           fn() => view('plats.create'))->name('plats.create');
-    Route::get('/plats/{plat}/edit',      function(\App\Models\Plat $plat) {
-        return view('plats.edit', compact('plat'));
-    })->name('plats.edit');
+    // ── Produits ──────────────────────────────────────────────────────────
+    Route::get('/produits',                    fn() => view('produits.index'))->name('produits.index');
+    Route::get('/produits/create',             fn() => view('produits.create'))->name('produits.create');
+    Route::get('/produits/{produit}/edit',     function(\App\Models\Produit $produit) {
+        return view('produits.edit', compact('produit'));
+    })->name('produits.edit');
 
     // ── Avis ──────────────────────────────────────────────────────────────
     Route::get('/avis',                    [AvisController::class, 'index'])->name('avis.index');

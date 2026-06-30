@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Vente;
 use App\Models\Depense;
 use App\Models\Achat;
-use App\Models\Plat;
+use App\Models\Produit;
 use App\Models\Parametre;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -134,17 +134,17 @@ class EtatController extends Controller
     // ── Bilan stocks ──────────────────────────────
     public function bilanStocks(Request $request)
     {
-        $plats = Plat::with('categorie')
+        $plats = Produit::with('categorie')
             ->where('est_actif', true)
             ->orderBy('categorie_id')
             ->orderBy('nom')
             ->get();
 
         $stats = [
-            'total_produits'    => $plats->count(),
-            'valeur_vente'      => $plats->sum(fn($p) => $p->stock * $p->prix_vente),
-            'ruptures'          => $plats->where('stock', '<=', 0)->where('sur_commande', false)->count(),
-            'stock_bas'         => $plats->filter(fn($p) =>
+            'total_produits' => $plats->count(),
+            'valeur_vente'   => $plats->sum(fn($p) => $p->stock * $p->prix_vente),
+            'ruptures'       => $plats->where('stock', '<=', 0)->where('sur_commande', false)->count(),
+            'stock_bas'      => $plats->filter(fn($p) =>
                 ! $p->sur_commande && $p->stock > 0 && $p->stock <= $p->seuil_alerte_stock
             )->count(),
         ];

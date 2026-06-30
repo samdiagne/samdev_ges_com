@@ -10,7 +10,7 @@ class MouvementStock extends Model
     protected $table = 'mouvements_stock';
 
     protected $fillable = [
-        'plat_id',
+        'produit_id',
         'user_id',
         'type',
         'source',
@@ -31,9 +31,9 @@ class MouvementStock extends Model
 
     // ── Relations ─────────────────────────────────
 
-    public function plat(): BelongsTo
+    public function produit(): BelongsTo
     {
-        return $this->belongsTo(Plat::class, 'plat_id');
+        return $this->belongsTo(Produit::class, 'produit_id');
     }
 
     public function user(): BelongsTo

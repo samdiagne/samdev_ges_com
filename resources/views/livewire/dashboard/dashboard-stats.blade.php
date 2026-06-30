@@ -1,4 +1,4 @@
-<div>
+﻿<div>
     {{-- ── Actions rapides --}}
     <div class="flex flex-wrap gap-2 mb-6">
         <a href="{{ route('caisse.pos') }}"
@@ -36,7 +36,7 @@
             Nouvelle dépense
         </a>
 
-        <a href="{{ route('plats.create') }}"
+        <a href="{{ route('produits.create') }}"
         class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold
                 bg-white border border-gray-200 text-dark hover:bg-gray-50 hover:border-gray-300
                 transition-all hover:-translate-y-0.5 shadow-sm">
@@ -44,7 +44,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M12 4v16M4 12h16"/>
             </svg>
-            Nouveau plat
+            Nouveau Produit
         </a>
     </div>
 
@@ -272,10 +272,10 @@
                     🔴 Rupture
                 </p>
                 <div class="space-y-2 mb-3">
-                    @foreach($alertes['stock_rupture'] as $plat)
+                    @foreach($alertes['stock_rupture'] as $produit)
                         <div class="flex items-center justify-between p-2 bg-red-50 rounded-xl">
-                            <p class="text-xs font-medium text-dark truncate">{{ $plat->nom }}</p>
-                            <span class="text-xs font-bold text-red-600 ml-2">{{ $plat->stock }}</span>
+                            <p class="text-xs font-medium text-dark truncate">{{ $produit->nom }}</p>
+                            <span class="text-xs font-bold text-red-600 ml-2">{{ $produit->stock }}</span>
                         </div>
                     @endforeach
                 </div>
@@ -286,11 +286,11 @@
                     🟠 Stock bas
                 </p>
                 <div class="space-y-2">
-                    @foreach($alertes['stock_faible'] as $plat)
+                    @foreach($alertes['stock_faible'] as $produit)
                         <div class="flex items-center justify-between p-2 bg-orange-50 rounded-xl">
-                            <p class="text-xs font-medium text-dark truncate">{{ $plat->nom }}</p>
+                            <p class="text-xs font-medium text-dark truncate">{{ $produit->nom }}</p>
                             <span class="text-xs font-bold text-orange-600 ml-2">
-                                {{ $plat->stock }}
+                                {{ $produit->stock }}
                             </span>
                         </div>
                     @endforeach
@@ -346,14 +346,14 @@
             </div>
         </div>
 
-        {{-- Top plats --}}
+        {{-- Top Produits --}}
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-bold text-dark">Top plats</h3>
+                <h3 class="text-sm font-bold text-dark">Top Produits</h3>
                 <span class="text-xs text-gray-400">ce mois</span>
             </div>
             <div class="space-y-3">
-                @forelse($recent['top_plats'] as $index => $item)
+                @forelse($recent['top_produits'] as $index => $item)
                     <div class="flex items-center gap-3">
                         <span class="w-6 h-6 rounded-lg flex items-center justify-center
                                      text-xs font-bold flex-shrink-0
@@ -364,7 +364,7 @@
                         </span>
                         <div class="flex-1 min-w-0">
                             <p class="text-xs font-semibold text-dark truncate">
-                                {{ $item->nom_plat }}
+                                {{ $item->nom_produit }}
                             </p>
                             <p class="text-xs text-gray-400">{{ $item->total_qty }} vendu(s)</p>
                         </div>

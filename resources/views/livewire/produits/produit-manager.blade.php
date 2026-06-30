@@ -1,10 +1,10 @@
-<div>
+﻿<div>
     {{-- Stats cards --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
             <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Total</p>
             <p class="text-2xl font-bold text-dark mt-1">{{ $stats['total'] }}</p>
-            <p class="text-xs text-gray-400 mt-1">plats</p>
+            <p class="text-xs text-gray-400 mt-1">Produits</p>
         </div>
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
             <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Actifs</p>
@@ -26,10 +26,10 @@
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
         <div>
-            <h3 class="text-lg font-bold text-dark">Plats</h3>
-            <p class="text-sm text-gray-400">{{ $plats->total() }} plat(s) trouvé(s)</p>
+            <h3 class="text-lg font-bold text-dark">Produits</h3>
+            <p class="text-sm text-gray-400">{{ $produits->total() }} Produit(s) trouvé(s)</p>
         </div>
-        <a href="{{ route('plats.create') }}"
+        <a href="{{ route('produits.create') }}"
            class="inline-flex items-center gap-2 bg-primary hover:bg-primary/90
                   text-white font-medium px-4 py-2.5 rounded-xl transition-all
                   shadow-lg shadow-primary/25 text-sm">
@@ -37,7 +37,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round"
                       stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
-            Nouveau plat
+            Nouveau Produit
         </a>
     </div>
 
@@ -52,7 +52,7 @@
                 </svg>
                 <input wire:model.live.debounce.300ms="search"
                        type="text"
-                       placeholder="Nom du plat..."
+                       placeholder="Nom du Produit..."
                        class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl
                               text-sm focus:outline-none focus:border-primary bg-gray-50"/>
             </div>
@@ -103,7 +103,7 @@
                 <thead>
                     <tr class="bg-gray-50 border-b border-gray-100">
                         <th class="text-left text-xs font-semibold text-gray-500
-                                   uppercase tracking-wider px-4 py-3">Plat</th>
+                                   uppercase tracking-wider px-4 py-3">Produit</th>
                         <th class="text-left text-xs font-semibold text-gray-500
                                    uppercase tracking-wider px-4 py-3 hidden md:table-cell">
                             Catégorie
@@ -119,15 +119,15 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
-                    @forelse($plats as $plat)
+                    @forelse($produits as $produit)
                         <tr class="hover:bg-gray-50/50 transition-colors">
-                            {{-- Plat --}}
+                            {{-- Produit --}}
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-xl bg-gray-100 flex-shrink-0
                                                 overflow-hidden">
-                                        @if($plat->image_principale)
-                                            <img src="{{ Storage::url($plat->image_principale) }}"
+                                        @if($produit->image_principale)
+                                            <img src="{{ Storage::url($produit->image_principale) }}"
                                                  class="w-full h-full object-cover"/>
                                         @else
                                             <div class="w-full h-full flex items-center
@@ -144,10 +144,10 @@
                                     </div>
                                     <div class="min-w-0 max-w-xs">
                                         <p class="text-sm font-semibold text-dark break-words">
-                                            {{ $plat->nom }}
+                                            {{ $produit->nom }}
                                         </p>
                                         <p class="text-xs text-gray-400">
-                                            {{ $plat->categorie->nom ?? '—' }}
+                                            {{ $produit->categorie->nom ?? '—' }}
                                         </p>
                                     </div>
                                 </div>
@@ -157,71 +157,71 @@
                             <td class="px-4 py-3 hidden md:table-cell">
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-lg
                                              bg-accent/10 text-primary text-xs font-medium">
-                                    {{ $plat->categorie->nom ?? '—' }}
+                                    {{ $produit->categorie->nom ?? '—' }}
                                 </span>
                             </td>
 
                             {{-- Prix --}}
                             <td class="px-4 py-3 text-right">
                                 <p class="text-sm font-bold text-dark">
-                                    {{ number_format($plat->prix_vente, 0, ',', ' ') }}
+                                    {{ number_format($produit->prix_vente, 0, ',', ' ') }}
                                     <span class="text-xs font-normal text-gray-400">FCFA</span>
                                 </p>
-                                @if($plat->estEnPromotion())
+                                @if($produit->estEnPromotion())
                                     <p class="text-xs text-gray-400 line-through">
-                                        {{ number_format($plat->ancien_prix, 0, ',', ' ') }}
+                                        {{ number_format($produit->ancien_prix, 0, ',', ' ') }}
                                     </p>
                                 @endif
                             </td>
 
                             {{-- Stock --}}
                             <td class="px-4 py-3 text-center">
-                                @if($plat->sur_commande)
+                                @if($produit->sur_commande)
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1
                                                  bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
                                         <span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
                                         Sur commande
                                     </span>
-                                @elseif($plat->stock <= 0)
+                                @elseif($produit->stock <= 0)
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1
                                                  bg-red-100 text-red-700 rounded-full text-xs font-medium">
                                         <span class="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
                                         Rupture
                                     </span>
-                                @elseif($plat->stock <= $plat->seuil_alerte_stock)
+                                @elseif($produit->stock <= $produit->seuil_alerte_stock)
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1
                                                  bg-orange-100 text-orange-700 rounded-full text-xs font-medium">
                                         <span class="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
-                                        {{ $plat->stock }}
+                                        {{ $produit->stock }}
                                     </span>
                                 @else
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1
                                                  bg-green-100 text-green-700 rounded-full text-xs font-medium">
                                         <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                                        {{ $plat->stock }}
+                                        {{ $produit->stock }}
                                     </span>
                                 @endif
                             </td>
 
                             {{-- Statut --}}
                             <td class="px-4 py-3 text-center">
-                                <button wire:click="toggleStatus({{ $plat->id }})"
+                                <button wire:click="toggleStatus({{ $produit->id }})"
                                         class="inline-flex items-center gap-1.5 px-2.5 py-1
                                                rounded-full text-xs font-medium transition-all
-                                               {{ $plat->est_actif
+                                               {{ $produit->est_actif
                                                   ? 'bg-green-100 text-green-700 hover:bg-green-200'
                                                   : 'bg-gray-100 text-gray-500 hover:bg-gray-200' }}">
                                     <span class="w-1.5 h-1.5 rounded-full
-                                                 {{ $plat->est_actif ? 'bg-green-500' : 'bg-gray-400' }}">
+                                                 {{ $produit->est_actif ? 'bg-green-500' : 'bg-gray-400' }}">
                                     </span>
-                                    {{ $plat->est_actif ? 'Actif' : 'Inactif' }}
+                                    {{ $produit->est_actif ? 'Actif' : 'Inactif' }}
                                 </button>
                             </td>
 
                             {{-- Actions --}}
                             <td class="px-4 py-3 sticky right-0 bg-white border-l border-gray-100">
                                 <div class="flex items-center justify-end gap-1">
-                                    <a href="{{ route('plats.edit', $plat->id) }}"
+                                    <a href="{{ route('produits.edit', $produit->id) }}"
                                        class="w-8 h-8 flex items-center justify-center rounded-lg
                                               text-gray-400 hover:text-primary hover:bg-primary/10
                                               transition-colors">
@@ -234,7 +234,7 @@
                                                      15H9v-2.828l8.586-8.586z"/>
                                         </svg>
                                     </a>
-                                    <button wire:click="confirmDelete({{ $plat->id }})"
+                                    <button wire:click="confirmDelete({{ $produit->id }})"
                                             class="w-8 h-8 flex items-center justify-center rounded-lg
                                                    text-gray-400 hover:text-red-500 hover:bg-red-50
                                                    transition-colors">
@@ -265,7 +265,7 @@
                                         </svg>
                                     </div>
                                     <p class="text-sm font-medium text-gray-500">
-                                        Aucun plat trouvé
+                                        Aucun Produit trouvé
                                     </p>
                                 </div>
                             </td>
@@ -275,9 +275,9 @@
             </table>
         </div>
 
-        @if($plats->hasPages())
+        @if($produits->hasPages())
             <div class="px-4 py-3 border-t border-gray-100">
-                {{ $plats->links('vendor.pagination.tailwind') }}
+                {{ $produits->links('vendor.pagination.tailwind') }}
             </div>
         @endif
     </div>
@@ -299,12 +299,12 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-dark">Supprimer le plat</h3>
+                        <h3 class="text-base font-bold text-dark">Supprimer le Produit</h3>
                         <p class="text-sm text-gray-400">Cette action est irréversible</p>
                     </div>
                 </div>
                 <p class="text-sm text-gray-600 mb-6">
-                    Êtes-vous sûr de vouloir supprimer ce plat du menu ?
+                    Êtes-vous sûr de vouloir supprimer ce Produit du menu ?
                 </p>
                 <div class="flex items-center justify-end gap-3">
                     <button wire:click="$set('afficherModalSuppression', false)"

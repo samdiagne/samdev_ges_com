@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Facture ' . $vente->facture?->numero_facture)
 @section('page-title', 'Facture ' . $vente->facture?->numero_facture)
@@ -110,7 +110,7 @@
                                     bg-gray-50 rounded-xl">
                             <div>
                                 <p class="text-sm font-medium text-dark">
-                                    {{ $item->nom_plat }}
+                                    {{ $item->nom_produit }}
                                 </p>
                                 <p class="text-xs text-gray-400">
                                     {{ number_format($item->prix_unitaire, 0, ',', ' ') }}

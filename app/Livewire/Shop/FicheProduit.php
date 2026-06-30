@@ -3,29 +3,27 @@
 namespace App\Livewire\Shop;
 
 use Livewire\Component;
-use App\Models\Plat;
+use App\Models\Produit;
 use App\Models\Parametre;
 
-class FichePlat extends Component
+class FicheProduit extends Component
 {
-    public Plat $plat;
+    public Produit $produit;
 
-    // Variables alignées sur la vue
     public int    $quantity    = 1;
     public int    $activeImage = 0;
     public bool   $added       = false;
     public array  $allImages   = [];
 
-    public function mount(Plat $plat): void
+    public function mount(Produit $produit): void
     {
-        $this->plat = $plat;
+        $this->produit = $produit;
 
-        // Construire la liste de toutes les images (principale + galerie)
         $images = [];
-        if ($plat->image_principale) {
-            $images[] = $plat->image_principale;
+        if ($produit->image_principale) {
+            $images[] = $produit->image_principale;
         }
-        foreach ($plat->images as $img) {
+        foreach ($produit->images as $img) {
             $images[] = $img->chemin;
         }
         $this->allImages = $images;
@@ -33,7 +31,7 @@ class FichePlat extends Component
 
     public function incrementQty(): void
     {
-        if ($this->plat->sur_commande || $this->quantity < $this->plat->stock) {
+        if ($this->produit->sur_commande || $this->quantity < $this->produit->stock) {
             $this->quantity++;
         }
     }
@@ -54,23 +52,23 @@ class FichePlat extends Component
 
     public function addToCart(): void
     {
-        if (! $this->plat->sur_commande && $this->plat->stock <= 0) return;
+        if (! $this->produit->sur_commande && $this->produit->stock <= 0) return;
 
         $panier = session('panier', []);
-        $cle    = 'plat_' . $this->plat->id;
+        $cle    = 'produit_' . $this->produit->id;
 
         if (isset($panier[$cle])) {
             $nouvelle = $panier[$cle]['quantite'] + $this->quantity;
-            $panier[$cle]['quantite'] = $this->plat->sur_commande ? $nouvelle : min($nouvelle, $this->plat->stock);
+            $panier[$cle]['quantite'] = $this->produit->sur_commande ? $nouvelle : min($nouvelle, $this->produit->stock);
         } else {
             $panier[$cle] = [
-                'plat_id'  => $this->plat->id,
-                'nom'      => $this->plat->nom,
-                'prix'     => (float) $this->plat->prix_vente,
-                'image'    => $this->plat->image_principale,
-                'slug'     => $this->plat->slug,
-                'quantite' => $this->quantity,
-                'stock'    => $this->plat->stock,
+                'produit_id' => $this->produit->id,
+                'nom'        => $this->produit->nom,
+                'prix'       => (float) $this->produit->prix_vente,
+                'image'      => $this->produit->image_principale,
+                'slug'       => $this->produit->slug,
+                'quantite'   => $this->quantity,
+                'stock'      => $this->produit->stock,
             ];
         }
 
@@ -84,6 +82,6 @@ class FichePlat extends Component
     public function render()
     {
         $parametres = Parametre::first();
-        return view('livewire.shop.fiche-plat', compact('parametres'));
+        return view('livewire.shop.fiche-produit', compact('parametres'));
     }
 }

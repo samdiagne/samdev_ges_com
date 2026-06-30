@@ -3,7 +3,7 @@
 namespace App\Imports;
 
 use App\Models\Categorie;
-use App\Models\Plat;
+use App\Models\Produit;
 use App\Models\Fournisseur;
 use Illuminate\Support\Str;
 use Illuminate\Support\Collection;
@@ -89,7 +89,7 @@ class ProduitsImport implements ToCollection
             $surCommandeRaw = trim($this->get($data, $map, 'sur_commande'));
             $surCommande    = in_array(mb_strtolower($surCommandeRaw), ['1', 'oui', 'yes', 'true', 'x'], true);
 
-            $platData = [
+            $produitData = [
                 'categorie_id'        => $categorie->id,
                 'nom'                 => $nom,
                 'slug'                => Str::slug($nom),
@@ -103,13 +103,13 @@ class ProduitsImport implements ToCollection
                 'est_actif'           => true,
             ];
 
-            $existing = Plat::withTrashed()->where('nom', $nom)->first();
+            $existing = Produit::withTrashed()->where('nom', $nom)->first();
             if ($existing) {
                 $existing->restore();
-                $existing->update($platData);
+                $existing->update($produitData);
                 $this->updated++;
             } else {
-                Plat::create($platData);
+                Produit::create($produitData);
                 $this->created++;
             }
         }

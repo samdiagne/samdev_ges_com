@@ -5,15 +5,14 @@ namespace App\Livewire\Shop;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Avis;
-use App\Models\Plat;
+use App\Models\Produit;
 
-class PlatReviews extends Component
+class ProduitReviews extends Component
 {
     use WithPagination;
 
-    public Plat $plat;
+    public Produit $produit;
 
-    // Variables alignées sur la vue
     public int    $rating      = 5;
     public string $comment     = '';
     public string $authorName  = '';
@@ -30,9 +29,9 @@ class PlatReviews extends Component
         ];
     }
 
-    public function mount(Plat $plat): void
+    public function mount(Produit $produit): void
     {
-        $this->plat = $plat;
+        $this->produit = $produit;
         if (auth()->check()) {
             $this->authorName  = auth()->user()->name;
             $this->authorEmail = auth()->user()->email ?? '';
@@ -49,8 +48,8 @@ class PlatReviews extends Component
         $this->validate();
 
         Avis::create([
-            'plat_id'        => $this->plat->id,
-            'user_id' => auth()->id(),
+            'produit_id'     => $this->produit->id,
+            'user_id'        => auth()->id(),
             'nom_auteur'     => $this->authorName,
             'note'           => $this->rating,
             'commentaire'    => $this->comment,
@@ -65,24 +64,23 @@ class PlatReviews extends Component
 
     public function render()
     {
-        $avis = Avis::where('plat_id', $this->plat->id)
+        $avis = Avis::where('produit_id', $this->produit->id)
             ->where('est_approuve', true)
             ->latest()
             ->paginate(5);
 
-        $noteMoyenne    = round($this->plat->avisApprouves()->avg('note') ?? 0, 1);
-        $totalApprouves = $this->plat->avisApprouves()->count();
+        $noteMoyenne    = round($this->produit->avisApprouves()->avg('note') ?? 0, 1);
+        $totalApprouves = $this->produit->avisApprouves()->count();
 
-        // Répartition par note (pour les étoiles)
         $ratingCounts = [];
         for ($i = 5; $i >= 1; $i--) {
-            $ratingCounts[$i] = Avis::where('plat_id', $this->plat->id)
+            $ratingCounts[$i] = Avis::where('produit_id', $this->produit->id)
                 ->where('est_approuve', true)
                 ->where('note', $i)
                 ->count();
         }
 
-        return view('livewire.shop.plat-reviews',
+        return view('livewire.shop.produit-reviews',
             compact('avis', 'noteMoyenne', 'totalApprouves', 'ratingCounts'));
     }
 }

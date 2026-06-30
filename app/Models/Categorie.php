@@ -44,14 +44,14 @@ class Categorie extends Model
 
     // ── Relations ─────────────────────────────────
 
-    public function plats(): HasMany
+    public function produits(): HasMany
     {
-        return $this->hasMany(Plat::class, 'categorie_id');
+        return $this->hasMany(Produit::class, 'categorie_id');
     }
 
-    public function platsActifs(): HasMany
+    public function produitsActifs(): HasMany
     {
-        return $this->hasMany(Plat::class, 'categorie_id')
+        return $this->hasMany(Produit::class, 'categorie_id')
             ->where('est_actif', true);
     }
 }

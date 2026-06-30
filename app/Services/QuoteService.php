@@ -7,7 +7,7 @@ use App\Models\Vente;
 use App\Models\VenteLigne;
 use App\Models\Facture;
 use App\Models\Client;
-use App\Models\Plat;
+use App\Models\Produit;
 use App\Models\Parametre;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
@@ -104,16 +104,16 @@ class QuoteService
             foreach ($quote->items as $item) {
                 VenteLigne::create([
                     'vente_id'      => $vente->id,
-                    'plat_id'       => $item->plat_id,
-                    'nom_plat'      => $item->description,
+                    'produit_id'    => $item->produit_id,
+                    'nom_produit'   => $item->description,
                     'prix_unitaire' => $item->prix_unitaire,
                     'quantite'      => $item->quantite,
                     'remise'        => $item->remise,
                     'total'         => $item->total,
                 ]);
 
-                if ($item->plat_id) {
-                    $plat = Plat::find($item->plat_id);
+                if ($item->produit_id) {
+                    $plat = Produit::find($item->produit_id);
                     if ($plat) {
                         $this->stockService->decrementerStock(
                             $plat, $item->quantite,

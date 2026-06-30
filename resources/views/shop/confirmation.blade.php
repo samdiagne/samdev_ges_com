@@ -1,4 +1,4 @@
-@extends('layouts.shop')
+﻿@extends('layouts.shop')
 @section('title', 'Commande confirmée — ' . $commande->reference)
 
 @section('content')
@@ -39,7 +39,7 @@
             @foreach($commande->lignes as $ligne)
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-600">
-                        {{ $ligne->nom_plat }}
+                        {{ $ligne->nom_produit }}
                         <span class="text-gray-400">×{{ $ligne->quantite }}</span>
                     </span>
                     <span class="font-semibold">

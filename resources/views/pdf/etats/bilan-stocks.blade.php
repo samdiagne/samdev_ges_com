@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8"/>
@@ -62,7 +62,7 @@
     {{-- Stats --}}
     <div class="stats-grid">
         <div class="stat-box">
-            <div class="stat-label">Plats</div>
+            <div class="stat-label">Produits</div>
             <div class="stat-value">{{ $stats['total_produits'] }}</div>
         </div>
         <div class="stat-box">
@@ -79,11 +79,11 @@
         </div>
     </div>
 
-    {{-- Table plats --}}
+    {{-- Table Produits --}}
     <table>
         <thead>
             <tr>
-                <th style="width:30%">Plat</th>
+                <th style="width:30%">Produit</th>
                 <th style="width:18%">Catégorie</th>
                 <th class="right" style="width:18%">Prix</th>
                 <th class="center" style="width:10%">Stock</th>
@@ -92,31 +92,31 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($plats as $plat)
+            @foreach($produits as $produit)
                 <tr>
-                    <td><strong>{{ $plat->nom }}</strong></td>
-                    <td>{{ $plat->categorie?->nom ?? '—' }}</td>
-                    <td class="right">{{ number_format($plat->prix_vente, 0, ',', ' ') }}</td>
+                    <td><strong>{{ $produit->nom }}</strong></td>
+                    <td>{{ $produit->categorie?->nom ?? '—' }}</td>
+                    <td class="right">{{ number_format($produit->prix_vente, 0, ',', ' ') }}</td>
                     <td class="center">
-                        @if($plat->sur_commande)
+                        @if($produit->sur_commande)
                             <span class="badge-ok">—</span>
-                        @elseif($plat->stock <= 0)
-                            <span class="badge-out">{{ $plat->stock }}</span>
-                        @elseif($plat->estStockFaible())
-                            <span class="badge-low">{{ $plat->stock }}</span>
+                        @elseif($produit->stock <= 0)
+                            <span class="badge-out">{{ $produit->stock }}</span>
+                        @elseif($produit->estStockFaible())
+                            <span class="badge-low">{{ $produit->stock }}</span>
                         @else
-                            <span class="badge-ok">{{ $plat->stock }}</span>
+                            <span class="badge-ok">{{ $produit->stock }}</span>
                         @endif
                     </td>
                     <td class="right">
-                        {{ $plat->sur_commande ? '—' : number_format($plat->stock * $plat->prix_vente, 0, ',', ' ') }}
+                        {{ $produit->sur_commande ? '—' : number_format($produit->stock * $produit->prix_vente, 0, ',', ' ') }}
                     </td>
                     <td class="center">
-                        @if($plat->sur_commande)
+                        @if($produit->sur_commande)
                             <span style="color:#3B82F6;font-weight:bold;">Sur cde</span>
-                        @elseif($plat->stock <= 0)
+                        @elseif($produit->stock <= 0)
                             <span class="badge-out">Rupture</span>
-                        @elseif($plat->estStockFaible())
+                        @elseif($produit->estStockFaible())
                             <span class="badge-low">Bas</span>
                         @else
                             <span class="badge-ok">OK</span>

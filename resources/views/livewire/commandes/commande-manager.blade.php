@@ -1,4 +1,4 @@
-<div>
+﻿<div>
     {{-- Stats --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         @foreach([
@@ -295,7 +295,7 @@
                             @foreach($voir->lignes as $item)
                                 <div class="flex justify-between text-sm">
                                     <span class="text-gray-600">
-                                        {{ $item->nom_plat }}
+                                        {{ $item->nom_produit }}
                                         <span class="text-gray-400">
                                             x{{ $item->quantite }}
                                         </span>

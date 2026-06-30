@@ -1,4 +1,4 @@
-<div>
+﻿<div>
     {{-- ── Header ───────────────────────────────────── --}}
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
@@ -85,7 +85,7 @@
                         </th>
                         <th class="text-center text-xs font-semibold text-gray-500
                                    uppercase tracking-wider px-4 py-3">
-                            Plats
+                            Produits
                         </th>
                         <th class="text-center text-xs font-semibold text-gray-500
                                    uppercase tracking-wider px-4 py-3">
@@ -137,11 +137,11 @@
                                 </p>
                             </td>
 
-                            {{-- Nb plats --}}
+                            {{-- Nb Produits --}}
                             <td class="px-4 py-3 text-center">
                                 <span class="inline-flex items-center justify-center w-7 h-7
                                              bg-accent/10 text-primary text-xs font-bold rounded-lg">
-                                    {{ $category->plats_count }}
+                                    {{ $category->Produits_count }}
                                 </span>
                             </td>
 
@@ -274,7 +274,7 @@
                         </label>
                         <input wire:model="nom"
                                type="text"
-                               placeholder="Ex: Plats principaux"
+                               placeholder="Ex: Produits principaux"
                                class="w-full px-3 py-2.5 border rounded-xl text-sm
                                       focus:outline-none transition-colors
                                       {{ $errors->has('nom')
@@ -404,7 +404,7 @@
                 </div>
                 <p class="text-sm text-gray-600 mb-6">
                     Êtes-vous sûr de vouloir supprimer cette catégorie ?
-                    Les plats associés ne seront pas supprimés.
+                    Les Produits associés ne seront pas supprimés.
                 </p>
                 <div class="flex items-center justify-end gap-3">
                     <button wire:click="$set('afficherModalSuppression', false)"

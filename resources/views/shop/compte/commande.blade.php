@@ -1,4 +1,4 @@
-@extends('layouts.shop')
+﻿@extends('layouts.shop')
 @section('title', 'Commande ' . $commande->reference)
 
 @section('content')
@@ -97,17 +97,17 @@
         </div>
     @endif
 
-    {{-- Plats commandés --}}
+    {{-- Produits commandés --}}
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
         <h2 class="text-sm font-bold text-dark mb-4">Articles commandés</h2>
         <div class="space-y-4">
             @foreach($commande->lignes as $ligne)
                 <div class="flex items-center justify-between gap-4">
                     <div class="flex items-center gap-3 min-w-0">
-                        {{-- Image plat --}}
-                        @if($ligne->plat?->image_principale)
-                            <img src="{{ Storage::url($ligne->plat->image_principale) }}"
-                                 alt="{{ $ligne->nom_plat }}"
+                        {{-- Image Produit --}}
+                        @if($ligne->Produit?->image_principale)
+                            <img src="{{ Storage::url($ligne->Produit->image_principale) }}"
+                                 alt="{{ $ligne->nom_produit }}"
                                  class="w-14 h-14 rounded-xl object-contain bg-gray-50 border border-gray-100 shrink-0 p-1"/>
                         @else
                             <div class="w-14 h-14 rounded-xl bg-gray-100 shrink-0 flex items-center
@@ -117,12 +117,12 @@
                         @endif
 
                         <div class="min-w-0">
-                            {{-- Nom avec lien si le plat existe encore --}}
-                            @if($ligne->plat?->slug)
-                                <a href="{{ route('shop.plat', $ligne->plat->slug) }}"
+                            {{-- Nom avec lien si le Produit existe encore --}}
+                            @if($ligne->Produit?->slug)
+                                <a href="{{ route('shop.produit', $ligne->Produit->slug) }}"
                                    class="text-sm font-medium text-dark hover:text-primary transition-colors
                                           truncate block group">
-                                    {{ $ligne->nom_plat }}
+                                    {{ $ligne->nom_produit }}
                                     <svg class="w-3 h-3 inline-block ml-1 opacity-0 group-hover:opacity-100
                                                 transition-opacity -mt-0.5 text-primary"
                                          fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,7 +131,7 @@
                                     </svg>
                                 </a>
                             @else
-                                <p class="text-sm font-medium text-dark truncate">{{ $ligne->nom_plat }}</p>
+                                <p class="text-sm font-medium text-dark truncate">{{ $ligne->nom_produit }}</p>
                             @endif
 
                             <p class="text-xs text-gray-400 mt-0.5">
@@ -139,8 +139,8 @@
                             </p>
 
                             {{-- Lien laisser un avis --}}
-                            @if($ligne->plat?->slug && $commande->statut === 'livree')
-                                <a href="{{ route('shop.plat', $ligne->plat->slug) }}#avis"
+                            @if($ligne->Produit?->slug && $commande->statut === 'livree')
+                                <a href="{{ route('shop.produit', $ligne->Produit->slug) }}#avis"
                                    class="inline-flex items-center gap-1 text-[11px] text-yellow-600
                                           hover:text-yellow-700 font-medium mt-1 transition-colors">
                                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">

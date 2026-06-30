@@ -4,7 +4,7 @@ namespace App\Livewire\Shop;
 
 use Livewire\Component;
 use Livewire\Attributes\On;
-use App\Models\Plat;
+use App\Models\Produit;
 use App\Models\Parametre;
 
 class CartDrawer extends Component
@@ -61,8 +61,8 @@ class CartDrawer extends Component
         $panier = session('panier', []);
         if (! isset($panier[$key])) return;
 
-        $plat = Plat::find($panier[$key]['plat_id'] ?? null);
-        if ($plat && $panier[$key]['quantite'] < $plat->stock) {
+        $produit = Produit::find($panier[$key]['produit_id'] ?? null);
+        if ($produit && $panier[$key]['quantite'] < $produit->stock) {
             $panier[$key]['quantite']++;
         }
         session(['panier' => $panier]);

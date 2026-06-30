@@ -1,4 +1,4 @@
-<div class="mt-12 space-y-8">
+﻿<div class="mt-12 space-y-8">
 
     {{-- ── Résumé notes ── --}}
     <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-8">
@@ -233,7 +233,7 @@
                         Votre avis <span class="text-red-500">*</span>
                     </label>
                     <textarea wire:model="comment" rows="4"
-                              placeholder="Partagez votre expérience avec ce plat..."
+                              placeholder="Partagez votre expérience avec ce Produit..."
                               class="w-full px-3 py-2.5 border rounded-xl text-sm
                                      focus:outline-none transition-colors resize-none
                                      {{ $errors->has('comment')

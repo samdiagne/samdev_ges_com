@@ -1,4 +1,4 @@
-<div>
+﻿<div>
     {{-- Stats --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
@@ -286,7 +286,7 @@
                                             bg-gray-50 rounded-xl">
                                     <div class="flex-1 min-w-0">
                                         <p class="text-sm font-medium text-dark truncate">
-                                            {{ $item->nom_plat }}
+                                            {{ $item->nom_produit }}
                                         </p>
                                         <p class="text-xs text-gray-400">
                                             {{ number_format($item->prix_unitaire, 0, ',', ' ') }}

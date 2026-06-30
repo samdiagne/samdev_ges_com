@@ -3,7 +3,7 @@
 namespace App\Livewire\Caisse;
 
 use Livewire\Component;
-use App\Models\Plat;
+use App\Models\Produit;
 use App\Models\Client;
 use App\Models\Categorie;
 use App\Services\VenteService;
@@ -51,7 +51,7 @@ class PointOfSale extends Component
 
     public function loadProducts(): void
     {
-        $this->plats = Plat::where('est_actif', true)
+        $this->plats = Produit::where('est_actif', true)
             ->where(fn($q) => $q->where('stock', '>', 0)->orWhere('sur_commande', true))
             ->with('categorie')
             ->when($this->filtreCategorie, fn($q) =>
@@ -95,7 +95,7 @@ class PointOfSale extends Component
         }
 
         if ($cleTrouvee !== null) {
-            $plat = Plat::find($platId);
+            $plat = Produit::find($platId);
             if (! $plat->sur_commande && $this->panier[$cleTrouvee]['quantite'] >= $plat->stock) {
                 session()->flash('pos_error', 'Stock insuffisant !'); return;
             }
@@ -104,7 +104,7 @@ class PointOfSale extends Component
             $this->recalcTotals();
             return;
         } else {
-            $plat = Plat::find($platId);
+            $plat = Produit::find($platId);
             if (! $plat || (! $plat->sur_commande && $plat->stock <= 0)) {
                 session()->flash('pos_error', 'Plat indisponible !'); return;
             }
@@ -281,7 +281,7 @@ class PointOfSale extends Component
     public function render()
     {
         $categories = Categorie::where('est_active', true)
-            ->whereHas('plats', fn($q) => $q->where('est_actif', true)->where(fn($sq) => $sq->where('stock', '>', 0)->orWhere('sur_commande', true)))
+            ->whereHas('produits', fn($q) => $q->where('est_actif', true)->where(fn($sq) => $sq->where('stock', '>', 0)->orWhere('sur_commande', true)))
             ->get(['id', 'nom']);
         return view('livewire.caisse.point-of-sale', compact('categories'));
     }

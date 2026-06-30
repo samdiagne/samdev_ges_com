@@ -68,7 +68,7 @@ class CommandeManager extends Component
 
     public function convertToSale(int $commandeId): void
     {
-        $commande = Commande::with('lignes.plat')->findOrFail($commandeId);
+        $commande = Commande::with('lignes.produit')->findOrFail($commandeId);
 
         if ($commande->vente_id) {
             session()->flash('info', 'Cette commande a déjà été convertie en vente.');
@@ -108,17 +108,17 @@ class CommandeManager extends Component
                 foreach ($commande->lignes as $ligne) {
                     VenteLigne::create([
                         'vente_id'      => $vente->id,
-                        'plat_id'       => $ligne->plat_id,
-                        'nom_plat'      => $ligne->nom_plat,
+                        'produit_id'    => $ligne->produit_id,
+                        'nom_produit'   => $ligne->nom_produit,
                         'prix_unitaire' => $ligne->prix_unitaire,
                         'quantite'      => $ligne->quantite,
                         'remise'        => 0,
                         'total'         => $ligne->total,
                     ]);
 
-                    if ($ligne->plat) {
+                    if ($ligne->produit) {
                         $stockSvc->decrementerStock(
-                            $ligne->plat, $ligne->quantite, 'vente', $vente->id,
+                            $ligne->produit, $ligne->quantite, 'vente', $vente->id,
                             'Vente en ligne #' . $commande->reference
                         );
                     }

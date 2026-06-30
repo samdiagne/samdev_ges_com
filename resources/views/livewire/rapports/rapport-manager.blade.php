@@ -1,4 +1,4 @@
-<div>
+﻿<div>
     {{-- Filtres --}}
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-6">
         <div class="flex flex-wrap items-end gap-4">
@@ -22,7 +22,7 @@
                 border-gray-100 shadow-sm p-1.5 w-fit flex-wrap">
         @foreach([
             'ventes'     => '📊 Ventes',
-            'plats'      => '🍽️ Plats',
+            'Produits'      => '🍽️ Produits',
             'clients'    => '👥 Clients',
             'achats'     => '📦 Achats',
             'tresorerie' => '💰 Trésorerie',
@@ -97,8 +97,8 @@
         @endif
     @endif
 
-    {{-- ══ TAB PLATS ══ --}}
-    @if($typeRapport === 'plats' && $rapport)
+    {{-- ══ TAB Produits ══ --}}
+    @if($typeRapport === 'Produits' && $rapport)
         <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
                 <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">CA Total</p>
@@ -115,14 +115,14 @@
 
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
             <div class="px-4 py-3 border-b border-gray-100">
-                <h3 class="text-sm font-bold text-dark">Top Plats</h3>
+                <h3 class="text-sm font-bold text-dark">Top Produits</h3>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full">
                     <thead>
                         <tr class="bg-gray-50 border-b border-gray-100">
                             <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">#</th>
-                            <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">Plat</th>
+                            <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">Produit</th>
                             <th class="text-center text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">Quantité</th>
                             <th class="text-right text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">CA</th>
                         </tr>
@@ -131,7 +131,7 @@
                         @forelse($rapport['lignes'] as $i => $ligne)
                             <tr class="hover:bg-gray-50/50">
                                 <td class="px-4 py-3 text-xs text-gray-400">{{ $i + 1 }}</td>
-                                <td class="px-4 py-3 text-sm font-medium text-dark">{{ $ligne->nom_plat }}</td>
+                                <td class="px-4 py-3 text-sm font-medium text-dark">{{ $ligne->nom_produit }}</td>
                                 <td class="px-4 py-3 text-center text-sm text-dark">{{ $ligne->total_qte }}</td>
                                 <td class="px-4 py-3 text-right text-sm font-bold text-primary">
                                     {{ number_format($ligne->total_ca, 0, ',', ' ') }} FCFA

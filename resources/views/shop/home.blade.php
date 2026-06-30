@@ -1,14 +1,14 @@
-@extends('layouts.shop')
+﻿@extends('layouts.shop')
 
 @section('title', $parametres->nom . ' — Restaurant & Livraison à Dakar')
-@section('description', 'Découvrez nos plats faits maison à Dakar. Commande en ligne, livraison rapide, qualité garantie.')
+@section('description', 'Découvrez nos Produits faits maison à Dakar. Commande en ligne, livraison rapide, qualité garantie.')
 
 @section('content')
 
 {{-- ── HERO ───────────────────────────────── --}}
 @php
-    $heroPlats = $misEnAvant->take(3);
-    $platVedette = $heroPlats->first();
+    $heroProduits = $misEnAvant->take(3);
+    $platVedette = $heroProduits->first();
     $carouselImages = $misEnAvant->filter(fn($p) => $p->image_principale)->pluck('image_principale')->values();
     $avisStats = App\Models\Avis::where('est_approuve', true)->selectRaw('COUNT(*) as total, ROUND(AVG(note), 1) as moyenne')->first();
     $avisMoyenne = $avisStats->moyenne ?? null;
@@ -36,7 +36,7 @@
                 <h1 class="text-[1.85rem] sm:text-[2.5rem] md:text-[3rem] lg:text-[3.5rem] xl:text-[4rem]
                            font-extrabold leading-[1.1] mb-4 sm:mb-5 tracking-tight text-dark">
                     Commandez<br/>
-                    Vos Plats<br/>
+                    Vos Produits<br/>
                     <span style="color: #F27B20;" class="italic">Préférés.</span>
                 </h1>
 
@@ -137,7 +137,7 @@
                                     lg:w-[360px] lg:h-[360px] xl:w-[400px] xl:h-[400px]">
                             <template x-for="(img, index) in images" :key="index">
                                 <img :src="img"
-                                     alt="Plat vedette"
+                                     alt="Produit vedette"
                                      class="absolute inset-0 w-full h-full object-contain
                                             drop-shadow-[0_20px_50px_rgba(242,123,32,0.2)]
                                             transition-opacity duration-1000 ease-in-out"
@@ -172,7 +172,7 @@
                          style="background: linear-gradient(135deg, rgba(242,123,32,0.08), rgba(242,123,32,0.03));">
                         <div class="text-center">
                             <span class="text-5xl sm:text-6xl">🍽️</span>
-                            <p class="text-gray-400 text-xs font-medium mt-2">Plat vedette</p>
+                            <p class="text-gray-400 text-xs font-medium mt-2">Produit vedette</p>
                         </div>
                     </div>
                 @endif
@@ -261,15 +261,15 @@
         {{-- Track : items dupliqués pour la boucle infinie --}}
         <div x-ref="inner" class="flex gap-3 sm:gap-4 py-2" style="width: max-content; will-change: transform;">
             @foreach([$platCarousel, $platCarousel] as $batch)
-                @foreach($batch as $plat)
-                    <a href="{{ route('shop.plat', $plat->slug) }}"
+                @foreach($batch as $produit)
+                    <a href="{{ route('shop.produit', $produit->slug) }}"
                        class="group flex-shrink-0 w-40 sm:w-52 bg-white rounded-2xl border
                               border-gray-100 overflow-hidden shadow-sm hover:shadow-lg
                               hover:-translate-y-1 transition-all duration-300">
                         <div class="aspect-square bg-gray-50 overflow-hidden">
-                            @if($plat->image_principale)
-                                <img src="{{ Storage::url($plat->image_principale) }}"
-                                     alt="{{ $plat->nom }}"
+                            @if($produit->image_principale)
+                                <img src="{{ Storage::url($produit->image_principale) }}"
+                                     alt="{{ $produit->nom }}"
                                      loading="lazy"
                                      class="w-full h-full object-cover group-hover:scale-105 transition duration-500"/>
                             @else
@@ -280,13 +280,13 @@
                         </div>
                         <div class="p-2.5 sm:p-3">
                             <p class="text-[10px] sm:text-xs text-primary font-medium truncate">
-                                {{ $plat->categorie->nom ?? '' }}
+                                {{ $produit->categorie->nom ?? '' }}
                             </p>
                             <p class="text-xs sm:text-sm font-semibold text-dark truncate mt-0.5">
-                                {{ $plat->nom }}
+                                {{ $produit->nom }}
                             </p>
                             <p class="text-xs sm:text-sm font-bold text-dark mt-1">
-                                {{ number_format($plat->prix_vente, 0, ',', ' ') }}
+                                {{ number_format($produit->prix_vente, 0, ',', ' ') }}
                                 <span class="text-[10px] font-normal text-gray-400">FCFA</span>
                             </p>
                         </div>
@@ -298,13 +298,13 @@
 </section>
 @endif
 
-{{-- ── PLATS VEDETTES ───────────────────── --}}
+{{-- ── Produits VEDETTES ───────────────────── --}}
 @if($misEnAvant->count() > 0)
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
     <div class="flex items-center justify-between mb-5 sm:mb-8" data-reveal="up">
         <div>
             <h2 class="text-lg sm:text-2xl font-bold text-dark">
-                ⭐ Plats vedettes
+                ⭐ Produits vedettes
             </h2>
             <p class="text-gray-400 text-xs sm:text-sm mt-0.5 sm:mt-1">
                 Nos meilleures sélections
@@ -316,8 +316,8 @@
         </a>
     </div>
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" data-reveal="up" data-reveal-delay="100">
-        @foreach($misEnAvant as $plat)
-            @include('shop.partials.plat-card', compact('plat'))
+        @foreach($misEnAvant as $produit)
+            @include('shop.partials.produit-card', compact('Produit'))
         @endforeach
     </div>
 </section>
@@ -332,7 +332,7 @@
             <div>
                 <h2 class="text-lg sm:text-2xl font-bold text-dark">🆕 Nouvelles arrivées</h2>
                 <p class="text-gray-400 text-xs sm:text-sm mt-0.5 sm:mt-1">
-                    Les derniers plats disponibles
+                    Les derniers Produits disponibles
                 </p>
             </div>
             <a href="{{ route('shop.catalogue', ['sort' => 'latest']) }}"
@@ -341,8 +341,8 @@
             </a>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" data-reveal="up" data-reveal-delay="100">
-            @foreach($nouveautes as $plat)
-                @include('shop.partials.plat-card', compact('plat'))
+            @foreach($nouveautes as $produit)
+                @include('shop.partials.produit-card', compact('Produit'))
             @endforeach
         </div>
     </div>
@@ -371,8 +371,8 @@
             </a>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" data-reveal="up" data-reveal-delay="100">
-            @foreach($section['plats'] as $plat)
-                @include('shop.partials.plat-card', compact('plat'))
+            @foreach($section['Produits'] as $produit)
+                @include('shop.partials.produit-card', compact('Produit'))
             @endforeach
         </div>
     </div>
@@ -381,7 +381,7 @@
 
 {{-- ── AVIS DÉFILANTS ─────────────────────── --}}
 @php
-    $avis = App\Models\Avis::with('plat')
+    $avis = App\Models\Avis::with('Produit')
         ->where('est_approuve', true)
         ->latest()
         ->limit(10)
@@ -457,7 +457,7 @@
                                     {{ $review->nom_auteur }}
                                 </p>
                                 <p class="text-[10px] sm:text-xs text-gray-400 truncate">
-                                    {{ $review->plat->nom }}
+                                    {{ $review->Produit->nom }}
                                 </p>
                             </div>
                         </div>
@@ -505,8 +505,8 @@
                 ['q' => 'Puis-je récupérer ma commande sur place ?',
                  'r' => 'Oui, le retrait au restaurant est gratuit et disponible dès que votre commande est prête. Vous serez contacté par téléphone dès que c\'est prêt.',
                  'icon' => '🏪'],
-                ['q' => 'Les plats sont-ils frais et faits maison ?',
-                 'r' => 'Absolument. Tous nos plats sont préparés le jour même avec des ingrédients frais provenant de fournisseurs locaux sélectionnés. Nous garantissons qualité et fraîcheur à chaque commande.',
+                ['q' => 'Les Produits sont-ils frais et faits maison ?',
+                 'r' => 'Absolument. Tous nos Produits sont préparés le jour même avec des ingrédients frais provenant de fournisseurs locaux sélectionnés. Nous garantissons qualité et fraîcheur à chaque commande.',
                  'icon' => '✅'],
                 ['q' => 'Puis-je modifier ou annuler ma commande ?',
                  'r' => 'Les modifications sont possibles tant que votre commande est au statut "En attente". Contactez-nous rapidement par WhatsApp ou par téléphone. Une fois confirmée et en préparation, il n\'est plus possible de la modifier.',
@@ -591,7 +591,7 @@
                 $wa = preg_replace('/[^0-9]/', '', $parametres->whatsapp);
                 $sujets = [
                     ['label' => '🛒 Passer une commande',       'msg' => "Bonjour *{$parametres->nom}* 👋\nJe souhaite passer une commande. Pouvez-vous m'aider ?"],
-                    ['label' => '📦 Disponibilité d\'un plat',   'msg' => "Bonjour *{$parametres->nom}* 👋\nJe voudrais savoir si un plat est disponible."],
+                    ['label' => '📦 Disponibilité d\'un Produit',   'msg' => "Bonjour *{$parametres->nom}* 👋\nJe voudrais savoir si un Produit est disponible."],
                     ['label' => '💰 Demande de prix',            'msg' => "Bonjour *{$parametres->nom}* 👋\nJe souhaite avoir des informations sur vos tarifs."],
                     ['label' => '🚚 Infos livraison',            'msg' => "Bonjour *{$parametres->nom}* 👋\nJe voudrais des informations sur vos délais et frais de livraison."],
                     ['label' => '🔧 Réclamation',                'msg' => "Bonjour *{$parametres->nom}* 👋\nJ'ai besoin d'assistance concernant ma commande."],

@@ -1,4 +1,4 @@
-@extends('layouts.shop')
+﻿@extends('layouts.shop')
 @section('title', 'Mon Panier')
 
 @section('content')
@@ -36,14 +36,14 @@
                             <div class="flex-1 min-w-0">
                                 {{-- Nom + Supprimer --}}
                                 <div class="flex items-start justify-between gap-2">
-                                    <a href="{{ route('shop.plat', $item['slug']) }}"
+                                    <a href="{{ route('shop.produit', $item['slug']) }}"
                                        class="text-sm font-semibold text-dark hover:text-primary
                                               transition-colors line-clamp-2 flex-1">
                                         {{ $item['nom'] }}
                                     </a>
                                     <form action="{{ route('shop.panier.remove') }}" method="POST" class="flex-shrink-0">
                                         @csrf
-                                        <input type="hidden" name="plat_id" value="{{ $item['plat_id'] }}"/>
+                                        <input type="hidden" name="produit_id" value="{{ $item['produit_id'] }}"/>
                                         <button type="submit"
                                                 class="w-7 h-7 flex items-center justify-center
                                                        text-gray-300 hover:text-red-500 transition-colors">
@@ -65,7 +65,7 @@
                                     <form action="{{ route('shop.panier.update') }}"
                                           method="POST" class="flex items-center">
                                         @csrf
-                                        <input type="hidden" name="plat_id" value="{{ $item['plat_id'] }}"/>
+                                        <input type="hidden" name="produit_id" value="{{ $item['produit_id'] }}"/>
                                         <div class="flex items-center gap-1.5 bg-gray-100 rounded-xl p-1">
                                             <button type="submit" name="quantite" value="{{ $item['quantite'] - 1 }}"
                                                     class="w-7 h-7 bg-white rounded-lg flex items-center justify-center
@@ -163,7 +163,7 @@
 
                     @if($wa)
                         @if(count($panier) > 0)
-                            {{-- Panier avec plats → message avec détails commande --}}
+                            {{-- Panier avec Produits → message avec détails commande --}}
                             @php
                                 $msg  = "Bonjour *{$parametres->nom}* 👋\n\n";
                                 $msg .= "Je souhaite passer une commande :\n\n";
@@ -218,8 +218,8 @@
                                                 'msg'   => "Bonjour *{$parametres->nom}* 👋\nJe souhaite passer une commande. Pouvez-vous m'aider ?",
                                             ],
                                             [
-                                                'label' => '📦 Disponibilité d\'un plat',
-                                                'msg'   => "Bonjour *{$parametres->nom}* 👋\nJe voudrais savoir si un plat est disponible.",
+                                                'label' => '📦 Disponibilité d\'un Produit',
+                                                'msg'   => "Bonjour *{$parametres->nom}* 👋\nJe voudrais savoir si un Produit est disponible.",
                                             ],
                                             [
                                                 'label' => '💰 Demande de prix',
@@ -292,7 +292,7 @@
             </div>
             <h2 class="text-lg font-bold text-dark mb-2">Votre panier est vide</h2>
             <p class="text-sm text-gray-400 mb-6">
-                Découvrez nos plats et ajoutez-les à votre panier.
+                Découvrez nos Produits et ajoutez-les à votre panier.
             </p>
             <a href="{{ route('shop.catalogue') }}"
                class="inline-flex items-center gap-2 bg-primary text-white

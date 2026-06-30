@@ -1,4 +1,4 @@
-<div>
+﻿<div>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
 
         {{-- ── Galerie images ── --}}
@@ -9,7 +9,7 @@
 
                 @if(count($allImages) > 0)
                     <img src="{{ Storage::url($allImages[$activeImage]) }}"
-                         alt="{{ $plat->nom }}"
+                         alt="{{ $produit->nom }}"
                          loading="eager"
                          @click="zoomed = true"
                          class="w-full h-full object-contain transition-all duration-300 cursor-zoom-in"/>
@@ -41,10 +41,10 @@
                     @endif
 
                     {{-- Badge promo --}}
-                    @if($plat->estEnPromotion())
+                    @if($produit->estEnPromotion())
                         <div class="absolute top-4 left-4 bg-red-500 text-white text-sm
                                     font-bold px-3 py-1.5 rounded-xl shadow-lg">
-                            -{{ $plat->pourcentageRemise() }}%
+                            -{{ $produit->pourcentageRemise() }}%
                         </div>
                     @endif
 
@@ -60,7 +60,7 @@
                          x-transition:leave-start="opacity-100 scale-100"
                          x-transition:leave-end="opacity-0 scale-95">
                         <img src="{{ Storage::url($allImages[$activeImage]) }}"
-                             alt="{{ $plat->nom }}"
+                             alt="{{ $produit->nom }}"
                              class="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl"
                              @click.stop/>
                         <button @click="zoomed = false"
@@ -95,18 +95,18 @@
             @endif
         </div>
 
-        {{-- ── Détails du plat ── --}}
+        {{-- ── Détails du Produit ── --}}
         <div class="space-y-5">
 
             {{-- Catégorie + titre --}}
             <div>
-                @if($plat->categorie)
+                @if($produit->categorie)
                     <p class="text-xs font-semibold text-primary uppercase tracking-widest mb-2">
-                        {{ $plat->categorie->nom }}
+                        {{ $produit->categorie->nom }}
                     </p>
                 @endif
                 <h1 class="text-2xl lg:text-3xl font-bold text-dark leading-tight mb-3">
-                    {{ $plat->nom }}
+                    {{ $produit->nom }}
                 </h1>
             </div>
 
@@ -114,31 +114,31 @@
             <div class="bg-gray-50 rounded-2xl p-5">
                 <div class="flex items-center gap-3 flex-wrap mb-3">
                     <p class="text-3xl font-bold text-dark">
-                        {{ number_format($plat->prix_vente, 0, ',', ' ') }}
+                        {{ number_format($produit->prix_vente, 0, ',', ' ') }}
                         <span class="text-lg font-normal text-gray-400">FCFA</span>
                     </p>
-                    @if($plat->estEnPromotion())
+                    @if($produit->estEnPromotion())
                         <span class="bg-red-500 text-white text-sm font-bold px-2.5 py-1 rounded-xl">
-                            -{{ $plat->pourcentageRemise() }}%
+                            -{{ $produit->pourcentageRemise() }}%
                         </span>
                     @endif
                 </div>
-                @if($plat->estEnPromotion())
+                @if($produit->estEnPromotion())
                     <p class="text-sm text-gray-400 line-through">
-                        {{ number_format($plat->ancien_prix, 0, ',', ' ') }} FCFA
+                        {{ number_format($produit->ancien_prix, 0, ',', ' ') }} FCFA
                     </p>
                     <p class="text-xs text-red-600 font-medium mt-0.5">
-                        Vous économisez {{ number_format($plat->ancien_prix - $plat->prix_vente, 0, ',', ' ') }} FCFA
+                        Vous économisez {{ number_format($produit->ancien_prix - $produit->prix_vente, 0, ',', ' ') }} FCFA
                     </p>
                 @endif
                 {{-- Stock --}}
                 <div class="flex items-center gap-2 mt-2">
-                    @if($plat->sur_commande)
+                    @if($produit->sur_commande)
                         <span class="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600">
                             <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
                             Sur commande
                         </span>
-                    @elseif($plat->stock <= 0)
+                    @elseif($produit->stock <= 0)
                         <span class="inline-flex items-center gap-1.5 text-sm font-medium text-red-600">
                             <span class="w-2 h-2 rounded-full bg-red-500"></span>
                             Épuisé
@@ -153,7 +153,7 @@
             </div>
 
             {{-- Ingrédients (aperçu) --}}
-            @php $ingredients = $plat->ingredients ?? []; @endphp
+            @php $ingredients = $produit->ingredients ?? []; @endphp
             @if(count($ingredients) > 0)
                 <div class="flex flex-wrap gap-2">
                     @foreach(array_slice($ingredients, 0, 8) as $ingredient)
@@ -170,14 +170,14 @@
             @endif
 
             {{-- Description courte --}}
-            @if($plat->description_courte)
+            @if($produit->description_courte)
                 <p class="text-gray-600 text-sm leading-relaxed">
-                    {{ $plat->description_courte }}
+                    {{ $produit->description_courte }}
                 </p>
             @endif
 
             {{-- Sélecteur quantité + Ajouter panier --}}
-            @if($plat->sur_commande || $plat->stock > 0)
+            @if($produit->sur_commande || $produit->stock > 0)
                 <div class="space-y-3">
                     <div class="flex items-center gap-4">
                         <span class="text-sm font-medium text-dark">Quantité :</span>
@@ -194,14 +194,14 @@
                                     @class([
                                         'w-8 h-8 rounded-lg flex items-center justify-center
                                          transition-colors font-bold',
-                                        'bg-white shadow text-dark' => $plat->sur_commande || $quantity < $plat->stock,
-                                        'text-gray-300 cursor-not-allowed' => ! $plat->sur_commande && $quantity >= $plat->stock,
+                                        'bg-white shadow text-dark' => $produit->sur_commande || $quantity < $produit->stock,
+                                        'text-gray-300 cursor-not-allowed' => ! $produit->sur_commande && $quantity >= $produit->stock,
                                     ])>+</button>
                         </div>
                         @if($quantity > 1)
                             <span class="text-sm text-gray-500">
                                 = <span class="font-bold text-dark">
-                                    {{ number_format($plat->prix_vente * $quantity, 0, ',', ' ') }} FCFA
+                                    {{ number_format($produit->prix_vente * $quantity, 0, ',', ' ') }} FCFA
                                 </span>
                             </span>
                         @endif
@@ -246,7 +246,7 @@
                     @if($parametres?->whatsapp)
                         @php
                             $wa  = preg_replace('/[^0-9]/', '', $parametres->whatsapp);
-                            $msg = urlencode("Bonjour *{$parametres->nom}* \nJe suis intéressé par *{$plat->nom}* à {$plat->prix_vente} FCFA.\nPouvez-vous me donner plus d'informations ?");
+                            $msg = urlencode("Bonjour *{$parametres->nom}* \nJe suis intéressé par *{$produit->nom}* à {$produit->prix_vente} FCFA.\nPouvez-vous me donner plus d'informations ?");
                         @endphp
                         <a href="https://wa.me/{{ $wa }}?text={{ $msg }}"
                            target="_blank"
@@ -262,15 +262,15 @@
                     @endif
                 </div>
             @else
-                {{-- Rupture (uniquement pour les plats non sur commande) --}}
+                {{-- Rupture (uniquement pour les Produits non sur commande) --}}
                 <div class="bg-red-50 border border-red-100 rounded-2xl p-4 text-center">
                     <p class="text-red-600 font-medium text-sm mb-3">
-                        Ce plat est actuellement indisponible
+                        Ce Produit est actuellement indisponible
                     </p>
                     @if($parametres?->whatsapp)
                         @php
                             $wa  = preg_replace('/[^0-9]/', '', $parametres->whatsapp);
-                            $msg = urlencode("Bonjour *{$parametres->nom}* \nJe suis intéressé par *{$plat->nom}* mais il est en rupture. Pouvez-vous me prévenir dès qu'il sera disponible ?");
+                            $msg = urlencode("Bonjour *{$parametres->nom}* \nJe suis intéressé par *{$produit->nom}* mais il est en rupture. Pouvez-vous me prévenir dès qu'il sera disponible ?");
                         @endphp
                         <a href="https://wa.me/{{ $wa }}?text={{ $msg }}"
                            target="_blank"
@@ -306,14 +306,14 @@
     </div>
 
     {{-- ── Onglets : Description / Ingrédients ── --}}
-    @php $ingredients = $plat->ingredients ?? []; @endphp
-    @if($plat->description || count($ingredients) > 0)
+    @php $ingredients = $produit->ingredients ?? []; @endphp
+    @if($produit->description || count($ingredients) > 0)
         <div x-data="{ tab: '{{ count($ingredients) > 0 ? 'ingredients' : 'description' }}' }"
              class="mt-12">
 
             {{-- Tab nav --}}
             <div class="flex gap-1 border-b border-gray-200 mb-6">
-                @if($plat->description)
+                @if($produit->description)
                     <button @click="tab = 'description'"
                             :class="tab === 'description'
                                 ? 'border-b-2 border-primary text-primary font-semibold'
@@ -337,11 +337,11 @@
             </div>
 
             {{-- Description --}}
-            @if($plat->description)
+            @if($produit->description)
                 <div x-show="tab === 'description'" x-cloak>
                     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
                         <div class="text-gray-600 text-sm leading-relaxed prose max-w-none">
-                            {!! nl2br(e($plat->description)) !!}
+                            {!! nl2br(e($produit->description)) !!}
                         </div>
                     </div>
                 </div>

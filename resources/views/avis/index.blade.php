@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 @section('title', 'Avis clients')
 @section('page-title', 'Avis clients')
 @section('page-subtitle', 'Modération des avis clients')
@@ -51,7 +51,7 @@
                             </span>
                         </div>
                         <p class="text-xs text-primary mb-1">
-                            {{ $avis->plat->nom }}
+                            {{ $avis->Produit->nom }}
                         </p>
                         <p class="text-sm text-gray-600">{{ $avis->commentaire }}</p>
                     </div>
@@ -104,7 +104,7 @@
                         </span>
                     </div>
                     <p class="text-xs text-primary mb-1">
-                        {{ $avis->plat->nom }}
+                        {{ $avis->Produit->nom }}
                     </p>
                     <p class="text-sm text-gray-600 line-clamp-2">
                         {{ $avis->commentaire }}

@@ -1,4 +1,4 @@
-<div class="max-w-4xl mx-auto">
+﻿<div class="max-w-4xl mx-auto">
     <form class="space-y-6">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -22,8 +22,8 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
                             </svg>
-                            <input wire:model.live.debounce.300ms="searchPlat"
-                                type="text" placeholder="Rechercher un plat..."
+                            <input wire:model.live.debounce.300ms="searchProduit"
+                                type="text" placeholder="Rechercher un Produit..."
                                 class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl
                                         text-sm focus:outline-none focus:border-primary bg-gray-50"/>
                         </div>
@@ -59,17 +59,17 @@
                         </div>
                     </div>
 
-                    {{-- Grille plats --}}
-                    @if(count($allPlats) > 0)
+                    {{-- Grille Produits --}}
+                    @if(count($allProduits) > 0)
                         @php
-                            $selectedPlatIds = array_filter(array_column($items, 'plat_id'));
+                            $selectedproduitIds = array_filter(array_column($items, 'produit_id'));
                         @endphp
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4
                                     max-h-72 overflow-y-auto pr-1">
-                            @foreach($allPlats as $plat)
-                                @php $isSelected = in_array($plat['id'], $selectedPlatIds); @endphp
+                            @foreach($allProduits as $produit)
+                                @php $isSelected = in_array($produit['id'], $selectedproduitIds); @endphp
                                 <button type="button"
-                                        wire:click="togglePlat({{ $plat['id'] }})"
+                                        wire:click="toggleProduit({{ $produit['id'] }})"
                                         @class([
                                             'rounded-xl text-left transition-all duration-150
                                             overflow-hidden group',
@@ -83,8 +83,8 @@
                                     <div class="aspect-video flex items-center
                                                 justify-center p-2 relative
                                                 {{ $isSelected ? 'bg-green-100/50' : 'bg-white' }}">
-                                        @if($plat['image'])
-                                            <img src="{{ Storage::url($plat['image']) }}"
+                                        @if($produit['image'])
+                                            <img src="{{ Storage::url($produit['image']) }}"
                                                 class="w-full h-full object-contain
                                                         group-hover:scale-105 transition-transform"/>
                                         @else
@@ -111,11 +111,11 @@
                                         @endif
 
                                         {{-- Badge stock --}}
-                                        @if($plat['stock'] <= 3)
+                                        @if($produit['stock'] <= 3)
                                             <div class="absolute top-1 right-1 bg-orange-500
                                                         text-white text-xs font-bold px-1.5 py-0.5
                                                         rounded-lg leading-none">
-                                                {{ $plat['stock'] }}
+                                                {{ $produit['stock'] }}
                                             </div>
                                         @endif
                                     </div>
@@ -124,15 +124,15 @@
                                     <div class="p-2.5">
                                         <p class="text-xs truncate
                                                   {{ $isSelected ? 'text-green-600' : 'text-gray-400' }}">
-                                            {{ $plat['categorie'] ?? '' }}
+                                            {{ $produit['categorie'] ?? '' }}
                                         </p>
                                         <p class="text-xs font-semibold truncate transition-colors
                                                   {{ $isSelected ? 'text-green-700' : 'text-dark group-hover:text-secondary' }}">
-                                            {{ $plat['nom'] }}
+                                            {{ $produit['nom'] }}
                                         </p>
                                         <p class="text-xs font-bold mt-1
                                                   {{ $isSelected ? 'text-green-600' : 'text-secondary' }}">
-                                            {{ number_format($plat['prix_vente'], 0, ',', ' ') }}
+                                            {{ number_format($produit['prix_vente'], 0, ',', ' ') }}
                                             <span class="font-normal text-gray-400">FCFA</span>
                                         </p>
                                     </div>
@@ -142,7 +142,7 @@
                     @else
                         <div class="flex flex-col items-center justify-center py-6 text-gray-400
                                     mb-4">
-                            <p class="text-sm">Aucun plat trouve</p>
+                            <p class="text-sm">Aucun Produit trouve</p>
                         </div>
                     @endif
 
@@ -160,7 +160,7 @@
                         <div class="bg-secondary/5 rounded-xl p-4 mb-4 space-y-3">
                             <p class="text-xs font-semibold text-secondary">Ligne libre</p>
                             <input wire:model="freeLineDescription" type="text"
-                                   placeholder="Description du plat/service"
+                                   placeholder="Description du Produit/service"
                                    class="w-full px-3 py-2 border border-gray-200 rounded-xl
                                           text-sm bg-white focus:outline-none focus:border-secondary"/>
                             <div class="grid grid-cols-2 gap-3">
@@ -275,7 +275,7 @@
                     @else
                         <div class="text-center py-8 text-gray-400">
                             <p class="text-sm">Aucune ligne</p>
-                            <p class="text-xs mt-1">Recherchez un plat ou ajoutez une ligne libre</p>
+                            <p class="text-xs mt-1">Recherchez un Produit ou ajoutez une ligne libre</p>
                         </div>
                     @endif
                 </div>

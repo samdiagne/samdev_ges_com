@@ -1,4 +1,4 @@
-<x-mail::message>
+﻿<x-mail::message>
 # Merci pour votre commande !
 
 Bonjour **{{ $commande->nom_client }}**,
@@ -10,10 +10,10 @@ Votre commande a bien été reçue et est en cours de traitement.
 ---
 
 <x-mail::table>
-| Plat | Qté | Prix |
+| Produit | Qté | Prix |
 |:--------|:---:|-----:|
 @foreach($commande->lignes as $item)
-| {{ $item->nom_plat }} | {{ $item->quantite }} | {{ number_format($item->total, 0, ',', ' ') }} FCFA |
+| {{ $item->nom_produit }} | {{ $item->quantite }} | {{ number_format($item->total, 0, ',', ' ') }} FCFA |
 @endforeach
 | **Total HT** | | **{{ number_format($commande->total, 0, ',', ' ') }} FCFA** |
 </x-mail::table>

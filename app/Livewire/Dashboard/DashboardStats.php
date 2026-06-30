@@ -7,7 +7,7 @@ use App\Models\Vente;
 use App\Models\VenteLigne;
 use App\Models\Achat;
 use App\Models\Depense;
-use App\Models\Plat;
+use App\Models\Produit;
 use App\Models\Client;
 use App\Models\Commande;
 use Carbon\Carbon;
@@ -55,10 +55,10 @@ class DashboardStats extends Component
             'benefice'       => $benefice,
             'evolution_ca'   => $evolution,
             'panier_moyen'   => $nbVentes > 0 ? round($ca / $nbVentes) : 0,
-            'total_plats'    => Plat::where('est_actif', true)->count(),
-            'total_clients'  => Client::count(),
-            'stock_faible'   => Plat::whereColumn('stock', '<=', 'seuil_alerte_stock')->where('stock', '>', 0)->where('sur_commande', false)->count(),
-            'stock_rupture'  => Plat::where('stock', '<=', 0)->where('sur_commande', false)->count(),
+            'total_produits'  => Produit::where('est_actif', true)->count(),
+            'total_clients'   => Client::count(),
+            'stock_faible'    => Produit::whereColumn('stock', '<=', 'seuil_alerte_stock')->where('stock', '>', 0)->where('sur_commande', false)->count(),
+            'stock_rupture'   => Produit::where('stock', '<=', 0)->where('sur_commande', false)->count(),
             'cash_total'     => (clone $ventesQuery)->where('mode_paiement', 'cash')->sum('total'),
             'wave_total'     => (clone $ventesQuery)->where('mode_paiement', 'wave')->sum('total'),
             'om_total'       => (clone $ventesQuery)->where('mode_paiement', 'om')->sum('total'),
@@ -108,12 +108,12 @@ class DashboardStats extends Component
     private function getAlertes(): array
     {
         return [
-            'stock_faible' => Plat::with('categorie')
+            'stock_faible' => Produit::with('categorie')
                 ->whereColumn('stock', '<=', 'seuil_alerte_stock')
                 ->where('stock', '>', 0)
                 ->where('sur_commande', false)
                 ->orderBy('stock')->limit(5)->get(),
-            'stock_rupture' => Plat::with('categorie')
+            'stock_rupture' => Produit::with('categorie')
                 ->where('stock', '<=', 0)->where('sur_commande', false)->limit(5)->get(),
         ];
     }
@@ -125,11 +125,11 @@ class DashboardStats extends Component
             'commandes_en_attente' => Commande::with('lignes')
                 ->whereIn('statut', ['en_attente', 'confirmee', 'en_preparation'])
                 ->latest()->limit(6)->get(),
-            'top_plats' => VenteLigne::selectRaw('plat_id, nom_plat, SUM(quantite) as total_qty, SUM(total) as total_ca')
+            'top_produits' => VenteLigne::selectRaw('produit_id, nom_produit, SUM(quantite) as total_qty, SUM(total) as total_ca')
                 ->whereHas('vente', fn($q) =>
                     $q->where('statut', 'completee')->whereMonth('vendu_le', now()->month)
                 )
-                ->groupBy('plat_id', 'nom_plat')
+                ->groupBy('produit_id', 'nom_produit')
                 ->orderByDesc('total_qty')
                 ->limit(5)->get(),
         ];

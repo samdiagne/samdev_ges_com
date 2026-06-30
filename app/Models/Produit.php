@@ -9,11 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-class Plat extends Model
+class Produit extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'plats';
+    protected $table = 'produits';
 
     protected $fillable = [
         'categorie_id',
@@ -52,8 +52,8 @@ class Plat extends Model
 
     protected static function booted(): void
     {
-        static::creating(function (Plat $plat) {
-            $plat->slug = Str::slug($plat->nom);
+        static::creating(function (Produit $produit) {
+            $produit->slug = Str::slug($produit->nom);
         });
     }
 
@@ -66,24 +66,24 @@ class Plat extends Model
 
     public function images(): HasMany
     {
-        return $this->hasMany(PlatImage::class, 'plat_id')->orderBy('ordre');
+        return $this->hasMany(ProduitImage::class, 'produit_id')->orderBy('ordre');
     }
 
     public function avis(): HasMany
     {
-        return $this->hasMany(Avis::class, 'plat_id');
+        return $this->hasMany(Avis::class, 'produit_id');
     }
 
     public function avisApprouves(): HasMany
     {
-        return $this->hasMany(Avis::class, 'plat_id')
+        return $this->hasMany(Avis::class, 'produit_id')
             ->where('est_approuve', true)
             ->latest();
     }
 
     public function mouvementsStock(): HasMany
     {
-        return $this->hasMany(MouvementStock::class, 'plat_id');
+        return $this->hasMany(MouvementStock::class, 'produit_id');
     }
 
     // ── Helpers ───────────────────────────────────

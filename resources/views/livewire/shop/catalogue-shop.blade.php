@@ -1,11 +1,11 @@
-<div>
+﻿<div>
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center justify-between
                 gap-4 mb-6">
         <div>
             <h1 class="text-2xl font-bold text-dark">Catalogue</h1>
             <p class="text-sm text-gray-400 mt-1">
-                {{ $plats->total() }} plat(s) trouvé(s)
+                {{ $produits->total() }} Produit(s) trouvé(s)
                 @if($search)
                     pour "<span class="text-primary font-medium">{{ $search }}</span>"
                 @endif
@@ -53,7 +53,7 @@
                       d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
             </svg>
             <input wire:model.live.debounce.400ms="search"
-                   type="text" placeholder="Rechercher un plat..."
+                   type="text" placeholder="Rechercher un Produit..."
                    class="w-full pl-9 pr-4 py-2.5 border border-gray-200
                           rounded-xl text-sm focus:outline-none
                           focus:border-primary bg-white"/>
@@ -158,7 +158,7 @@
                             <span>Toutes</span>
                             <span class="{{ $categorie === '' ? 'bg-white/20' : 'bg-gray-100' }}
                                         text-xs px-2 py-0.5 rounded-full">
-                                {{ $categories->sum('plats_actifs_count') }}
+                                {{ $categories->sum('produits_actifs_count') }}
                             </span>
                         </button>
                         @foreach($categories as $cat)
@@ -177,7 +177,7 @@
                                     'bg-white/20' => $categorie === $cat->slug,
                                     'bg-gray-100' => $categorie !== $cat->slug,
                                 ])>
-                                    {{ $cat->plats_actifs_count }}
+                                    {{ $cat->produits_actifs_count }}
                                 </span>
                             </button>
                         @endforeach
@@ -228,7 +228,7 @@
             </div>
         </aside>
 
-        {{-- ── Grille plats ── --}}
+        {{-- ── Grille Produits ── --}}
         <div class="flex-1 min-w-0">
 
             {{-- Loading --}}
@@ -247,18 +247,18 @@
             </div>
 
             <div wire:loading.remove>
-                @if($plats->count() > 0)
+                @if($produits->count() > 0)
                     <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                        @foreach($plats as $plat)
-                            @include('shop.partials.plat-card',
-                                compact('plat'))
+                        @foreach($produits as $produit)
+                            @include('shop.partials.produit-card',
+                                compact('Produit'))
                         @endforeach
                     </div>
 
                     {{-- Pagination --}}
-                    @if($plats->hasPages())
+                    @if($produits->hasPages())
                         <div class="mt-8 flex justify-center">
-                            {{ $plats->links() }}
+                            {{ $produits->links() }}
                         </div>
                     @endif
                 @else
@@ -274,7 +274,7 @@
                             </svg>
                         </div>
                         <p class="text-lg font-semibold text-dark mb-2">
-                            Aucun plat trouvé
+                            Aucun Produit trouvé
                         </p>
                         <p class="text-sm text-gray-400 mb-6">
                             Essayez de modifier vos filtres

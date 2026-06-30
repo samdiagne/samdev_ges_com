@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8"/>
@@ -289,7 +289,7 @@
             @foreach($vente->lignes as $index => $item)
                 <tr>
                     <td>{{ $index + 1 }}</td>
-                    <td><strong>{{ $item->nom_plat }}</strong></td>
+                    <td><strong>{{ $item->nom_produit }}</strong></td>
                     <td class="center">{{ $item->quantite }}</td>
                     <td class="right">{{ number_format($item->prix_unitaire, 0, ',', ' ') }}</td>
                     <td class="right">

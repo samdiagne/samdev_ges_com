@@ -5,18 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PlatImage extends Model
+class ProduitImage extends Model
 {
-    protected $table = 'plat_images';
+    protected $table = 'produit_images';
 
     protected $fillable = [
-        'plat_id',
+        'produit_id',
         'chemin',
         'ordre',
     ];
 
-    public function plat(): BelongsTo
+    public function produit(): BelongsTo
     {
-        return $this->belongsTo(Plat::class, 'plat_id');
+        return $this->belongsTo(Produit::class, 'produit_id');
     }
 }
