@@ -31,8 +31,9 @@ class PointOfSale extends Component
     public string $notes                 = '';
     public string $dateVente             = '';
 
-    public bool   $afficherModalPaiement = false;
-    public bool   $afficherModalSucces   = false;
+    public bool   $afficherModalPaiement    = false;
+    public bool   $afficherModalSucces      = false;
+    public bool   $afficherConfirmationVider = false;
     public string $erreurPaiement        = '';
 
     public ?int   $derniereVenteId       = null;
@@ -151,13 +152,14 @@ class PointOfSale extends Component
 
     public function clearCart(): void
     {
-        $this->panier               = [];
-        $this->sousTotal            = 0;
-        $this->total                = 0;
-        $this->remise               = 0;
-        $this->clientSelectionneId  = null;
-        $this->clientSelectionneNom = '';
-        $this->notes                = '';
+        $this->panier                    = [];
+        $this->sousTotal                 = 0;
+        $this->total                     = 0;
+        $this->remise                    = 0;
+        $this->clientSelectionneId       = null;
+        $this->clientSelectionneNom      = '';
+        $this->notes                     = '';
+        $this->afficherConfirmationVider = false;
     }
 
     private function recalcLine(int $index): void

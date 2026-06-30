@@ -1,9 +1,9 @@
-<div class="h-full flex flex-col lg:flex-row gap-4">
+<div class="lg:h-full flex flex-col lg:flex-row gap-4">
 
     {{-- ════════════════════════════════════════
          COLONNE GAUCHE — Recherche & Produits
     ════════════════════════════════════════ --}}
-    <div class="flex-1 flex flex-col gap-4 min-w-0">
+    <div class="flex flex-col gap-4 min-w-0 lg:flex-1">
 
         {{-- Erreur flash --}}
         @if(session('pos_error'))
@@ -20,7 +20,7 @@
         @endif
 
         {{-- ── Partie gauche : Grille produits ── --}}
-        <div class="flex-1 flex flex-col overflow-hidden">
+        <div class="flex flex-col overflow-hidden lg:flex-1">
 
             {{-- Barre recherche + filtres catégories --}}
             <div class="p-4 bg-white border-b border-gray-100 space-y-3">
@@ -68,7 +68,7 @@
             </div>
 
             {{-- Grille produits --}}
-            <div class="flex-1 overflow-y-auto p-4">
+            <div class="overflow-y-auto p-4 max-h-72 lg:max-h-none lg:flex-1">
                 @if(count($plats) > 0)
                     @php
                         $panierPlatIds = array_column($panier, 'plat_id');
@@ -172,8 +172,8 @@
         </div>
 
         {{-- Panier --}}
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm flex-1 flex flex-col
-                    overflow-hidden">
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col
+                    overflow-hidden lg:flex-1">
 
             {{-- Header panier --}}
             <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
@@ -193,8 +193,7 @@
                     </h3>
                 </div>
                 @if(count($panier) > 0)
-                    <button wire:click="clearCart"
-                            wire:confirm="Vider le panier ?"
+                    <button wire:click="$set('afficherConfirmationVider', true)"
                             class="text-xs text-red-500 hover:text-red-700
                                    hover:bg-red-50 px-2 py-1 rounded-lg transition-colors">
                         Vider
@@ -203,7 +202,7 @@
             </div>
 
             {{-- Items panier --}}
-            <div class="flex-1 overflow-y-auto divide-y divide-gray-50">
+            <div class="overflow-y-auto divide-y divide-gray-50 lg:flex-1">
                 @forelse($panier as $index => $item)
                     <div class="px-4 py-3 flex items-center gap-3 hover:bg-gray-50/50
                                 transition-colors">
@@ -260,7 +259,7 @@
                         </button>
                     </div>
                 @empty
-                    <div class="flex flex-col items-center justify-center py-16 text-center px-4">
+                    <div class="flex flex-col items-center justify-center py-8 lg:py-16 text-center px-4">
                         <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center
                                     justify-center mb-4">
                             <svg class="w-8 h-8 text-gray-300" fill="none"
@@ -458,6 +457,41 @@
             Encaisser — {{ number_format($total, 0, ',', ' ') }} FCFA
         </button>
     </div>
+
+    {{-- ════════════════════════════════════════
+         MODAL CONFIRMATION VIDER PANIER
+    ════════════════════════════════════════ --}}
+    @if($afficherConfirmationVider)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                 wire:click="$set('afficherConfirmationVider', false)"></div>
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+                <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5
+                                 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                </div>
+                <h3 class="text-base font-bold text-dark mb-1">Vider le panier ?</h3>
+                <p class="text-sm text-gray-400 mb-6">
+                    {{ count($panier) }} article{{ count($panier) > 1 ? 's' : '' }} seront supprimés.
+                </p>
+                <div class="flex gap-3">
+                    <button wire:click="$set('afficherConfirmationVider', false)"
+                            class="flex-1 py-2.5 text-sm font-medium text-gray-600
+                                   hover:bg-gray-100 rounded-xl transition-colors border border-gray-200">
+                        Annuler
+                    </button>
+                    <button wire:click="clearCart"
+                            class="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white
+                                   text-sm font-bold rounded-xl transition-colors">
+                        Vider
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
 
     {{-- ════════════════════════════════════════
          MODAL PAIEMENT
