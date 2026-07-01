@@ -8,7 +8,7 @@
         </div>
     @endif
 
-    <form wire:submit="save" class="space-y-6">
+    <form wire:submit.prevent="save" class="space-y-6">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
             {{-- ── Colonne principale : lignes de dépense ── --}}
@@ -290,7 +290,8 @@
                       hover:bg-gray-100 rounded-xl transition-colors">
                 ← Retour
             </a>
-            <button type="submit"
+            <button type="button"
+                    wire:click="save"
                     class="px-6 py-2.5 bg-primary hover:bg-primary/90 text-white
                            text-sm font-medium rounded-xl transition-all shadow-lg
                            shadow-primary/25 flex items-center gap-2">

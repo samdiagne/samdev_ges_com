@@ -75,7 +75,7 @@ class AchatForm extends Component
 
         $this->lignes = $achat->lignes->map(fn($l) => [
             'description' => $l->description,
-            'quantity'    => $l->quantite,
+            'quantity'    => (int) $l->quantite,
             'unit'        => $l->unite ?? '',
             'unit_price'  => (float) $l->prix_unitaire,
         ])->toArray();
