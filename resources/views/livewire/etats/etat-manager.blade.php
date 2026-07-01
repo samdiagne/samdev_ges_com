@@ -1,4 +1,8 @@
-<div>
+<div x-data="{
+    dateFrom: '{{ $dateFrom }}',
+    dateTo:   '{{ $dateTo }}',
+    url(base) { return base + '?date_from=' + this.dateFrom + '&date_to=' + this.dateTo; }
+}">
     {{-- Filtre dates --}}
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
         <h3 class="text-sm font-bold text-dark mb-4 flex items-center gap-2">
@@ -11,13 +15,13 @@
         <div class="flex flex-col sm:flex-row gap-4">
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">Du</label>
-                <input wire:model="dateFrom" type="date"
+                <input x-model="dateFrom" type="date"
                        class="px-3 py-2.5 border border-gray-200 rounded-xl text-sm
                               bg-gray-50 focus:outline-none focus:border-primary focus:bg-white transition-colors"/>
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">Au</label>
-                <input wire:model="dateTo" type="date"
+                <input x-model="dateTo" type="date"
                        class="px-3 py-2.5 border border-gray-200 rounded-xl text-sm
                               bg-gray-50 focus:outline-none focus:border-primary focus:bg-white transition-colors"/>
             </div>
@@ -28,7 +32,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
         {{-- Ventes --}}
-        <a href="{{ route('etats.ventes', ['date_from' => $dateFrom, 'date_to' => $dateTo]) }}"
+        <a :href="url('{{ route('etats.ventes') }}')"
            class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 hover:shadow-lg
                   hover:border-primary/30 transition-all group">
             <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4
@@ -52,7 +56,7 @@
         </a>
 
         {{-- Dépenses --}}
-        <a href="{{ route('etats.depenses', ['date_from' => $dateFrom, 'date_to' => $dateTo]) }}"
+        <a :href="url('{{ route('etats.depenses') }}')"
            class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 hover:shadow-lg
                   hover:border-red-200 transition-all group">
             <div class="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center mb-4
@@ -75,7 +79,7 @@
         </a>
 
         {{-- Trésorerie --}}
-        <a href="{{ route('etats.tresorerie', ['date_from' => $dateFrom, 'date_to' => $dateTo]) }}"
+        <a :href="url('{{ route('etats.tresorerie') }}')"
            class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 hover:shadow-lg
                   hover:border-green-200 transition-all group">
             <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center mb-4
