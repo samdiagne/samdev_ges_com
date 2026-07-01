@@ -29,6 +29,8 @@ class DashboardStats extends Component
         $alertes = $this->getAlertes();
         $recent  = $this->getActiviteRecente();
 
+        $this->dispatch('chartsUpdated', charts: $charts);
+
         return view('livewire.dashboard.dashboard-stats',
             compact('stats', 'charts', 'alertes', 'recent'));
     }

@@ -1,4 +1,4 @@
-﻿<div class="lg:h-full flex flex-col lg:flex-row gap-4">
+<div class="lg:h-full flex flex-col lg:flex-row gap-4">
 
     {{-- ════════════════════════════════════════
          COLONNE GAUCHE — Recherche & Produits

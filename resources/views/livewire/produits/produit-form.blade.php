@@ -1,4 +1,4 @@
-﻿<div class="max-w-4xl mx-auto">
+<div class="max-w-4xl mx-auto">
     <form wire:submit="save" class="space-y-6">
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">

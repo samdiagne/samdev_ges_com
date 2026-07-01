@@ -1,4 +1,4 @@
-﻿<div>
+<div>
     {{-- Filtres --}}
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-6">
         <div class="flex flex-wrap items-end gap-4">
@@ -22,7 +22,7 @@
                 border-gray-100 shadow-sm p-1.5 w-fit flex-wrap">
         @foreach([
             'ventes'     => '📊 Ventes',
-            'Produits'      => '🍽️ Produits',
+            'produits'      => '🍽️ Produits',
             'clients'    => '👥 Clients',
             'achats'     => '📦 Achats',
             'tresorerie' => '💰 Trésorerie',
@@ -98,7 +98,7 @@
     @endif
 
     {{-- ══ TAB Produits ══ --}}
-    @if($typeRapport === 'Produits' && $rapport)
+    @if($typeRapport === 'produits' && $rapport)
         <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
                 <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">CA Total</p>

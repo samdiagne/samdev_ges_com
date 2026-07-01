@@ -522,17 +522,9 @@ style="height: 100dvh;">
 @livewireScripts
 @stack('scripts')
 <script>
-    // Redirige vers le login si la session Laravel expire (erreur 419 Livewire)
-    document.addEventListener('livewire:init', () => {
-        Livewire.hook('request', ({ fail }) => {
-            fail(({ status, preventDefault }) => {
-                if (status === 419) {
-                    preventDefault();
-                    if (confirm('Votre session a expiré. Cliquez OK pour vous reconnecter.')) {
-                        window.location.href = '/login';
-                    }
-                }
-            });
+    document.addEventListener('livewire:initialized', () => {
+        Livewire.on('exception', (e) => {
+            if (e.status === 419) window.location.href = '/login';
         });
     });
 </script>

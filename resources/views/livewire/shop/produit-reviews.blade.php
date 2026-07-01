@@ -1,4 +1,4 @@
-﻿<div class="mt-12 space-y-8">
+<div class="mt-12 space-y-8">
 
     {{-- ── Résumé notes ── --}}
     <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-8">

@@ -1,4 +1,4 @@
-﻿<div>
+<div>
     {{-- ── Actions rapides --}}
     <div class="flex flex-wrap gap-2 mb-6">
         <a href="{{ route('caisse.pos') }}"
@@ -47,6 +47,8 @@
             Nouveau Produit
         </a>
     </div>
+
+
 
     {{-- Sélecteur période --}}
     <div class="flex items-center gap-2 mb-6 bg-white rounded-2xl border
@@ -162,13 +164,13 @@
                     <p class="text-xs text-gray-400">Chiffre d'affaires journalier</p>
                 </div>
             </div>
-            <canvas id="salesChart" height="120"></canvas>
+            <canvas wire:ignore id="salesChart" height="120"></canvas>
         </div>
 
         {{-- Répartition paiements --}}
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <h3 class="text-sm font-bold text-dark mb-4">Modes de paiement</h3>
-            <canvas id="paymentChart" height="160"></canvas>
+            <canvas wire:ignore id="paymentChart" height="160"></canvas>
             <div class="space-y-2 mt-4">
                 @php
                     $pmColors = ['cash' => '#10B981', 'wave' => '#3B82F6', 'om' => '#F97316', 'carte' => '#7c3aed'];
@@ -199,7 +201,7 @@
                 <p class="text-xs text-gray-400">Évolution du chiffre d'affaires</p>
             </div>
         </div>
-        <canvas id="monthlyChart" height="80"></canvas>
+        <canvas wire:ignore id="monthlyChart" height="80"></canvas>
     </div>
 
     {{-- ── Commandes en attente --}}
@@ -382,9 +384,8 @@
 
     {{-- Chart.js --}}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-    @script
     <script>
-        let chartInstances = {};
+        window.chartInstances = window.chartInstances || {};
 
         function theme() {
             const dark = document.documentElement.classList.contains('dark');
@@ -534,11 +535,12 @@
             }, 50);
         }
 
-        initAllCharts(@json($charts));
-
-        $wire.on('chartsUpdated', ({ charts }) => {
-            initAllCharts(charts);
-        });
+        if (!window._dashChartsReady) {
+            window._dashChartsReady = true;
+            document.addEventListener('DOMContentLoaded', () => initAllCharts(@json($charts)));
+            document.addEventListener('livewire:initialized', () => {
+                Livewire.on('chartsUpdated', ({ charts }) => initAllCharts(charts));
+            });
+        }
     </script>
-    @endscript
 </div>
