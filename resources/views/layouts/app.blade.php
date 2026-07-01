@@ -96,7 +96,7 @@ style="height: 100dvh;">
         <div class="absolute inset-0 sidebar-glow pointer-events-none"></div>
 
         {{-- Header logo --}}
-        <div class="relative z-10 flex items-center justify-between px-4 py-5">
+        <div class="relative z-10 flex items-center justify-between px-4 py-3">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3 min-w-0">
                 @if($logo && file_exists(storage_path('app/public/' . $logo)))
                     <div :class="sidebarOpen ? 'h-12 w-12' : 'h-10 w-10'"
@@ -137,7 +137,7 @@ style="height: 100dvh;">
         <div class="mx-4 border-t border-white/[0.06]"></div>
 
         {{-- Navigation --}}
-        <nav class="relative z-10 flex-1 overflow-y-auto py-4 px-3 space-y-0.5
+        <nav class="relative z-10 flex-1 overflow-y-auto pt-2 pb-4 px-3 space-y-0.5
                     scrollbar-thin scrollbar-thumb-white/10">
             @include('layouts.partials.sidebar-nav')
         </nav>
