@@ -216,82 +216,27 @@
     }
 </style>
 
-{{-- ── CARROUSEL PRODUITS ───────────────────── --}}
+{{-- ── PRODUITS ───────────────────── --}}
 @if($platCarousel->count() > 0)
 <section class="py-8 sm:py-12 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 sm:mb-8">
-        <h2 class="text-lg sm:text-2xl font-bold text-dark text-center">
-            Découvrez nos produits
-        </h2>
-        <p class="text-gray-400 text-xs sm:text-sm mt-1 text-center">
-            Une sélection variée pour tous les goûts
-        </p>
-    </div>
-
-    <div class="relative overflow-hidden"
-         x-data="{
-            paused: false,
-            rafId: null,
-            pos: 0,
-            speed: 0.6,
-            start() {
-                const inner = this.$refs.inner;
-                const step = () => {
-                    if (!this.paused) {
-                        this.pos += this.speed;
-                        const half = inner.scrollWidth / 2;
-                        if (this.pos >= half) this.pos = 0;
-                        inner.style.transform = 'translateX(-' + this.pos + 'px)';
-                    }
-                    this.rafId = requestAnimationFrame(step);
-                };
-                this.rafId = requestAnimationFrame(step);
-            }
-         }"
-         x-init="$nextTick(() => start())"
-         @mouseenter="paused = true"
-         @mouseleave="paused = false">
-
-        {{-- Dégradés latéraux --}}
-        <div class="absolute left-0 top-0 bottom-0 w-12 sm:w-20 z-10 pointer-events-none"
-             style="background: linear-gradient(to right, white, transparent);"></div>
-        <div class="absolute right-0 top-0 bottom-0 w-12 sm:w-20 z-10 pointer-events-none"
-             style="background: linear-gradient(to left, white, transparent);"></div>
-
-        {{-- Track : items dupliqués pour la boucle infinie --}}
-        <div x-ref="inner" class="flex gap-3 sm:gap-4 py-2" style="width: max-content; will-change: transform;">
-            @foreach([$platCarousel, $platCarousel] as $batch)
-                @foreach($batch as $produit)
-                    <a href="{{ route('shop.produit', $produit->slug) }}"
-                       class="group flex-shrink-0 w-40 sm:w-52 bg-white rounded-2xl border
-                              border-gray-100 overflow-hidden shadow-sm hover:shadow-lg
-                              hover:-translate-y-1 transition-all duration-300">
-                        <div class="aspect-square bg-gray-50 overflow-hidden">
-                            @if($produit->image_principale)
-                                <img src="{{ Storage::url($produit->image_principale) }}"
-                                     alt="{{ $produit->nom }}"
-                                     loading="lazy"
-                                     class="w-full h-full object-cover group-hover:scale-105 transition duration-500"/>
-                            @else
-                                <div class="w-full h-full flex items-center justify-center">
-                                    <span class="text-3xl">🍽️</span>
-                                </div>
-                            @endif
-                        </div>
-                        <div class="p-2.5 sm:p-3">
-                            <p class="text-[10px] sm:text-xs text-primary font-medium truncate">
-                                {{ $produit->categorie->nom ?? '' }}
-                            </p>
-                            <p class="text-xs sm:text-sm font-semibold text-dark truncate mt-0.5">
-                                {{ $produit->nom }}
-                            </p>
-                            <p class="text-xs sm:text-sm font-bold text-dark mt-1">
-                                {{ number_format($produit->prix_vente, 0, ',', ' ') }}
-                                <span class="text-[10px] font-normal text-gray-400">FCFA</span>
-                            </p>
-                        </div>
-                    </a>
-                @endforeach
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between mb-5 sm:mb-8">
+            <div>
+                <h2 class="text-lg sm:text-2xl font-bold text-dark">
+                    Découvrez nos produits
+                </h2>
+                <p class="text-gray-400 text-xs sm:text-sm mt-0.5 sm:mt-1">
+                    Une sélection variée pour tous les goûts
+                </p>
+            </div>
+            <a href="{{ route('shop.catalogue') }}"
+               class="text-xs sm:text-sm font-medium text-primary hover:underline flex-shrink-0 ml-4">
+                Voir tout →
+            </a>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+            @foreach($platCarousel as $produit)
+                @include('shop.partials.produit-card', compact('produit'))
             @endforeach
         </div>
     </div>

@@ -30,8 +30,9 @@ class HomeController extends Controller
             ->get();
 
         $platCarousel = Produit::where('est_actif', true)
-            ->with('categorie')
+            ->with(['categorie', 'avisApprouves'])
             ->inRandomOrder()
+            ->limit(8)
             ->get();
 
         $sectionsCategories = Categorie::where('est_active', true)
