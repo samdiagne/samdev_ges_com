@@ -1,4 +1,4 @@
-﻿@extends('layouts.shop')
+@extends('layouts.shop')
 @section('title', 'Mes commandes')
 
 @section('content')

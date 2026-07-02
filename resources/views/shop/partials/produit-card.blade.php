@@ -1,4 +1,4 @@
-﻿<a href="{{ route('shop.produit', $produit->slug) }}"
+<a href="{{ route('shop.produit', $produit->slug) }}"
    class="group bg-white rounded-xl sm:rounded-2xl border border-gray-100 overflow-hidden
           hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 relative">
 

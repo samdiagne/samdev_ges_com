@@ -1,4 +1,4 @@
-﻿<x-mail::message>
+<x-mail::message>
 # 🎉 Commande livrée — Merci pour votre confiance !
 
 Bonjour **{{ $commande->nom_client }}**,

@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 @section('title', 'Avis clients')
 @section('page-title', 'Avis clients')
 @section('page-subtitle', 'Modération des avis clients')

@@ -1,4 +1,4 @@
-﻿@extends('layouts.shop')
+@extends('layouts.shop')
 @section('title', $produit->nom . ' — ' . $parametres->nom)
 @section('description', Str::limit($produit->description ?? $produit->nom, 160))
 

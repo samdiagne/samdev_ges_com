@@ -1,4 +1,4 @@
-﻿<x-mail::message>
+<x-mail::message>
 # 🛒 Nouvelle commande reçue
 
 **Référence :** {{ $commande->reference }}

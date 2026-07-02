@@ -1,4 +1,4 @@
-﻿@extends('layouts.shop')
+@extends('layouts.shop')
 
 @section('title', $parametres->nom . ' — Restaurant & Livraison à Dakar')
 @section('description', 'Découvrez nos Produits faits maison à Dakar. Commande en ligne, livraison rapide, qualité garantie.')

@@ -1,4 +1,4 @@
-﻿@extends('layouts.shop')
+@extends('layouts.shop')
 @section('title', 'Commande confirmée — ' . $commande->reference)
 
 @section('content')

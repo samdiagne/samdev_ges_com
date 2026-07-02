@@ -1,4 +1,4 @@
-﻿@php
+@php
     $user = Auth::user();
     $pendingOrdersCount  = \App\Models\Commande::where('statut', 'en_attente')->count();
     $pendingReviewsCount = \App\Models\Avis::where('est_approuve', false)->count();

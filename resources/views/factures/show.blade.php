@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', 'Facture ' . $vente->facture?->numero_facture)
 @section('page-title', 'Facture ' . $vente->facture?->numero_facture)
