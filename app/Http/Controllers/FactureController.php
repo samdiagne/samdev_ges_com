@@ -11,7 +11,7 @@ class FactureController extends Controller
 
     public function show(Vente $vente)
     {
-        $vente->load(['lignes.plat', 'client', 'facture', 'user']);
+        $vente->load(['lignes.produit', 'client', 'facture', 'user']);
 
         if ($vente->facture) {
             $this->factureService->generatePdf($vente);

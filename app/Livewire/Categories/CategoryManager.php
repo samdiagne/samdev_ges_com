@@ -108,8 +108,8 @@ class CategoryManager extends Component
     public function delete(): void
     {
         $categorie = Categorie::findOrFail($this->suppressionId);
-        if ($categorie->plats()->count() > 0) {
-            session()->flash('error', 'Impossible : cette catégorie contient des plats.');
+        if ($categorie->produits()->count() > 0) {
+            session()->flash('error', 'Impossible : cette catégorie contient des produits.');
             $this->afficherModalSuppression = false;
             return;
         }

@@ -94,7 +94,7 @@
 
                             {{-- Détails --}}
                             <div class="flex-1 min-w-0">
-                                <a href="{{ route('shop.plat', $item['slug']) }}"
+                                <a href="{{ route('shop.produit', $item['slug']) }}"
                                    wire:click="close"
                                    class="text-sm font-semibold text-dark hover:text-primary
                                           transition-colors line-clamp-2 leading-tight mb-1 block">

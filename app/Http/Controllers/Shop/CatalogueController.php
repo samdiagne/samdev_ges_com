@@ -25,20 +25,20 @@ class CatalogueController extends Controller
 
     public function show(string $slug)
     {
-        $plat = Produit::where('slug', $slug)
+        $produit = Produit::where('slug', $slug)
             ->where('est_actif', true)
             ->with(['categorie', 'images'])
             ->firstOrFail();
 
         $similaires = Produit::where('est_actif', true)
-            ->where('categorie_id', $plat->categorie_id)
-            ->where('id', '!=', $plat->id)
+            ->where('categorie_id', $produit->categorie_id)
+            ->where('id', '!=', $produit->id)
             ->with('avisApprouves')
             ->limit(4)
             ->get();
 
         $parametres = Parametre::first();
 
-        return view('shop.plat', compact('plat', 'similaires', 'parametres'));
+        return view('shop.produit', compact('produit', 'similaires', 'parametres'));
     }
 }
