@@ -71,7 +71,7 @@
                     @if(count($ingredients) > 0)
                         <div class="space-y-2 mb-3">
                             @foreach($ingredients as $index => $ingredient)
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-2" wire:key="ingredient-{{ $index }}">
                                     <input type="text"
                                            wire:model="ingredients.{{ $index }}"
                                            placeholder="Ex: Riz, Poisson, Tomate..."
@@ -414,7 +414,7 @@
                     @if($galerieExistante->isNotEmpty())
                         <div class="grid grid-cols-3 gap-2 mb-3">
                             @foreach($galerieExistante as $img)
-                                <div class="relative group">
+                                <div class="relative group" wire:key="galerie-existante-{{ $img->id }}">
                                     <img src="{{ Storage::url($img->chemin) }}"
                                          class="w-full aspect-square object-cover rounded-xl
                                                 border border-gray-200"/>
@@ -436,7 +436,7 @@
                     @if(count($imagesGalerie) > 0)
                         <div class="grid grid-cols-3 gap-2 mb-3">
                             @foreach($imagesGalerie as $i => $img)
-                                <div class="relative">
+                                <div class="relative" wire:key="galerie-upload-{{ $i }}">
                                     <img src="{{ $img->temporaryUrl() }}"
                                          class="w-full aspect-square object-cover rounded-xl
                                                 border-2 border-primary/30"/>

@@ -146,6 +146,11 @@ class ProduitForm extends Component
 
     public function save(): void
     {
+        if ($this->sur_commande) {
+            $this->stock = 0;
+            $this->seuil_alerte_stock = 0;
+        }
+
         $this->validate();
 
         $cheminImage = $this->imageActuelle;
