@@ -27,6 +27,8 @@ class ParametreManager extends Component
 
     public         $logo            = null;
     public ?string $logoActuel      = null;
+    public         $imageHero       = null;
+    public ?string $imageHeroActuelle = null;
     public         $cachet          = null;
     public ?string $cachetActuel    = null;
 
@@ -72,6 +74,7 @@ class ParametreManager extends Component
         $this->devise           = $parametres->devise ?? 'FCFA';
         $this->prefixe_facture  = $parametres->prefixe_facture ?? 'FAC';
         $this->logoActuel       = $parametres->logo;
+        $this->imageHeroActuelle = $parametres->image_hero;
         $this->cachetActuel     = $parametres->cachet;
         $this->signatureActuelle = $parametres->signature;
     }
@@ -92,6 +95,7 @@ class ParametreManager extends Component
             'lien_whatsapp'   => 'nullable|string|max:255',
             'prefixe_facture' => 'required|string|max:10',
             'logo'            => 'nullable|mimes:jpeg,jpg,png,gif,webp|max:5120',
+            'imageHero'       => 'nullable|mimes:jpeg,jpg,png,gif,webp|max:5120',
         ]);
 
         $logoPath = $this->logoActuel;
@@ -102,6 +106,16 @@ class ParametreManager extends Component
             $logoPath = $this->logo->store('parametres', 'public');
             $this->logoActuel = $logoPath;
             $this->logo = null;
+        }
+
+        $imageHeroPath = $this->imageHeroActuelle;
+        if ($this->imageHero) {
+            if ($this->imageHeroActuelle && Storage::disk('public')->exists($this->imageHeroActuelle)) {
+                Storage::disk('public')->delete($this->imageHeroActuelle);
+            }
+            $imageHeroPath = $this->imageHero->store('parametres', 'public');
+            $this->imageHeroActuelle = $imageHeroPath;
+            $this->imageHero = null;
         }
 
         Parametre::updateOrCreate(['id' => 1], [
@@ -119,6 +133,7 @@ class ParametreManager extends Component
             'devise'          => $this->devise,
             'prefixe_facture' => $this->prefixe_facture,
             'logo'            => $logoPath,
+            'image_hero'      => $imageHeroPath,
         ]);
 
         $this->showSaved();

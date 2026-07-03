@@ -120,7 +120,16 @@
                             border-radius: 60% 40% 55% 45% / 50% 60% 40% 50%;
                             opacity: 0.12;"></div>
 
-                @if($carouselImages->count() > 1)
+                @if($parametres->image_hero)
+                    {{-- Image mise en avant (definie manuellement dans les parametres) --}}
+                    <div class="relative z-20">
+                        <img src="{{ Storage::url($parametres->image_hero) }}"
+                             alt="{{ $parametres->nom }}"
+                             class="w-52 h-52 sm:w-64 sm:h-64 md:w-72 md:h-72 lg:w-[360px] lg:h-[360px] xl:w-[400px] xl:h-[400px]
+                                    object-contain
+                                    drop-shadow-[0_20px_50px_rgba(242,123,32,0.2)]"/>
+                    </div>
+                @elseif($carouselImages->count() > 1)
                     {{-- Carrousel fondu Alpine --}}
                     <div class="relative z-20"
                          x-data="{

@@ -17,6 +17,7 @@ class Parametre extends Model
         'email',
         'adresse',
         'logo',
+        'image_hero',
         'signature',
         'cachet',
         'devise',

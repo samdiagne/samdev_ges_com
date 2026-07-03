@@ -192,6 +192,43 @@
                                       file:font-medium file:bg-primary/10 file:text-primary
                                       hover:file:bg-primary/20 cursor-pointer"/>
                     </div>
+
+                    {{-- Image mise en avant (accueil boutique) --}}
+                    <div>
+                        <label class="block text-sm font-medium text-dark mb-1.5">
+                            Image mise en avant (accueil boutique)
+                        </label>
+                        <p class="text-xs text-gray-400 mb-2">
+                            Affichée au premier plan sur la page d'accueil de la boutique.
+                            Si absente, un produit vedette est utilisé automatiquement à la place.
+                        </p>
+                        @if($imageHeroActuelle && !$imageHero)
+                            <div class="mb-3 flex items-center gap-3">
+                                <img src="{{ Storage::url($imageHeroActuelle) }}"
+                                    class="h-20 w-20 object-contain rounded-xl border border-gray-200 bg-white p-1"/>
+                                <button type="button"
+                                        wire:click="$set('imageHeroActuelle', null)"
+                                        class="text-xs text-red-500 hover:text-red-700 transition-colors">
+                                    🗑️ Supprimer
+                                </button>
+                            </div>
+                        @endif
+                        @if($imageHero)
+                            <div class="mb-2">
+                                <img src="{{ $imageHero->temporaryUrl() }}"
+                                     class="w-20 h-20 object-contain rounded-xl
+                                            border border-gray-200 bg-white p-1"/>
+                            </div>
+                        @endif
+                        <input wire:model="imageHero" type="file" accept="image/*"
+                               class="w-full text-sm text-gray-500 file:mr-3 file:py-2
+                                      file:px-3 file:rounded-lg file:border-0 file:text-xs
+                                      file:font-medium file:bg-primary/10 file:text-primary
+                                      hover:file:bg-primary/20 cursor-pointer"/>
+                        @error('imageHero')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
 
                 <div class="flex justify-end mt-6">
