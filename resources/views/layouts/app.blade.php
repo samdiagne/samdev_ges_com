@@ -100,7 +100,7 @@ style="height: 100dvh;">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3 min-w-0">
                 @if($logo && file_exists(storage_path('app/public/' . $logo)))
                     <div :class="sidebarOpen ? 'h-12 w-12' : 'h-10 w-10'"
-                         class="flex-shrink-0 rounded-xl bg-white p-1 shadow-sm transition-all duration-300">
+                         class="flex-shrink-0 rounded-xl logo-badge p-1 shadow-sm transition-all duration-300">
                         <img src="{{ Storage::url($logo) }}"
                              class="w-full h-full object-contain"/>
                     </div>
@@ -262,7 +262,7 @@ style="height: 100dvh;">
         <div class="relative z-10 flex items-center justify-between px-4 py-5">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-3 min-w-0">
                 @if($logo && file_exists(storage_path('app/public/' . $logo)))
-                    <div class="h-12 w-12 flex-shrink-0 rounded-xl bg-white p-1 shadow-sm">
+                    <div class="h-12 w-12 flex-shrink-0 rounded-xl logo-badge p-1 shadow-sm">
                         <img src="{{ Storage::url($logo) }}"
                              class="w-full h-full object-contain"/>
                     </div>

@@ -216,6 +216,9 @@
 
             {{-- Réseaux sociaux --}}
             @if(($settings->facebook ?? false) || ($settings->instagram ?? false) || ($settings->tiktok ?? false))
+                <p class="text-[11px] sm:text-xs font-medium" style="color: #a8a29e;">
+                    Suivez-nous sur :
+                </p>
                 <div class="flex items-center justify-center gap-2">
                     @if($settings->facebook ?? false)
                         <a href="{{ $settings->facebook }}" target="_blank"
