@@ -245,7 +245,7 @@
             {{-- Modal --}}
             <div data-modal tabindex="-1"
                  class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md
-                        outline-none animate-fade-in">
+                        max-h-[90vh] overflow-y-auto outline-none animate-fade-in">
 
                 {{-- Header --}}
                 <div class="flex items-center justify-between px-6 py-4

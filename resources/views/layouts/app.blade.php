@@ -390,7 +390,7 @@ style="height: 100dvh;">
                         opacity: 0.4;"></div>
 
             {{-- Gauche : toggle + titre --}}
-            <div class="flex items-center gap-3 min-w-0">
+            <div class="flex items-center gap-3 min-w-0 max-w-[calc(50%_-_60px)] sm:max-w-[calc(50%_-_100px)]">
                 <button @click="sidebarMobile = true"
                         class="lg:hidden flex-shrink-0 flex items-center justify-center w-9 h-9
                                rounded-xl hover:bg-gray-100 transition-all duration-200">
@@ -425,7 +425,7 @@ style="height: 100dvh;">
             <div class="absolute left-1/2 -translate-x-1/2 pointer-events-none">
                 @if($logo && file_exists(storage_path('app/public/' . $logo)))
                     <img src="{{ Storage::url($logo) }}"
-                         class="h-12 sm:h-16 w-auto max-w-[180px] object-contain opacity-90"/>
+                         class="h-10 sm:h-16 w-auto max-w-[110px] sm:max-w-[180px] object-contain opacity-90"/>
                 @else
                     <span class="font-bold text-primary text-sm">Maffood</span>
                 @endif

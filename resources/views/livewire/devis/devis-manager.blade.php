@@ -305,7 +305,8 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
                  wire:click="$set('showConvertModal', false)"></div>
-            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6
+                        max-h-[90vh] overflow-y-auto">
                 <h3 class="text-base font-bold text-dark mb-2">
                     Convertir en vente
                 </h3>
@@ -317,7 +318,7 @@
                         <label class="block text-sm font-medium text-dark mb-1.5">
                             Mode de paiement
                         </label>
-                        <div class="grid grid-cols-3 gap-2">
+                        <div class="grid grid-cols-2 gap-2">
                             @foreach([
                                 ['value' => 'cash', 'label' => 'Cash'],
                                 ['value' => 'wave', 'label' => 'Wave'],

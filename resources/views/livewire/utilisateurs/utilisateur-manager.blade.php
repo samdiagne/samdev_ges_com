@@ -89,6 +89,7 @@
 
     {{-- Table --}}
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
         <table class="w-full">
             <thead>
                 <tr class="bg-gray-50 border-b border-gray-100">
@@ -205,6 +206,7 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
         @if($users->hasPages())
             <div class="px-4 py-3 border-t border-gray-100">
                 {{ $users->links() }}

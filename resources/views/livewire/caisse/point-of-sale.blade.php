@@ -501,7 +501,8 @@
             <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
                  wire:click="$set('afficherModalPaiement', false)"></div>
 
-            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md">
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md
+                        max-h-[90vh] overflow-y-auto">
 
                 <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                     <h3 class="text-base font-bold text-dark">Encaissement</h3>
