@@ -42,24 +42,25 @@ php artisan storage:link
 ### French Naming Convention
 
 All models, database columns, routes, views, and business logic use French naming. Key vocabulary:
-- `Plat` = product/dish, `Vente` = sale, `Achat` = purchase, `Depense` = expense
+- `Produit` = product (formerly `Plat` — some views/variables still reference "plat"), `Vente` = sale, `Achat` = purchase, `Depense` = expense
 - `Commande` = e-commerce order, `Facture` = invoice, `Fournisseur` = supplier
 - `Categorie` = category, `Avis` = review, `Parametre` = company settings
 - `lignes` = line items (e.g., `VenteLigne`, `CommandeLigne`, `AchatLigne`)
 - `est_actif` / `est_active` = is_active, `vendu_le` = sold_at, `emise_le` = issued_at
 
-### Authentication — Two Models, Two Flows
+### Authentication — One Model, Spatie Roles
 
-The default auth model is **`Utilisateur`** (not `User`), configured in `config/auth.php`. This is critical — `auth()->user()` returns an `Utilisateur` instance.
+The auth model is **`App\Models\User`** (table `users`), configured in `config/auth.php`. It uses the Spatie `HasRoles` trait with three roles: `admin`, `gestionnaire`, `client`. Role checks via `isAdmin()` (= `hasRole('admin')`) and `isGestionnaire()` (= `hasRole(['admin', 'gestionnaire'])`) on the model.
 
-- **Admin/Staff auth**: Laravel Breeze at `/login`. `Utilisateur` has a `role` column (`admin` or `gestionnaire`). Role checks via `isAdmin()` and `isGestionnaire()` methods directly on the model (no Spatie roles on this model).
-- **Customer auth**: Separate flow at `/compte/connexion` and `/compte/inscription` via `Shop\AuthClientController`. Customers are stored in both `utilisateurs` and `clients` tables (linked via `client.utilisateur_id`).
+(A model named `Utilisateur` and its `utilisateurs` table existed historically but were removed — ignore any remaining references.)
 
-A `User` model also exists with Spatie `HasRoles` trait, but the auth guard uses `Utilisateur`.
+- **Admin/Staff auth**: Laravel Breeze at `/login`.
+- **Customer auth**: Registration at `/compte/inscription` via `Shop\AuthClientController` creates a `User` with the `client` role plus a linked `Client` record (`clients.user_id`). `/compte/connexion` redirects to the same `/login` form; after login, admin/gestionnaire accounts are rejected from the customer portal.
+- `Shop\EspaceClientController` (profile updates) syncs `name`/`email`/`phone` changes to the linked `Client` record.
 
 Middleware aliases registered in `bootstrap/app.php`:
-- `admin` → `EnsureUserIsAdmin` (checks `role === 'admin'`)
-- `gestionnaire` → `EnsureUserIsGestionnaire` (checks `role in ['admin', 'gestionnaire']`)
+- `admin` → `EnsureUserIsAdmin` (checks `isAdmin()`)
+- `gestionnaire` → `EnsureUserIsGestionnaire` (checks `isGestionnaire()`)
 - `active` → `EnsureUserIsActive`
 
 ### Three Sales Flows (Important Distinction)
@@ -80,7 +81,9 @@ Business logic is in `app/Services/`:
 
 ### Stock Tracking
 
-Every stock change creates a `MouvementStock` record with `type` (entree/sortie), `source` (vente/achat/ajustement), before/after quantities, and who did it. Always use `StockService` rather than directly modifying `plat.stock`.
+Every stock change creates a `MouvementStock` record with `type` (entree/sortie), `source` (vente/achat/ajustement), before/after quantities, and who did it. Always use `StockService` rather than directly modifying `produit.stock`.
+
+Note: in the current catalog all products are `sur_commande` (made-to-order) with stock ≤ 0 — any stock-based gate must check `sur_commande` first (POS, shop, and cart all do).
 
 ### Livewire Components
 
@@ -121,20 +124,21 @@ The `Parametre` model (singleton row) holds all company config: name, NINEA, RC,
 
 ### Email Notifications
 
-Queued mailable classes in `app/Mail/`:
-- `OrderConfirmationMail` / `NewOrderAdminMail` — sent on successful Paydunya payment
+Queued mailable classes in `app/Mail/` (all implement `ShouldQueue`):
+- `OrderConfirmationMail` / `NewOrderAdminMail` — sent on successful Paydunya payment (from both the browser callback and the webhook, with an idempotency guard against double-sends)
 - `OrderDeliveredMail` — sent when a `Commande` is marked `livree`
 - `NewReviewAdminMail` — sent when a customer submits an `Avis`
 
-Emails are queued (the `queue:listen` process in `composer run dev` must be running). Admin email address is configured via `MAIL_ADMIN_ADDRESS` env var, read as `config('mail.admin_address')`.
+Emails require a queue worker (`QUEUE_CONNECTION=database`; the `queue:listen` process in `composer run dev` covers dev). Admin email address is configured via `MAIL_ADMIN_ADDRESS` env var, read as `config('mail.admin_address')`.
 
-### Plat Features
+### Produit Features
 
-- `sur_commande` (boolean) — made-to-order items bypass stock checks in POS and shop
-- Tiered pricing: `quantite_palier` + `prix_palier` — use `$plat->prixPourQuantite($qty)` to get the correct price
+- `sur_commande` (boolean) — made-to-order items bypass stock checks in POS, shop, and cart
+- Tiered pricing: `quantite_palier` + `prix_palier` — use `$produit->prixPourQuantite($qty)` to get the correct price
 - `est_mis_en_avant` — featured/highlighted on the public shop hero section
-- `PlatImage` — ordered gallery images (separate from `image_principale`)
-- `Avis` (reviews) require admin approval (`est_approuve`) before showing publicly
+- `ProduitImage` — ordered gallery images (separate from `image_principale`)
+- `Avis` (reviews) require admin approval (`est_approuve`) before showing publicly; a queued `NewReviewAdminMail` notifies the admin on submission
+- `description_courte` doubles as the SEO meta description on product pages
 
 ### Artisan Import Commands
 

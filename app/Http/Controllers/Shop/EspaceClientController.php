@@ -48,7 +48,14 @@ class EspaceClientController extends Controller
             'email.unique'   => 'Cette adresse email est déjà utilisée.',
         ]);
 
-        $user->update($request->only('name', 'email'));
+        $user->update($request->only('name', 'email', 'phone'));
+
+        // Synchronise la fiche client liée (utilisée par les commandes et le POS)
+        $user->client?->update([
+            'nom'       => $user->name,
+            'email'     => $user->email,
+            'telephone' => $user->phone,
+        ]);
 
         return back()->with('success', 'Votre profil a été mis à jour.');
     }
