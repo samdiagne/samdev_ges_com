@@ -3,27 +3,27 @@
 
     {{-- Pages statiques --}}
     <url>
-        <loc>{{ url('/shop') }}</loc>
+        <loc>{{ route('shop.home') }}</loc>
         <changefreq>daily</changefreq>
         <priority>1.0</priority>
     </url>
     <url>
-        <loc>{{ url('/shop/catalogue') }}</loc>
+        <loc>{{ route('shop.catalogue') }}</loc>
         <changefreq>daily</changefreq>
         <priority>0.9</priority>
     </url>
     <url>
-        <loc>{{ url('/shop/contact') }}</loc>
+        <loc>{{ route('shop.contact') }}</loc>
         <changefreq>monthly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>{{ url('/shop/faq') }}</loc>
+        <loc>{{ route('shop.faq') }}</loc>
         <changefreq>monthly</changefreq>
         <priority>0.5</priority>
     </url>
     <url>
-        <loc>{{ url('/shop/cgv') }}</loc>
+        <loc>{{ route('shop.cgv') }}</loc>
         <changefreq>yearly</changefreq>
         <priority>0.3</priority>
     </url>
@@ -31,7 +31,7 @@
     {{-- Catégories --}}
     @foreach($categories as $category)
     <url>
-        <loc>{{ url('/shop/catalogue?categorie=' . $category->slug) }}</loc>
+        <loc>{{ route('shop.catalogue', ['categorie' => $category->slug]) }}</loc>
         <lastmod>{{ $category->updated_at->toAtomString() }}</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>

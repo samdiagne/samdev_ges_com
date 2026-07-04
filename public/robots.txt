@@ -2,7 +2,7 @@ User-agent: *
 
 # Pages publiques autorisées
 Allow: /shop/
-Allow: /shop/catalogue
+Allow: /shop/menu
 Allow: /shop/produit/
 Allow: /shop/faq
 Allow: /shop/contact
@@ -41,7 +41,7 @@ Disallow: /compte/profil
 
 # Panier & checkout — interdit aux robots
 Disallow: /shop/panier
-Disallow: /shop/checkout
+Disallow: /shop/commande
 Disallow: /shop/confirmation/
 Disallow: /shop/payment/
 
