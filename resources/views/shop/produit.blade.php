@@ -1,6 +1,10 @@
 @extends('layouts.shop')
-@section('title', $produit->nom . ' — ' . $parametres->nom)
-@section('description', Str::limit($produit->description ?? $produit->nom, 160))
+@section('title', $produit->nom . ' à Dakar')
+@section('description', $produit->description_courte ?: Str::limit($produit->description ?? $produit->nom, 160))
+@section('og_type', 'product')
+@if($produit->image_principale)
+    @section('og_image', url(Storage::url($produit->image_principale)))
+@endif
 
 @push('meta')
     @php
@@ -9,27 +13,27 @@
             '@context'    => 'https://schema.org/',
             '@type'       => 'Product',
             'name'        => $produit->nom,
-            'description' => Str::limit(strip_tags($produit->description ?? ''), 200),
+            'description' => Str::limit(strip_tags($produit->description_courte ?: ($produit->description ?? '')), 200),
             'brand'       => [
                 '@type' => 'Brand',
-                'name'  => $parametres->nom,
+                'name'  => trim($parametres->nom),
             ],
             'offers' => [
                 '@type'         => 'Offer',
                 'url'           => url()->current(),
                 'priceCurrency' => 'XOF',
                 'price'         => (string) $produit->prix_vente,
-                'availability'  => $produit->stock > 0
+                'availability'  => ($produit->sur_commande || $produit->stock > 0)
                     ? 'https://schema.org/InStock'
                     : 'https://schema.org/OutOfStock',
                 'seller' => [
                     '@type' => 'Organization',
-                    'name'  => $parametres->nom,
+                    'name'  => trim($parametres->nom),
                 ],
             ],
         ];
         if ($produit->image_principale) {
-            $jsonLd['image'] = Storage::url($produit->image_principale);
+            $jsonLd['image'] = url(Storage::url($produit->image_principale));
         }
         if ($reviewCount > 0) {
             $jsonLd['aggregateRating'] = [
@@ -41,10 +45,6 @@
     @endphp
 
     {{-- OG spécifique Produit --}}
-    <meta property="og:type" content="product"/>
-    @if($produit->image_principale)
-        <meta property="og:image" content="{{ Storage::url($produit->image_principale) }}"/>
-    @endif
     <meta property="product:price:amount"   content="{{ $produit->prix_vente }}"/>
     <meta property="product:price:currency" content="XOF"/>
 

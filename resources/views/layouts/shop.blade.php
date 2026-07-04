@@ -7,17 +7,18 @@
 
     @php
         $settings    = App\Models\Parametre::first();
-        $siteName    = $settings->nom ?? 'Mon Restaurant';
+        $siteName    = trim($settings->nom ?? 'Mon Restaurant');
         $siteUrl     = config('app.url');
         $defaultDesc = 'Découvrez nos plats faits maison à Dakar. Commande en ligne, livraison rapide, qualité garantie — ' . $siteName;
-        $metaTitle   = (trim(strip_tags($__env->yieldContent('title')))
-            ? trim(strip_tags($__env->yieldContent('title'))) . ' — '
-            : '') . $siteName;
-        $metaDesc    = trim(strip_tags($__env->yieldContent('description')))
+        $pageTitle   = html_entity_decode(trim(strip_tags($__env->yieldContent('title'))), ENT_QUOTES);
+        $metaTitle   = ($pageTitle ? $pageTitle . ' — ' : '') . $siteName;
+        $metaDesc    = html_entity_decode(trim(strip_tags($__env->yieldContent('description'))), ENT_QUOTES)
             ?: $defaultDesc;
-        $metaImage   = $settings->logo
-            ? Storage::url($settings->logo)
-            : $siteUrl . '/images/og-default.jpg';
+        $metaImage   = trim($__env->yieldContent('og_image'))
+            ?: ($settings->logo
+                ? url(Storage::url($settings->logo))
+                : $siteUrl . '/images/og-default.jpg');
+        $ogType      = trim($__env->yieldContent('og_type')) ?: 'website';
         $metaUrl     = url()->current();
     @endphp
 
@@ -30,13 +31,13 @@
     @endif
 
     {{-- SEO de base --}}
-    <title>{!! $metaTitle !!}</title>
+    <title>{{ $metaTitle }}</title>
     <meta name="description" content="{{ Str::limit($metaDesc, 160) }}"/>
     <meta name="robots" content="index, follow"/>
     <link rel="canonical" href="{{ $metaUrl }}"/>
 
     {{-- Open Graph (Facebook, WhatsApp, LinkedIn) --}}
-    <meta property="og:type"        content="website"/>
+    <meta property="og:type"        content="{{ $ogType }}"/>
     <meta property="og:site_name"   content="{{ $siteName }}"/>
     <meta property="og:title"       content="{{ $metaTitle }}"/>
     <meta property="og:description" content="{{ Str::limit($metaDesc, 200) }}"/>
