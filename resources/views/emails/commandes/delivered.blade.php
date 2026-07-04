@@ -28,6 +28,6 @@ En cas de question ou de problème, n'hésitez pas à nous contacter. Nous somme
 
 Merci encore pour votre confiance et à bientôt,
 
-**Mon Restaurant**
-Dakar, Sénégal
+**{{ $settings->nom }}**
+{{ $settings->adresse }}
 </x-mail::message>

@@ -11,7 +11,7 @@ use App\Models\Facture;
 use App\Models\Client;
 use App\Models\Parametre;
 use App\Services\StockService;
-use App\Mail\CommandeLivreeMail;
+use App\Mail\OrderDeliveredMail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -38,8 +38,8 @@ class CommandeManager extends Component
 
         if ($statut === 'livree' && $commande->email_client) {
             try {
-                Mail::to($commande->email_client)->send(new CommandeLivreeMail($commande));
-            } catch (\Exception $e) {
+                Mail::to($commande->email_client)->send(new OrderDeliveredMail($commande));
+            } catch (\Throwable $e) {
                 Log::error('Mail livraison : ' . $e->getMessage());
             }
         }

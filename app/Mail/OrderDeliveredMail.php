@@ -2,30 +2,37 @@
 
 namespace App\Mail;
 
-use App\Models\Order;
+use App\Models\Commande;
+use App\Models\Parametre;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class OrderDeliveredMail extends Mailable
+class OrderDeliveredMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public Order $order) {}
+    public $settings;
+
+    public function __construct(public Commande $commande)
+    {
+        $this->settings = Parametre::first();
+    }
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '🎉 Votre commande ' . $this->order->reference . ' a été livrée !',
+            subject: '🎉 Votre commande ' . $this->commande->reference . ' a été livrée !',
         );
     }
 
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.orders.delivered',
+            markdown: 'emails.commandes.delivered',
         );
     }
 

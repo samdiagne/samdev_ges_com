@@ -4,8 +4,11 @@ namespace App\Livewire\Shop;
 
 use Livewire\Component;
 use Livewire\WithPagination;
+use App\Mail\NewReviewAdminMail;
 use App\Models\Avis;
 use App\Models\Produit;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class ProduitReviews extends Component
 {
@@ -47,7 +50,7 @@ class ProduitReviews extends Component
     {
         $this->validate();
 
-        Avis::create([
+        $avis = Avis::create([
             'produit_id'     => $this->produit->id,
             'user_id'        => auth()->id(),
             'nom_auteur'     => $this->authorName,
@@ -55,6 +58,12 @@ class ProduitReviews extends Component
             'commentaire'    => $this->comment,
             'est_approuve'   => false,
         ]);
+
+        try {
+            Mail::to(config('mail.admin_address'))->send(new NewReviewAdminMail($avis));
+        } catch (\Throwable $e) {
+            Log::error('Mail nouvel avis : ' . $e->getMessage());
+        }
 
         $this->submitted   = true;
         $this->comment     = '';

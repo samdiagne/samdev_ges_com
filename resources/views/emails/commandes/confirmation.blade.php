@@ -15,7 +15,7 @@ Votre commande a bien été reçue et est en cours de traitement.
 @foreach($commande->lignes as $item)
 | {{ $item->nom_produit }} | {{ $item->quantite }} | {{ number_format($item->total, 0, ',', ' ') }} FCFA |
 @endforeach
-| **Total HT** | | **{{ number_format($commande->total, 0, ',', ' ') }} FCFA** |
+| **Total** | | **{{ number_format($commande->total, 0, ',', ' ') }} FCFA** |
 </x-mail::table>
 
 ---

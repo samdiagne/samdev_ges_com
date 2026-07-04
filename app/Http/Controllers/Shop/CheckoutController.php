@@ -100,7 +100,7 @@ class CheckoutController extends Controller
             }
             Mail::to(config('mail.admin_address'))
                 ->send(new NewOrderAdminMail($commande));
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Erreur envoi mail commande: ' . $e->getMessage());
         }
     }
@@ -173,11 +173,14 @@ class CheckoutController extends Controller
                 $commande = Commande::where('paydunya_token', $token)->first();
 
                 if ($commande) {
+                    $dejaPaye = $commande->statut_paiement === 'paye';
                     $commande->update([
                         'statut_paiement' => 'paye',
                         'statut'          => 'en_attente',
                     ]);
-                    $this->sendCommandeEmails($commande->fresh('lignes'));
+                    if (! $dejaPaye) {
+                        $this->sendCommandeEmails($commande->fresh('lignes'));
+                    }
 
                     return redirect()
                         ->route('shop.confirmation', $commande->reference)
@@ -197,9 +200,14 @@ class CheckoutController extends Controller
         $hash      = $request->header('X-Paydunya-Signature')
             ?? $request->header('Paydunya-Signature')
             ?? null;
-        $masterKey = config('services.paydunya.master_key', '');
+        $masterKey = config('paydunya.master_key', '');
 
-        if (! $hash || $hash !== hash_hmac('sha256', $request->getContent(), $masterKey)) {
+        if (! $masterKey) {
+            Log::error('PayDunya webhook: master key non configurée');
+            return response()->json(['error' => 'Configuration invalide'], 500);
+        }
+
+        if (! $hash || ! hash_equals(hash_hmac('sha256', $request->getContent(), $masterKey), $hash)) {
             Log::warning('PayDunya webhook: signature invalide', ['ip' => $request->ip()]);
             return response()->json(['error' => 'Signature invalide'], 401);
         }
@@ -219,7 +227,11 @@ class CheckoutController extends Controller
         }
 
         if ($statut === 'completed') {
+            $dejaPaye = $commande->statut_paiement === 'paye';
             $commande->update(['statut_paiement' => 'paye', 'statut' => 'en_attente']);
+            if (! $dejaPaye) {
+                $this->sendCommandeEmails($commande->fresh('lignes'));
+            }
         } elseif ($statut === 'cancelled') {
             $commande->update(['statut_paiement' => 'echoue', 'statut' => 'annulee']);
         }
