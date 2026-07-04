@@ -116,10 +116,6 @@
                         <th class="text-center text-xs font-semibold text-gray-500
                                    uppercase tracking-wider px-4 py-3">Statut</th>
                         <th class="text-right text-xs font-semibold text-gray-500
-                                   uppercase tracking-wider px-4 py-3 hidden md:table-cell">PU</th>
-                        <th class="text-center text-xs font-semibold text-gray-500
-                                   uppercase tracking-wider px-4 py-3 hidden md:table-cell">Qté</th>
-                        <th class="text-right text-xs font-semibold text-gray-500
                                    uppercase tracking-wider px-4 py-3">Total</th>
                         <th class="text-right text-xs font-semibold text-gray-500
                                    uppercase tracking-wider px-4 py-3 hidden lg:table-cell">
@@ -170,17 +166,6 @@
                                              {{ $statusColors[$achat->statut] ?? 'bg-gray-100 text-gray-600' }}">
                                     {{ $statusLabels[$achat->statut] ?? $achat->statut }}
                                 </span>
-                            </td>
-                            <td class="px-4 py-3 text-right hidden md:table-cell">
-                                <p class="text-sm text-dark">
-                                    {{ number_format($achat->lignes->first()?->prix_unitaire ?? 0, 0, ',', ' ') }}
-                                    <span class="text-xs text-gray-400">FCFA</span>
-                                </p>
-                            </td>
-                            <td class="px-4 py-3 text-center hidden md:table-cell">
-                                <p class="text-sm text-dark">
-                                    {{ $achat->lignes->first()?->quantite ?? '-' }}
-                                </p>
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <p class="text-sm font-bold text-dark">
@@ -247,7 +232,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="px-4 py-12 text-center">
+                            <td colspan="7" class="px-4 py-12 text-center">
                                 <p class="text-sm text-gray-400">Aucun achat trouvé</p>
                             </td>
                         </tr>
