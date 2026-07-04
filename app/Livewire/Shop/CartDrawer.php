@@ -31,6 +31,21 @@ class CartDrawer extends Component
     public function syncCart(): void
     {
         $this->panier = session('panier', []);
+
+        // Rafraichit stock et sur_commande depuis la base (la session
+        // fige ces valeurs au moment de l'ajout au panier)
+        $produits = Produit::whereIn('id', collect($this->panier)->pluck('produit_id')->filter())
+            ->get(['id', 'stock', 'sur_commande'])
+            ->keyBy('id');
+
+        foreach ($this->panier as $key => $item) {
+            $produit = $produits->get($item['produit_id'] ?? null);
+            if ($produit) {
+                $this->panier[$key]['stock']        = $produit->stock;
+                $this->panier[$key]['sur_commande'] = (bool) $produit->sur_commande;
+            }
+        }
+
         $this->total  = round(collect($this->panier)->sum(fn($i) => $i['prix'] * $i['quantite']), 2);
         $this->count  = (int) collect($this->panier)->sum('quantite');
     }
@@ -62,7 +77,7 @@ class CartDrawer extends Component
         if (! isset($panier[$key])) return;
 
         $produit = Produit::find($panier[$key]['produit_id'] ?? null);
-        if ($produit && $panier[$key]['quantite'] < $produit->stock) {
+        if ($produit && ($produit->sur_commande || $panier[$key]['quantite'] < $produit->stock)) {
             $panier[$key]['quantite']++;
         }
         session(['panier' => $panier]);

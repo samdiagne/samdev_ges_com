@@ -38,13 +38,14 @@ class PanierController extends Controller
             $panier[$cle]['quantite'] += $request->quantite;
         } else {
             $panier[$cle] = [
-                'produit_id' => $plat->id,
-                'nom'      => $plat->nom,
-                'prix'     => $plat->prix_vente,
-                'image'    => $plat->image_principale,
-                'slug'     => $plat->slug,
-                'quantite' => $request->quantite,
-                'stock'    => $plat->stock,
+                'produit_id'   => $plat->id,
+                'nom'          => $plat->nom,
+                'prix'         => $plat->prix_vente,
+                'image'        => $plat->image_principale,
+                'slug'         => $plat->slug,
+                'quantite'     => $request->quantite,
+                'stock'        => $plat->stock,
+                'sur_commande' => (bool) $plat->sur_commande,
             ];
         }
 
@@ -74,10 +75,21 @@ class PanierController extends Controller
         $panier = session('panier', []);
         $cle    = 'produit_' . $request->produit_id;
 
+        if (! isset($panier[$cle])) {
+            return back();
+        }
+
         if ($request->quantite <= 0) {
             unset($panier[$cle]);
         } else {
-            $panier[$cle]['quantite'] = $request->quantite;
+            $quantite = (int) $request->quantite;
+            $plat     = Produit::find($request->produit_id);
+
+            if ($plat && ! $plat->sur_commande && $quantite > $plat->stock) {
+                $quantite = max(1, $plat->stock);
+            }
+
+            $panier[$cle]['quantite'] = $quantite;
         }
 
         session(['panier' => $panier]);

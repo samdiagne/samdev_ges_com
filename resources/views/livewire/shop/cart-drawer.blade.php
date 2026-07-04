@@ -119,7 +119,7 @@
                                             {{ $item['quantite'] }}
                                         </span>
                                         <button wire:click="increment('{{ $key }}')"
-                                                @if($item['quantite'] >= $item['stock']) disabled @endif
+                                                @if(! ($item['sur_commande'] ?? false) && $item['quantite'] >= $item['stock']) disabled @endif
                                                 class="w-7 h-7 flex items-center justify-center rounded-lg
                                                        bg-white border border-gray-200 hover:border-primary
                                                        hover:text-primary transition-colors text-gray-500
