@@ -52,6 +52,16 @@
                 <option value="1">Actifs</option>
                 <option value="0">Inactifs</option>
             </select>
+            <select wire:model.live="tri"
+                    class="px-3 py-2 border border-gray-200 rounded-xl text-sm
+                           focus:outline-none focus:border-primary bg-gray-50">
+                <option value="created_at:desc">Trier par : Plus récents</option>
+                <option value="total_achats:desc">Total achats — du + gros au + petit</option>
+                <option value="total_achats:asc">Total achats — du + petit au + gros</option>
+                <option value="ventes_count:desc">Nb d'achats — décroissant</option>
+                <option value="ventes_count:asc">Nb d'achats — croissant</option>
+                <option value="nom:asc">Nom — A → Z</option>
+            </select>
         </div>
     </div>
 
@@ -93,8 +103,26 @@
                                    uppercase tracking-wider px-4 py-3 hidden md:table-cell">
                             Contact
                         </th>
-                        <th class="text-center text-xs font-semibold text-gray-500
-                                   uppercase tracking-wider px-4 py-3">Achats</th>
+                        <th class="text-center px-4 py-3">
+                            <button wire:click="sortBy('ventes_count')"
+                                    class="inline-flex items-center gap-1 text-xs font-semibold text-gray-500
+                                           uppercase tracking-wider hover:text-primary transition-colors">
+                                Achats
+                                @if($sortField === 'ventes_count')
+                                    <span class="text-primary">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                                @endif
+                            </button>
+                        </th>
+                        <th class="text-right px-4 py-3">
+                            <button wire:click="sortBy('total_achats')"
+                                    class="inline-flex items-center gap-1 text-xs font-semibold text-gray-500
+                                           uppercase tracking-wider hover:text-primary transition-colors">
+                                Total achats
+                                @if($sortField === 'total_achats')
+                                    <span class="text-primary">{{ $sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                                @endif
+                            </button>
+                        </th>
                         <th class="text-center text-xs font-semibold text-gray-500
                                    uppercase tracking-wider px-4 py-3">Statut</th>
                         <th class="text-right text-xs font-semibold text-gray-500
@@ -136,6 +164,12 @@
                                              bg-primary/10 text-primary text-xs font-bold rounded-lg">
                                     {{ $client->ventes_count ?? 0 }}
                                 </span>
+                            </td>
+                            <td class="px-4 py-3 text-right">
+                                <p class="text-sm font-bold text-dark">
+                                    {{ number_format($client->total_achats ?? 0, 0, ',', ' ') }}
+                                    <span class="text-xs font-normal text-gray-400">FCFA</span>
+                                </p>
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <span @class([
@@ -198,7 +232,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-4 py-12 text-center">
+                            <td colspan="6" class="px-4 py-12 text-center">
                                 <div class="flex flex-col items-center gap-3">
                                     <div class="w-12 h-12 bg-gray-100 rounded-2xl flex items-center
                                                 justify-center">

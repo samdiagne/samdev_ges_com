@@ -13,6 +13,10 @@ class ClientManager extends Component
     public string $search       = '';
     public string $filtreStatut = '';
 
+    public string $sortField     = 'created_at';
+    public string $sortDirection = 'desc';
+    public string $tri           = 'created_at:desc';
+
     public bool   $afficherModal = false;
     public bool   $isEditing     = false;
     public ?int   $editingId     = null;
@@ -47,6 +51,35 @@ class ClientManager extends Component
     ];
 
     public function updatingSearch(): void { $this->resetPage(); }
+
+    public function sortBy(string $field): void
+    {
+        if (! in_array($field, ['nom', 'ventes_count', 'total_achats', 'created_at'])) {
+            return;
+        }
+
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField     = $field;
+            $this->sortDirection = 'desc';
+        }
+
+        $this->tri = $this->sortField . ':' . $this->sortDirection;
+        $this->resetPage();
+    }
+
+    public function updatedTri(string $value): void
+    {
+        [$field, $direction] = array_pad(explode(':', $value), 2, 'desc');
+
+        if (in_array($field, ['nom', 'ventes_count', 'total_achats', 'created_at'])
+            && in_array($direction, ['asc', 'desc'])) {
+            $this->sortField     = $field;
+            $this->sortDirection = $direction;
+            $this->resetPage();
+        }
+    }
 
     public function openCreateModal(): void
     {
@@ -142,12 +175,18 @@ class ClientManager extends Component
     public function render()
     {
         $clients = Client::withCount('ventes')
+            ->withSum(['ventes as total_achats' => fn($q) => $q->where('statut', 'completee')], 'total')
             ->when($this->search, fn($q) =>
-                $q->where('nom', 'like', '%' . $this->search . '%')
-                  ->orWhere('telephone', 'like', '%' . $this->search . '%')
-                  ->orWhere('email', 'like', '%' . $this->search . '%')
+                $q->where(fn($sub) =>
+                    $sub->where('nom', 'like', '%' . $this->search . '%')
+                        ->orWhere('telephone', 'like', '%' . $this->search . '%')
+                        ->orWhere('email', 'like', '%' . $this->search . '%')
+                )
             )
-            ->latest()
+            ->when($this->sortField === 'total_achats',
+                fn($q) => $q->orderByRaw('COALESCE(total_achats, 0) ' . $this->sortDirection),
+                fn($q) => $q->orderBy($this->sortField, $this->sortDirection)
+            )
             ->paginate(15);
 
         $voirClient = $this->voirId
