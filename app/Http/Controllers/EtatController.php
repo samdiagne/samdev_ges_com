@@ -14,11 +14,25 @@ use Carbon\Carbon;
 
 class EtatController extends Controller
 {
+    // ── Helper période ─────────────────────────────
+    // Gere les parametres absents OU vides, et remet les bornes
+    // dans l'ordre si l'utilisateur les inverse.
+    private function getPeriode(Request $request): array
+    {
+        $from = Carbon::parse($request->filled('date_from') ? $request->date_from : now()->startOfMonth())->startOfDay();
+        $to   = Carbon::parse($request->filled('date_to') ? $request->date_to : now())->endOfDay();
+
+        if ($from->gt($to)) {
+            [$from, $to] = [$to->copy()->startOfDay(), $from->copy()->endOfDay()];
+        }
+
+        return [$from, $to];
+    }
+
     // ── État des ventes ───────────────────────────
     public function etatVentes(Request $request)
     {
-        $from = Carbon::parse($request->date_from ?? now()->startOfMonth());
-        $to   = Carbon::parse($request->date_to ?? now())->endOfDay();
+        [$from, $to] = $this->getPeriode($request);
 
         $ventes = Vente::with(['client', 'lignes'])
             ->where('statut', 'completee')
@@ -51,8 +65,7 @@ class EtatController extends Controller
     // ── État des dépenses ─────────────────────────
     public function etatDepenses(Request $request)
     {
-        $from = Carbon::parse($request->date_from ?? now()->startOfMonth());
-        $to   = Carbon::parse($request->date_to ?? now())->endOfDay();
+        [$from, $to] = $this->getPeriode($request);
 
         $depenses = Depense::with(['categorie', 'user'])
             ->whereBetween('date_depense', [$from->toDateString(), $to->toDateString()])
@@ -77,11 +90,94 @@ class EtatController extends Controller
         ->download('etat-depenses-' . $from->format('Y-m-d') . '.pdf');
     }
 
+    // ── État des achats ───────────────────────────
+    public function etatAchats(Request $request)
+    {
+        [$from, $to] = $this->getPeriode($request);
+
+        $achats = Achat::with(['fournisseur', 'lignes'])
+            ->whereBetween('date_achat', [$from->toDateString(), $to->toDateString()])
+            ->latest('date_achat')
+            ->get();
+
+        $stats = [
+            'total'           => $achats->sum('montant_total'),
+            'count'           => $achats->count(),
+            'paye'            => $achats->sum('montant_paye'),
+            'du'              => $achats->sum('montant_du'),
+            'par_fournisseur' => $achats->groupBy(fn($a) => $a->fournisseur?->nom ?? 'Sans fournisseur')
+                ->map(fn($g) => $g->sum('montant_total'))
+                ->sortDesc(),
+        ];
+
+        $parametres = Parametre::first();
+        $logoBase64 = $this->getLogoBase64();
+
+        return Pdf::loadView('pdf.etats.etat-achats',
+            compact('achats', 'stats', 'parametres', 'logoBase64', 'from', 'to')
+        )
+        ->setPaper('a4', 'portrait')
+        ->setOptions(['defaultFont' => 'DejaVu Sans', 'isHtml5ParserEnabled' => true])
+        ->download('etat-achats-' . $from->format('Y-m-d') . '.pdf');
+    }
+
+    // ── État croisé achats + dépenses ─────────────
+    public function etatAchatsDepenses(Request $request)
+    {
+        [$from, $to] = $this->getPeriode($request);
+
+        $achats = Achat::with('fournisseur')
+            ->whereBetween('date_achat', [$from->toDateString(), $to->toDateString()])
+            ->get();
+
+        $depenses = Depense::with('categorie')
+            ->whereBetween('date_depense', [$from->toDateString(), $to->toDateString()])
+            ->get();
+
+        // Fusion chronologique des deux types de sorties
+        $mouvements = $achats->map(fn($a) => [
+                'date'    => Carbon::parse($a->date_achat),
+                'type'    => 'achat',
+                'libelle' => $a->reference . ($a->fournisseur ? ' — ' . $a->fournisseur->nom : ''),
+                'mode'    => $a->mode_paiement,
+                'montant' => (float) $a->montant_total,
+                'du'      => (float) $a->montant_du,
+            ])
+            ->concat($depenses->map(fn($d) => [
+                'date'    => Carbon::parse($d->date_depense),
+                'type'    => 'depense',
+                'libelle' => ($d->categorie?->nom ? $d->categorie->nom . ' — ' : '') . $d->description,
+                'mode'    => $d->mode_paiement,
+                'montant' => (float) $d->montant,
+                'du'      => 0.0,
+            ]))
+            ->sortBy('date')
+            ->values();
+
+        $stats = [
+            'achats_total'   => $achats->sum('montant_total'),
+            'achats_count'   => $achats->count(),
+            'achats_du'      => $achats->sum('montant_du'),
+            'depenses_total' => $depenses->sum('montant'),
+            'depenses_count' => $depenses->count(),
+            'total_sorties'  => $achats->sum('montant_total') + $depenses->sum('montant'),
+        ];
+
+        $parametres = Parametre::first();
+        $logoBase64 = $this->getLogoBase64();
+
+        return Pdf::loadView('pdf.etats.etat-achats-depenses',
+            compact('mouvements', 'stats', 'parametres', 'logoBase64', 'from', 'to')
+        )
+        ->setPaper('a4', 'portrait')
+        ->setOptions(['defaultFont' => 'DejaVu Sans', 'isHtml5ParserEnabled' => true])
+        ->download('etat-achats-depenses-' . $from->format('Y-m-d') . '.pdf');
+    }
+
     // ── État de trésorerie ────────────────────────
     public function etatTresorerie(Request $request)
     {
-        $from = Carbon::parse($request->date_from ?? now()->startOfMonth());
-        $to   = Carbon::parse($request->date_to ?? now())->endOfDay();
+        [$from, $to] = $this->getPeriode($request);
 
         $recettes = Vente::where('statut', 'completee')
             ->whereBetween('vendu_le', [$from, $to])
@@ -134,17 +230,17 @@ class EtatController extends Controller
     // ── Bilan stocks ──────────────────────────────
     public function bilanStocks(Request $request)
     {
-        $plats = Produit::with('categorie')
+        $produits = Produit::with('categorie')
             ->where('est_actif', true)
             ->orderBy('categorie_id')
             ->orderBy('nom')
             ->get();
 
         $stats = [
-            'total_produits' => $plats->count(),
-            'valeur_vente'   => $plats->sum(fn($p) => $p->stock * $p->prix_vente),
-            'ruptures'       => $plats->where('stock', '<=', 0)->where('sur_commande', false)->count(),
-            'stock_bas'      => $plats->filter(fn($p) =>
+            'total_produits' => $produits->count(),
+            'valeur_vente'   => $produits->sum(fn($p) => $p->stock * $p->prix_vente),
+            'ruptures'       => $produits->where('stock', '<=', 0)->where('sur_commande', false)->count(),
+            'stock_bas'      => $produits->filter(fn($p) =>
                 ! $p->sur_commande && $p->stock > 0 && $p->stock <= $p->seuil_alerte_stock
             )->count(),
         ];
@@ -153,7 +249,7 @@ class EtatController extends Controller
         $logoBase64 = $this->getLogoBase64();
 
         return Pdf::loadView('pdf.etats.bilan-stocks',
-            compact('plats', 'stats', 'parametres', 'logoBase64')
+            compact('produits', 'stats', 'parametres', 'logoBase64')
         )
         ->setPaper('a4', 'landscape')
         ->setOptions(['defaultFont' => 'DejaVu Sans', 'isHtml5ParserEnabled' => true])

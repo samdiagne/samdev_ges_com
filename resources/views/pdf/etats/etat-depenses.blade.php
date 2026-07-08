@@ -81,14 +81,14 @@
     </div>
 
     {{-- Répartition par catégorie --}}
-    @if($stats['by_category']->isNotEmpty())
+    @if($stats['par_categorie']->isNotEmpty())
         <div style="margin-bottom:15px;">
             <p style="font-size:9px; font-weight:bold; color:#EF4444; margin-bottom:8px;
                       text-transform:uppercase; letter-spacing:0.5px;">
                 Répartition par catégorie
             </p>
-            @php $maxCat = $stats['by_category']->max() ?: 1; @endphp
-            @foreach($stats['by_category'] as $catName => $amount)
+            @php $maxCat = $stats['par_categorie']->max() ?: 1; @endphp
+            @foreach($stats['par_categorie'] as $catName => $amount)
                 <div class="cat-row">
                     <div class="cat-name">{{ $catName ?? 'Autre' }}</div>
                     <div class="cat-bar">

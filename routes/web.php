@@ -127,6 +127,8 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/etats/ventes',       [EtatController::class, 'etatVentes'])->name('etats.ventes');
     Route::get('/etats/depenses',     [EtatController::class, 'etatDepenses'])->name('etats.depenses');
     Route::get('/etats/tresorerie',   [EtatController::class, 'etatTresorerie'])->name('etats.tresorerie');
+    Route::get('/etats/achats',       [EtatController::class, 'etatAchats'])->name('etats.achats');
+    Route::get('/etats/achats-depenses', [EtatController::class, 'etatAchatsDepenses'])->name('etats.achats-depenses');
     Route::get('/etats/stocks',       [EtatController::class, 'bilanStocks'])->name('etats.stocks');
 
     // ── Admin uniquement ──────────────────────────────────────────────────
