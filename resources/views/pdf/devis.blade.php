@@ -126,13 +126,13 @@
         </div>
     </div>
 
-    {{-- Validite --}}
+    {{-- Validite 
     @if($quote->valide_jusqua)
         <div class="validity">
             Ce devis est valable jusqu'au
             <strong>{{ $quote->valide_jusqua->format('d/m/Y') }}</strong>.
         </div>
-    @endif
+    @endif --}}
 
     {{-- Infos --}}
     <div class="info-section">
@@ -221,7 +221,7 @@
             </div>
             @endif
 
-            {{-- Signature --}}
+            {{-- Signature 
             <div class="sign-block">
                 @if($signaturePath && file_exists($signaturePath))
                     <img src="{{ $signaturePath }}"
@@ -230,7 +230,7 @@
                     <div style="height:50px;"></div>
                 @endif
                 <div class="sign-line">Signature</div>
-            </div>
+            </div>--}}
 
         </div>
     </div>

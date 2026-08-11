@@ -24,7 +24,13 @@
       "Bash(composer show *)",
       "Bash(composer require *)",
       "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://127.0.0.1:8000/shop/catalogue\" -UseBasicParsing -TimeoutSec 10; \"Status: $\\($r.StatusCode\\)\"; \"Length: $\\($r.Content.Length\\)\" } catch { \"Error: $\\($_.Exception.Message\\)\" })",
-      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://127.0.0.1:8000/shop\" -UseBasicParsing; \"Status: $\\($r.StatusCode\\) | Length: $\\($r.Content.Length\\)\"; if \\($r.Content -match 'hero-gradient-text'\\) { \"HERO GRADIENT: OK\" } else { \"HERO GRADIENT: MISSING\" }; if \\($r.Content -match 'hero-float'\\) { \"ANIMATIONS: OK\" } else { \"ANIMATIONS: MISSING\" }; if \\($r.Content -match 'Des saveurs'\\) { \"NEW TITLE: OK\" } else { \"NEW TITLE: MISSING\" } } catch { \"Error: $\\($_.Exception.Message\\)\" })"
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://127.0.0.1:8000/shop\" -UseBasicParsing; \"Status: $\\($r.StatusCode\\) | Length: $\\($r.Content.Length\\)\"; if \\($r.Content -match 'hero-gradient-text'\\) { \"HERO GRADIENT: OK\" } else { \"HERO GRADIENT: MISSING\" }; if \\($r.Content -match 'hero-float'\\) { \"ANIMATIONS: OK\" } else { \"ANIMATIONS: MISSING\" }; if \\($r.Content -match 'Des saveurs'\\) { \"NEW TITLE: OK\" } else { \"NEW TITLE: MISSING\" } } catch { \"Error: $\\($_.Exception.Message\\)\" })",
+      "Bash(php *)",
+      "Bash(curl *)",
+      "Bash(python3 -c ' *)",
+      "Bash(node -e ' *)",
+      "PowerShell(php artisan tinker --execute=\"echo json_encode\\(App\\\\Models\\\\Parametre::first\\(\\)->only\\(['nom_entreprise','adresse','telephone','slogan'] \\), JSON_UNESCAPED_UNICODE\\);\")",
+      "PowerShell(php \"C:\\\\Users\\\\FISC\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--xampp-htdocs-maf-food\\\\3867f3bc-e7ee-48ff-88d6-4a5bbda86322\\\\scratchpad\\\\update-descriptions.php\")"
     ]
   }
 }

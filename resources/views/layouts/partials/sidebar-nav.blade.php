@@ -36,6 +36,12 @@
                     'icon'  => 'receipt',
                     'roles' => ['admin', 'gestionnaire'],
                 ],
+                [
+                    'label' => 'Devis',
+                    'route' => 'devis.index',
+                    'icon'  => 'receipt',
+                    'roles' => ['admin', 'gestionnaire'],
+                ],
             ],
         ],
         [

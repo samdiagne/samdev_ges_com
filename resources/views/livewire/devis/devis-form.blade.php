@@ -220,18 +220,30 @@
                                         <button type="button"
                                                 wire:click="updateQuantity({{ $index }}, {{ $item['quantite'] - 1 }})"
                                                 class="w-6 h-6 flex items-center justify-center
-                                                       bg-white rounded-lg border border-gray-200
-                                                       text-gray-500 hover:bg-gray-100 text-sm">
+                                                    bg-white rounded-lg border border-gray-200
+                                                    text-gray-500 hover:bg-gray-100 text-sm">
                                             &minus;
                                         </button>
-                                        <span class="w-8 text-center text-sm font-bold">
-                                            {{ $item['quantite'] }}
-                                        </span>
+
+                                        <input type="number"
+                                            min="1"
+                                            step="1"
+                                            value="{{ $item['quantite'] }}"
+                                            wire:key="qty-{{ $index }}"
+                                            wire:change="updateQuantity({{ $index }}, $event.target.value)"
+                                            onfocus="this.select()"
+                                            class="w-12 text-center text-sm font-bold
+                                                    bg-white rounded-lg border border-gray-200
+                                                    focus:outline-none focus:ring-1 focus:ring-orange-400
+                                                    [appearance:textfield]
+                                                    [&::-webkit-outer-spin-button]:appearance-none
+                                                    [&::-webkit-inner-spin-button]:appearance-none"/>
+
                                         <button type="button"
                                                 wire:click="updateQuantity({{ $index }}, {{ $item['quantite'] + 1 }})"
                                                 class="w-6 h-6 flex items-center justify-center
-                                                       bg-white rounded-lg border border-gray-200
-                                                       text-gray-500 hover:bg-gray-100 text-sm">
+                                                    bg-white rounded-lg border border-gray-200
+                                                    text-gray-500 hover:bg-gray-100 text-sm">
                                             +
                                         </button>
                                     </div>
