@@ -51,47 +51,14 @@
             </div>
         @endif
 
-        {{-- QUICK ADD (hover desktop) --}}
-        @if($produit->sur_commande || $produit->stock > 0)
+        {{-- HOVER CTA (desktop) --}}
         <div class="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 opacity-0
-                    group-hover:opacity-100 transition duration-300 w-[90%] hidden sm:block"
-             x-data="{ loading: false, done: false }"
-             @click.stop>
-            <button @click="
-                        loading = true;
-                        fetch('{{ route('shop.panier.add') }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
-                                'Accept': 'application/json',
-                            },
-                            body: JSON.stringify({ produit_id: {{ $produit->id }}, quantite: 1 })
-                        })
-                        .then(() => {
-                            loading = false;
-                            done = true;
-                            setTimeout(() => done = false, 2000);
-                            Livewire.dispatch('panier-mis-a-jour');
-                            Livewire.dispatch('open-cart');
-                        })
-                        .catch(() => { loading = false; })
-                    "
-                    :disabled="loading || done"
-                    class="w-full text-white text-xs py-2 rounded-xl font-semibold
-                           shadow-lg transition disabled:opacity-70"
-                    :class="done ? 'bg-green-500' : 'bg-primary hover:scale-105'">
-                <span x-show="!loading && !done">{{ $produit->sur_commande ? 'Voir' : '🛒 Ajouter au panier' }}</span>
-                <span x-show="loading">
-                    <svg class="w-3.5 h-3.5 animate-spin inline" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-                    </svg>
-                </span>
-                <span x-show="done">✓ Ajouté !</span>
-            </button>
+                    group-hover:opacity-100 transition duration-300 w-[90%] hidden sm:block">
+            <span class="block w-full text-white text-xs py-2 rounded-xl font-semibold
+                         shadow-lg bg-primary text-center">
+                Plus de détails
+            </span>
         </div>
-        @endif
 
     </div>
 
