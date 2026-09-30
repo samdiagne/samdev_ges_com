@@ -88,7 +88,7 @@ style="height: 100dvh;">
     {{-- ═══════════════════════════════════════════
          SIDEBAR DESKTOP
     ═══════════════════════════════════════════ --}}
-    <aside :class="sidebarOpen ? 'w-[260px]' : 'w-[68px]'"
+    <aside :class="sidebarOpen ? 'w-[220px]' : 'w-[64px]'"
            style="background: linear-gradient(180deg, #F27B20 0%, #E06010 100%)"
            class="hidden lg:flex flex-col text-white flex-shrink-0
                   transition-all duration-300 ease-in-out relative overflow-hidden">
@@ -467,7 +467,7 @@ style="height: 100dvh;">
         </header>
 
         {{-- Page content --}}
-        <main class="flex-1 overflow-y-auto p-4 lg:p-6"
+        <main class="flex-1 {{ request()->routeIs('caisse.pos') ? 'overflow-hidden p-2 sm:p-3 flex flex-col' : 'overflow-y-auto p-4 lg:p-6' }}"
         style="-webkit-overflow-scrolling: touch;">
 
             @if(session('success'))

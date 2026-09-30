@@ -45,6 +45,27 @@
             Télécharger PDF
         </a>
 
+        {{-- Basculer Statut --}}
+        @if($vente->facture)
+            <form action="{{ route('factures.toggle-statut', $vente->id) }}" method="POST" class="inline">
+                @csrf
+                <button type="submit"
+                        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm shadow-sm transition-all {{ $vente->facture->estPayee() ? 'bg-amber-100 hover:bg-amber-200 text-amber-800' : 'bg-emerald-600 hover:bg-emerald-700 text-white' }}">
+                    @if($vente->facture->estPayee())
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0"/>
+                        </svg>
+                        Passer en « À régler »
+                    @else
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Marquer comme « Payée »
+                    @endif
+                </button>
+            </form>
+        @endif
+
         {{-- Imprimer --}}
         <button onclick="window.print()"
                 class="inline-flex items-center gap-2 bg-dark hover:bg-dark/90
@@ -65,9 +86,17 @@
     @if($vente->facture)
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
             <div class="p-4 border-b border-gray-100 flex items-center justify-between">
-                <h3 class="text-sm font-bold text-dark">
-                    Aperçu — {{ $vente->facture->numero_facture }}
+                <h3 class="text-sm font-bold text-dark flex items-center gap-2">
+                    <span>Aperçu — {{ $vente->facture->numero_facture }}</span>
                 </h3>
+                <span @class([
+                    'px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-xs',
+                    'bg-emerald-100 text-emerald-700' => $vente->facture->estPayee(),
+                    'bg-amber-100 text-amber-700' => !$vente->facture->estPayee(),
+                ])>
+                    <span class="w-1.5 h-1.5 rounded-full {{ $vente->facture->estPayee() ? 'bg-emerald-500' : 'bg-amber-500' }}"></span>
+                    <span>{{ $vente->facture->estPayee() ? 'Payée (Acquittée)' : 'À régler' }}</span>
+                </span>
             </div>
 
             {{-- Infos rapides --}}
@@ -76,19 +105,19 @@
                 <div class="p-4">
                     <p class="text-xs text-gray-400">Client</p>
                     <p class="text-sm font-semibold text-dark mt-0.5">
-                        {{ $vente->client?->name ?? 'Anonyme' }}
+                        {{ $vente->client?->nom ?? 'Client anonyme' }}
                     </p>
                 </div>
                 <div class="p-4">
-                    <p class="text-xs text-gray-400">Date</p>
+                    <p class="text-xs text-gray-400">Date d'émission</p>
                     <p class="text-sm font-semibold text-dark mt-0.5">
-                        {{ $vente->vendu_le->format('d/m/Y') }}
+                        {{ $vente->facture->emise_le->format('d/m/Y') }}
                     </p>
                 </div>
                 <div class="p-4">
-                    <p class="text-xs text-gray-400">Paiement</p>
+                    <p class="text-xs text-gray-400">Règlement</p>
                     <p class="text-sm font-semibold text-dark mt-0.5 capitalize">
-                        {{ $vente->mode_paiement }}
+                        {{ $vente->facture->estPayee() ? ucfirst($vente->mode_paiement) : 'En attente' }}
                     </p>
                 </div>
                 <div class="p-4">

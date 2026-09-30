@@ -25,4 +25,16 @@ class FactureController extends Controller
         $vente->load(['lignes', 'client', 'facture']);
         return $this->factureService->download($vente);
     }
+
+    public function toggleStatut(Vente $vente)
+    {
+        if ($vente->facture) {
+            $this->factureService->basculerStatut($vente->facture);
+            $msg = $vente->facture->estPayee()
+                ? 'La facture est désormais marquée comme Payée (Acquittée).'
+                : 'La facture est désormais marquée comme À régler.';
+            return back()->with('success', $msg);
+        }
+        return back()->with('error', 'Aucune facture associée.');
+    }
 }

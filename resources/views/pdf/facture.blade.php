@@ -57,6 +57,19 @@
             margin-top: 6px;
         }
 
+        .badge-paid {
+            display: inline-block;
+            background: #16A34A;
+            color: white;
+            font-size: 9px;
+            font-weight: bold;
+            padding: 3px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 6px;
+        }
+
         /* ── Info boxes ── */
         .info-section {
             display: table;
@@ -121,6 +134,17 @@
         }
         .payment-note-due strong { color: #B91C1C; }
 
+        .payment-note-paid {
+            background: #F0FDF4;
+            border: 1px solid #BBF7D0;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-bottom: 20px;
+            font-size: 10px;
+            color: #14532D;
+        }
+        .payment-note-paid strong { color: #15803D; }
+
         /* ── Footer ── */
         .footer {
             display: table;
@@ -161,7 +185,13 @@
             <div class="invoice-title">FACTURE</div>
             <div class="invoice-number">{{ $facture->numero_facture }}</div>
             <div class="invoice-date">Date : {{ $facture->emise_le->format('d/m/Y') }}</div>
-            <div><span class="badge-unpaid">À régler</span></div>
+            <div>
+                @if($facture->estPayee())
+                    <span class="badge-paid">Payée</span>
+                @else
+                    <span class="badge-unpaid">À régler</span>
+                @endif
+            </div>
         </div>
     </div>
 
@@ -188,8 +218,15 @@
         </div>
         <div class="info-box">
             <div class="info-box-title">Paiement</div>
-            <p>Mode : <strong>À définir</strong></p>
-            <p>Date : {{ $vente->vendu_le->format('d/m/Y à H:i') }}</p>
+            @if($facture->estPayee())
+                <p>Statut : <strong style="color: #16A34A;">Réglée</strong></p>
+                <p>Mode : <strong>{{ ucfirst($vente->mode_paiement) }}</strong></p>
+                <p>Date : {{ $vente->vendu_le->format('d/m/Y à H:i') }}</p>
+            @else
+                <p>Statut : <strong style="color: #DC2626;">À régler</strong></p>
+                <p>Mode : <strong>En attente</strong></p>
+                <p>Date émission : {{ $facture->emise_le->format('d/m/Y') }}</p>
+            @endif
             <p>Réf : {{ $vente->reference }}</p>
         </div>
     </div>
@@ -220,12 +257,18 @@
         </tbody>
     </table>
 
-    {{-- ── Note à régler ── --}}
-    <div class="payment-note-due">
-        <strong>Facture à régler</strong><br/>
-        Montant dû : <strong>{{ number_format($vente->montant_recu, 0, ',', ' ') }} FCFA</strong>
-        — À régler.
-    </div>
+    {{-- ── Note paiement ── --}}
+    @if($facture->estPayee())
+        <div class="payment-note-paid">
+            <strong>Facture acquittée</strong><br/>
+            Montant réglé : <strong>{{ number_format($facture->total, 0, ',', ' ') }} FCFA</strong> par {{ ucfirst($vente->mode_paiement) }} le {{ $vente->vendu_le->format('d/m/Y') }}.
+        </div>
+    @else
+        <div class="payment-note-due">
+            <strong>Facture à régler</strong><br/>
+            Montant dû : <strong>{{ number_format($facture->total, 0, ',', ' ') }} FCFA</strong> — En attente de règlement.
+        </div>
+    @endif
 
     {{-- ── Footer ── --}}
     <div class="footer">
@@ -236,6 +279,14 @@
             <span style="color:#bbb; font-size:8px;">
                 Document généré le {{ now()->format('d/m/Y à H:i') }} — {{ $parametres->nom }}
             </span>
+        </div>
+        <div style="display: table-cell; width: 50%; vertical-align: bottom; text-align: right;">
+            @if($facture->estPayee() && $cachetPath && file_exists($cachetPath))
+                <img src="{{ $cachetPath }}" style="height: 60px; max-width: 140px; margin-right: 10px; display: inline-block; vertical-align: middle;"/>
+            @endif
+            @if($facture->estPayee() && $signaturePath && file_exists($signaturePath))
+                <img src="{{ $signaturePath }}" style="height: 50px; max-width: 140px; display: inline-block; vertical-align: middle;"/>
+            @endif
         </div>
     </div>
 

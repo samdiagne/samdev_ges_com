@@ -31,6 +31,20 @@ class Facture extends Model
         ];
     }
 
+    // ── Statuts ───────────────────────────────────
+    public const STATUT_PAYEE    = 'payee';
+    public const STATUT_A_REGLER = 'a_regler';
+
+    public function estPayee(): bool
+    {
+        return $this->statut === self::STATUT_PAYEE;
+    }
+
+    public function estARegler(): bool
+    {
+        return $this->statut === self::STATUT_A_REGLER || $this->statut === 'emise';
+    }
+
     // ── Relations ─────────────────────────────────
 
     public function vente(): BelongsTo

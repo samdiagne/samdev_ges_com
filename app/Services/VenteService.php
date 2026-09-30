@@ -41,18 +41,21 @@ class VenteService
                 ? Carbon::parse($dateVente)->startOfDay()
                 : now();
 
+            $modePaiement = $paiement['mode_paiement'] ?? 'cash';
+            $estARegler   = ($modePaiement === 'a_regler');
+
             // ── Créer la vente ─────────────────────────
             $vente = Vente::create([
                 'reference'      => $this->genererReference(),
                 'client_id'      => $clientId,
-                'user_id' => Auth::id(),
+                'user_id'        => Auth::id(),
                 'source'         => 'boutique',
-                'statut'         => 'completee',
+                'statut'         => $estARegler ? 'en_attente' : 'completee',
                 'total'          => $total,
                 'remise'         => $remise,
-                'montant_recu'   => $montantRecu,
-                'monnaie_rendue' => $monnaieRendue,
-                'mode_paiement'  => $paiement['mode_paiement'] ?? 'cash',
+                'montant_recu'   => $estARegler ? 0 : $montantRecu,
+                'monnaie_rendue' => $estARegler ? 0 : $monnaieRendue,
+                'mode_paiement'  => $modePaiement,
                 'notes'          => $paiement['notes'] ?? null,
                 'vendu_le'       => $venduLe,
             ]);
@@ -86,7 +89,7 @@ class VenteService
                 'vente_id'       => $vente->id,
                 'client_id'      => $clientId,
                 'numero_facture' => $this->genererNumeroFacture($parametres),
-                'statut'         => 'emise',
+                'statut'         => $estARegler ? Facture::STATUT_A_REGLER : Facture::STATUT_PAYEE,
                 'total'          => $total,
                 'emise_le'       => $venduLe,
             ]);

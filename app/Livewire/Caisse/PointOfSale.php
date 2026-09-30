@@ -126,7 +126,7 @@ class PointOfSale extends Component
 
     public function updateQuantity(int $index, int $quantite): void
     {
-        if ($quantite <= 0) { $this->retirerDuPanier($index); return; }
+        if ($quantite <= 0) { $this->removeFromCart($index); return; }
         $stockMax = $this->panier[$index]['stock_max'];
         if ($stockMax !== null && $quantite > $stockMax) {
             $quantite = $stockMax;
@@ -246,7 +246,7 @@ class PointOfSale extends Component
     public function processPayment(VenteService $venteService): void
     {
         if (empty($this->panier)) return;
-        if ($this->montantRecu < $this->total) {
+        if ($this->modePaiement !== 'a_regler' && $this->montantRecu < $this->total) {
             $this->addError('montantRecu', 'Montant insuffisant !'); return;
         }
         try {
@@ -273,6 +273,8 @@ class PointOfSale extends Component
             $this->afficherModalSucces   = true;
             $this->clearCart();
             $this->loadProducts();
+
+            $this->dispatch('imprimer-ticket', url: route('caisse.ticket', $vente->id) . '?auto=1');
         } catch (\Exception $e) {
             $this->erreurPaiement = $e->getMessage();
         }

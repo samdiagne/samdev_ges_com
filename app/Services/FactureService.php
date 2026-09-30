@@ -46,6 +46,24 @@ class FactureService
     }
 
     /**
+     * Basculer le statut d'une facture (Payée <-> À régler) et régénérer le PDF.
+     */
+    public function basculerStatut(Facture $facture): Facture
+    {
+        $nouveauStatut = $facture->estPayee() ? Facture::STATUT_A_REGLER : Facture::STATUT_PAYEE;
+        $facture->update(['statut' => $nouveauStatut]);
+
+        if ($facture->vente) {
+            $facture->vente->update([
+                'statut' => $nouveauStatut === Facture::STATUT_PAYEE ? 'completee' : 'en_attente',
+            ]);
+            $this->generatePdf($facture->vente);
+        }
+
+        return $facture;
+    }
+
+    /**
      * Générer et retourner le PDF en téléchargement direct.
      */
     public function download(Vente $vente)

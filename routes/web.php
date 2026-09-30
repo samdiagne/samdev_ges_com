@@ -80,6 +80,14 @@ Route::middleware(['auth', 'active'])->group(function () {
 
         // Dépenses
         Route::get('/depenses', fn() => view('caisse.depenses.index'))->name('depenses.index');
+
+        // Ticket de caisse
+        Route::get('/ticket/{vente}', function(\App\Models\Vente $vente) {
+            $vente->load(['lignes', 'client', 'user']);
+            $settings = \App\Models\Parametre::first();
+            $devise = $settings?->devise ?? 'FCFA';
+            return view('caisse.ticket', compact('vente', 'settings', 'devise'));
+        })->name('ticket');
     });
 
     // ── Produits ──────────────────────────────────────────────────────────
@@ -107,6 +115,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/factures',                    fn() => view('factures.index'))->name('factures.index');
     Route::get('/factures/{vente}',            [FactureController::class, 'show'])->name('factures.show');
     Route::get('/factures/{vente}/telecharger',[FactureController::class, 'download'])->name('factures.download');
+    Route::post('/factures/{vente}/toggle-statut', [FactureController::class, 'toggleStatut'])->name('factures.toggle-statut');
 
     // ── Rapports ──────────────────────────────────────────────────────────
     Route::get('/rapports', fn() => view('rapports.index'))->name('rapports.index');

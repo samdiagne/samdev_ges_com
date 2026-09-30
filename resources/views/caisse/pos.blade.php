@@ -5,7 +5,7 @@
 @section('page-subtitle', now()->translatedFormat('l d F Y'))
 
 @section('content')
-    <div class="lg:h-[calc(100vh-8rem)]">
+    <div class="h-full w-full overflow-hidden flex flex-col min-h-0 flex-1">
         @livewire('caisse.point-of-sale')
     </div>
 @endsection
