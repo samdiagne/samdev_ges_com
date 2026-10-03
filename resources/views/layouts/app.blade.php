@@ -467,7 +467,7 @@ style="height: 100dvh;">
         </header>
 
         {{-- Page content --}}
-        <main class="flex-1 {{ request()->routeIs('caisse.pos') ? 'overflow-hidden p-2 sm:p-3 flex flex-col' : 'overflow-y-auto p-4 lg:p-6' }}"
+        <main class="flex-1 {{ request()->routeIs('caisse.pos', 'devis.create', 'devis.edit') ? 'overflow-hidden p-2 sm:p-3 flex flex-col' : 'overflow-y-auto p-4 lg:p-6' }}"
         style="-webkit-overflow-scrolling: touch;">
 
             @if(session('success'))
