@@ -301,7 +301,8 @@
         {{-- ── Corps du Panier Défilant ── --}}
         <div class="flex-1 min-h-0 overflow-y-auto divide-y divide-gray-50 px-2 sm:px-3">
             @forelse($panier as $index => $item)
-                <div class="py-2.5 px-2 flex items-center gap-2.5 hover:bg-gray-50/70 rounded-xl transition-colors">
+                <div wire:key="cart-item-{{ $item['produit_id'] }}-{{ $index }}"
+                     class="py-2.5 px-2 flex items-center gap-2.5 hover:bg-gray-50/70 rounded-xl transition-colors">
                     {{-- Titre & Prix unitaire --}}
                     <div class="flex-1 min-w-0">
                         <p class="text-xs sm:text-sm font-bold text-dark truncate">
@@ -315,17 +316,28 @@
                         </p>
                     </div>
 
-                    {{-- Boutons Quantité --}}
+                    {{-- Boutons & Saisie Quantité --}}
                     <div class="flex items-center gap-1 flex-shrink-0 bg-gray-100 rounded-lg p-0.5">
                         <button wire:click="updateQuantity({{ $index }}, {{ $item['quantite'] - 1 }})"
-                                class="w-6 h-6 flex items-center justify-center rounded-md bg-white hover:bg-gray-200 text-gray-700 font-extrabold text-xs shadow-xs transition-colors">
+                                type="button"
+                                class="w-6 h-6 flex items-center justify-center rounded-md bg-white hover:bg-gray-200 text-gray-700 font-extrabold text-xs shadow-xs transition-colors"
+                                title="Diminuer">
                             −
                         </button>
-                        <span class="w-6 text-center text-xs font-bold text-dark">
-                            {{ $item['quantite'] }}
-                        </span>
+                        <input type="number"
+                               inputmode="numeric"
+                               min="1"
+                               @if(($item['stock_max'] ?? null) !== null) max="{{ $item['stock_max'] }}" @endif
+                               value="{{ $item['quantite'] }}"
+                               x-on:focus="$event.target.select()"
+                               x-on:change="let val = parseInt($event.target.value); $wire.updateQuantity({{ $index }}, isNaN(val) ? 1 : val)"
+                               x-on:keydown.enter.prevent="$event.target.blur()"
+                               class="w-10 h-6 text-center text-xs font-bold text-dark bg-white border border-gray-200 hover:border-gray-300 focus:border-primary focus:ring-1 focus:ring-primary rounded-md p-0 shadow-xs cursor-text [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-all"
+                               title="Cliquer pour saisir le nombre" />
                         <button wire:click="updateQuantity({{ $index }}, {{ $item['quantite'] + 1 }})"
-                                class="w-6 h-6 flex items-center justify-center rounded-md bg-white hover:bg-gray-200 text-gray-700 font-extrabold text-xs shadow-xs transition-colors">
+                                type="button"
+                                class="w-6 h-6 flex items-center justify-center rounded-md bg-white hover:bg-gray-200 text-gray-700 font-extrabold text-xs shadow-xs transition-colors"
+                                title="Augmenter">
                             +
                         </button>
                     </div>
@@ -454,7 +466,27 @@
             <div class="absolute inset-0 bg-black/50 backdrop-blur-sm cursor-pointer"
                  wire:click="$set('afficherModalPaiement', false)"></div>
 
-            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto" @click.stop>
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto"
+                 @click.stop
+                 x-data="{
+                     montant: {{ (float) $montantRecu }},
+                     total: {{ (float) $total }},
+                     get monnaie() {
+                         let m = parseFloat(this.montant) || 0;
+                         return m > this.total ? Math.round(m - this.total) : 0;
+                     },
+                     formatMoney(val) {
+                         return new Intl.NumberFormat('fr-FR').format(Math.round(val));
+                     },
+                     setMontant(val) {
+                         this.montant = val;
+                         $wire.set('montantRecu', val);
+                     },
+                     valider() {
+                         let m = parseFloat(this.montant) || 0;
+                         $wire.processPayment(m);
+                     }
+                 }">
                 <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                     <h3 class="text-base font-bold text-dark">Encaissement</h3>
                     <button wire:click="$set('afficherModalPaiement', false)"
@@ -542,32 +574,61 @@
                                 <label class="text-xs font-semibold text-gray-700">Montant reçu du client</label>
                                 {{-- Bouton d'appoint rapide --}}
                                 <button type="button"
-                                        wire:click="$set('montantRecu', {{ $total }})"
+                                        @click="setMontant(total)"
                                         class="text-[11px] text-primary hover:underline font-semibold">
-                                    Montant exact ({{ number_format($total, 0, ',', ' ') }})
+                                    Montant exact (<span x-text="formatMoney(total)"></span> FCFA)
                                 </button>
                             </div>
                             <div class="relative">
-                                <input wire:model.live="montantRecu"
-                                       type="number" min="{{ $total }}" step="100"
-                                       class="w-full px-4 py-2.5 border-2 rounded-xl text-lg font-extrabold text-center focus:outline-none transition-colors {{ $errors->has('montantRecu') ? 'border-red-400 bg-red-50' : 'border-gray-200 focus:border-primary bg-white' }}"/>
+                                <input type="number"
+                                       inputmode="numeric"
+                                       x-model.number="montant"
+                                       x-on:focus="$event.target.select()"
+                                       x-on:keydown.enter.prevent="valider()"
+                                       x-on:input.debounce.300ms="$wire.set('montantRecu', parseFloat(montant) || 0)"
+                                       x-on:blur="$wire.set('montantRecu', parseFloat(montant) || 0)"
+                                       placeholder="Saisir le montant..."
+                                       class="w-full px-4 py-2.5 border-2 rounded-xl text-lg font-extrabold text-center focus:outline-none transition-colors border-gray-200 focus:border-primary bg-white {{ $errors->has('montantRecu') ? '!border-red-400 !bg-red-50' : '' }}"/>
                                 <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-bold">FCFA</span>
                             </div>
                             @error('montantRecu')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
+
+                            {{-- Coupures rapides FCFA --}}
+                            @php
+                                $billetsStandards = [1000, 2000, 5000, 10000];
+                                $arrondiSup = ceil($total / 1000) * 1000;
+                                if ($arrondiSup > $total && !in_array($arrondiSup, $billetsStandards)) {
+                                    $billetsStandards[] = (int) $arrondiSup;
+                                    sort($billetsStandards);
+                                }
+                                $billetsAAfficher = array_values(array_filter($billetsStandards, fn($b) => $b >= $total || $b >= 1000));
+                                $billetsAAfficher = array_slice($billetsAAfficher, 0, 5);
+                            @endphp
+                            @if(count($billetsAAfficher) > 0)
+                                <div class="flex items-center gap-1.5 mt-2 overflow-x-auto pb-0.5">
+                                    <span class="text-[10px] text-gray-400 font-semibold mr-0.5 flex-shrink-0">Billets :</span>
+                                    @foreach($billetsAAfficher as $billet)
+                                        <button type="button"
+                                                @click="setMontant({{ $billet }})"
+                                                class="px-2.5 py-1 bg-gray-100 hover:bg-primary hover:text-white text-gray-700 text-xs font-bold rounded-lg transition-all flex-shrink-0 active:scale-95">
+                                            {{ number_format($billet, 0, ',', ' ') }}
+                                        </button>
+                                    @endforeach
+                                </div>
+                            @endif
                         </div>
 
-                        {{-- Monnaie à rendre --}}
-                        @php $change = max(0, $montantRecu - $total); @endphp
-                        @if($change > 0)
-                            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
-                                <p class="text-xs font-medium text-emerald-700">Monnaie à rendre au client</p>
-                                <p class="text-2xl font-extrabold text-emerald-700 mt-0.5">
-                                    {{ number_format($change, 0, ',', ' ') }} FCFA
-                                </p>
-                            </div>
-                        @endif
+                        {{-- Monnaie à rendre instantanée --}}
+                        <div x-show="monnaie > 0"
+                             x-transition
+                             class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
+                            <p class="text-xs font-medium text-emerald-700">Monnaie à rendre au client</p>
+                            <p class="text-2xl font-extrabold text-emerald-700 mt-0.5">
+                                <span x-text="formatMoney(monnaie)"></span> FCFA
+                            </p>
+                        </div>
                     @endif
 
                     {{-- Notes --}}
@@ -584,7 +645,8 @@
                             class="flex-1 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-xl transition-colors border border-gray-200">
                         Annuler
                     </button>
-                    <button wire:click="processPayment"
+                    <button @click="valider()"
+                            type="button"
                             class="flex-1 py-3 bg-primary hover:bg-primary/95 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2">
                         <svg wire:loading wire:target="processPayment"
                              class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">

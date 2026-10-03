@@ -5,40 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Ticket #{{ $vente->reference }}</title>
     <style>
-        /* ── Reset & format ticket 80mm ── */
+        /* ── Reset & format ticket 80mm pour imprimante thermique ── */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         @page {
             size: 80mm auto;
             margin: 0;
         }
         body {
-            font-family: 'Courier New', 'Consolas', monospace;
-            font-size: 12px;
-            line-height: 1.4;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, Helvetica, sans-serif;
+            font-size: 13px;
+            font-weight: 600; /* Graisse renforcée pour que la tête thermique chauffe bien chaque lettre */
+            line-height: 1.35;
             width: 80mm;
             max-width: 80mm;
             margin: 0 auto;
-            padding: 8px 10px;
+            padding: 6px 8px;
             color: #000;
             background: #fff;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
 
-        /* ── Éléments ── */
-        .center  { text-align: center; }
-        .right   { text-align: right; }
-        .bold    { font-weight: bold; }
-        .big     { font-size: 16px; }
-        .small   { font-size: 10px; }
+        /* ── Éléments de typographie ── */
+        .center   { text-align: center; }
+        .right    { text-align: right; }
+        .bold     { font-weight: 800; }
+        .black    { font-weight: 900; }
+        .big      { font-size: 17px; font-weight: 900; }
+        .medium   { font-size: 14px; font-weight: 700; }
+        .small    { font-size: 11px; font-weight: 700; }
+        .tiny     { font-size: 10px; font-weight: 600; }
 
         .sep {
             border: none;
-            border-top: 1px dashed #000;
+            border-top: 1.5px dashed #000;
             margin: 6px 0;
         }
 
         .double-sep {
             border: none;
-            border-top: 2px solid #000;
+            border-top: 2.5px solid #000;
             margin: 6px 0;
         }
 
@@ -48,22 +54,34 @@
             border-collapse: collapse;
         }
         table td {
-            padding: 2px 0;
+            padding: 3px 0;
             vertical-align: top;
+            font-weight: 600;
         }
-        .col-qty  { width: 15%; }
-        .col-name { width: 55%; }
-        .col-price { width: 30%; text-align: right; }
+        .col-qty   { width: 14%; font-weight: 800; font-size: 13px; }
+        .col-name  { width: 54%; font-weight: 700; font-size: 13px; }
+        .col-price { width: 32%; text-align: right; font-weight: 800; font-size: 13px; }
 
-        .totals td { padding: 1px 0; }
-        .totals .label { text-align: left; }
-        .totals .value { text-align: right; font-weight: bold; }
+        .totals td {
+            padding: 2px 0;
+            font-size: 13px;
+        }
+        .totals .label {
+            text-align: left;
+            font-weight: 700;
+        }
+        .totals .value {
+            text-align: right;
+            font-weight: 800;
+        }
 
         .grand-total .label,
         .grand-total .value {
-            font-size: 14px;
-            font-weight: bold;
-            padding: 4px 0;
+            font-size: 16px;
+            font-weight: 900;
+            padding: 5px 0;
+            border-top: 1.5px solid #000;
+            border-bottom: 1.5px solid #000;
         }
 
         /* ── Impression ── */
@@ -79,10 +97,10 @@
         @media screen {
             body {
                 margin: 20px auto;
-                border: 1px solid #ddd;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                border-radius: 4px;
-                padding: 12px 14px;
+                border: 1px solid #ccc;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+                border-radius: 6px;
+                padding: 14px 16px;
             }
             .no-print {
                 display: flex;
@@ -91,11 +109,11 @@
                 margin-top: 16px;
             }
             .btn-print, .btn-close {
-                padding: 8px 20px;
+                padding: 9px 22px;
                 border: none;
-                border-radius: 6px;
+                border-radius: 8px;
                 font-size: 13px;
-                font-weight: bold;
+                font-weight: 800;
                 cursor: pointer;
             }
             .btn-print {
@@ -104,7 +122,7 @@
             }
             .btn-close {
                 background: #e5e7eb;
-                color: #333;
+                color: #111;
             }
         }
     </style>
@@ -118,15 +136,15 @@
         @if($settings?->logo)
             <img src="{{ asset('storage/' . $settings->logo) }}"
                  alt="{{ $settings->nom }}"
-                 style="max-width: 120px; max-height: 50px; margin-bottom: 4px;"/>
+                 style="max-width: 130px; max-height: 55px; margin-bottom: 4px; filter: grayscale(100%) contrast(160%);"/>
             <br/>
         @endif
-        <div class="bold big">{{ $settings?->nom ?? "Maf'Food" }}</div>
+        <div class="big">{{ $settings?->nom ?? "Maf'Food" }}</div>
         @if($settings?->adresse)
-            <div class="small">{{ $settings->adresse }}</div>
+            <div class="small" style="margin-top: 1px;">{{ $settings->adresse }}</div>
         @endif
         @if($settings?->telephone)
-            <div class="small">Tél : {{ $settings->telephone }}</div>
+            <div class="small bold">Tél : {{ $settings->telephone }}</div>
         @endif
     </div>
 
@@ -135,7 +153,7 @@
     {{-- ═══════════════════════════════════════
          INFOS VENTE
     ═══════════════════════════════════════ --}}
-    <div>
+    <div style="font-size: 12px; font-weight: 600; line-height: 1.45;">
         <div><span class="bold">Ticket :</span> {{ $vente->reference }}</div>
         <div><span class="bold">Date :</span> {{ $vente->vendu_le->format('d/m/Y H:i') }}</div>
         <div><span class="bold">Caissier :</span> {{ $vente->user->name ?? '—' }}</div>
@@ -152,20 +170,20 @@
     ═══════════════════════════════════════ --}}
     <table>
         <thead>
-            <tr class="bold small">
-                <td class="col-qty">Qté</td>
-                <td class="col-name">Désignation</td>
-                <td class="col-price">Montant</td>
+            <tr style="border-bottom: 1.5px solid #000; font-size: 12px;">
+                <td class="col-qty bold">Qté</td>
+                <td class="col-name bold">Désignation</td>
+                <td class="col-price bold">Montant</td>
             </tr>
         </thead>
         <tbody>
             @foreach($vente->lignes as $ligne)
-                <tr>
-                    <td class="col-qty">{{ $ligne->quantite }}x</td>
+                <tr style="border-bottom: 1px dotted #bbb;">
+                    <td class="col-qty bold">{{ $ligne->quantite }}x</td>
                     <td class="col-name">
-                        {{ $ligne->nom_produit }}
+                        <span class="bold">{{ $ligne->nom_produit }}</span>
                         @if($ligne->remise > 0)
-                            <br/><span class="small">  remise -{{ number_format($ligne->remise, 0, ',', ' ') }}</span>
+                            <br/><span class="small">Remise : -{{ number_format($ligne->remise, 0, ',', ' ') }}</span>
                         @endif
                     </td>
                     <td class="col-price">{{ number_format($ligne->total, 0, ',', ' ') }}</td>
@@ -215,17 +233,18 @@
     {{-- ═══════════════════════════════════════
          PIED DE TICKET
     ═══════════════════════════════════════ --}}
-    <div class="center small">
-        <p class="bold">Merci pour votre visite !</p>
+    <div class="center" style="font-size: 11px; font-weight: 700; line-height: 1.4;">
+        <p class="bold" style="font-size: 12px; margin-bottom: 2px;">Merci pour votre visite !</p>
         <p>{{ $settings?->nom ?? "Maf'Food" }}</p>
         @if($settings?->facebook || $settings?->instagram)
-            <p>
+            <p style="margin-top: 2px;">
                 @if($settings?->facebook) FB: {{ $settings->facebook }} @endif
                 @if($settings?->instagram) IG: {{ $settings->instagram }} @endif
             </p>
         @endif
-        <br/>
-        <p>{{ $vente->reference }} — {{ $vente->vendu_le->format('d/m/Y H:i') }}</p>
+        <p style="margin-top: 4px; font-size: 10px; font-weight: 600;">
+            {{ $vente->reference }} — {{ $vente->vendu_le->format('d/m/Y H:i') }}
+        </p>
     </div>
 
     {{-- ═══════════════════════════════════════

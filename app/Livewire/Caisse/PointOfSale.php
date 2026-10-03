@@ -124,16 +124,32 @@ class PointOfSale extends Component
         $this->recalcTotals();
     }
 
-    public function updateQuantity(int $index, int $quantite): void
+    public function updateQuantity(int $index, $quantite): void
     {
+        $quantite = (int) $quantite;
+        if (! isset($this->panier[$index])) { return; }
         if ($quantite <= 0) { $this->removeFromCart($index); return; }
-        $stockMax = $this->panier[$index]['stock_max'];
+        $stockMax = $this->panier[$index]['stock_max'] ?? null;
         if ($stockMax !== null && $quantite > $stockMax) {
-            $quantite = $stockMax;
+            $quantite = (int) $stockMax;
+            session()->flash('pos_error', "Stock maximum disponible atteint ({$stockMax}) !");
         }
         $this->panier[$index]['quantite'] = $quantite;
         $this->recalcLine($index);
         $this->recalcTotals();
+    }
+
+    public function setQuantity(int $index, $quantite): void
+    {
+        $this->updateQuantity($index, $quantite);
+    }
+
+    public function updatedPanier($value, $key): void
+    {
+        $parts = explode('.', (string) $key);
+        if (count($parts) === 2 && $parts[1] === 'quantite') {
+            $this->updateQuantity((int) $parts[0], $value);
+        }
     }
 
     public function updateLineDiscount(int $index, float $remise): void
@@ -243,13 +259,17 @@ class PointOfSale extends Component
         $this->montantRecu = $this->total;
     }
 
-    public function processPayment(VenteService $venteService): void
+    public function processPayment($montantSaisi = null): void
     {
         if (empty($this->panier)) return;
+        if ($montantSaisi !== null && (float) $montantSaisi > 0) {
+            $this->montantRecu = (float) $montantSaisi;
+        }
         if ($this->modePaiement !== 'a_regler' && $this->montantRecu < $this->total) {
             $this->addError('montantRecu', 'Montant insuffisant !'); return;
         }
         try {
+            $venteService = app(VenteService::class);
             $clientId = $this->clientSelectionneId;
             if (! $clientId && $this->utiliserClientRapide && $this->clientRapideNom) {
                 $client   = Client::create(['nom' => $this->clientRapideNom, 'telephone' => $this->clientRapideTel ?: null]);
