@@ -125,12 +125,8 @@
                                     </div>
                                 @endif
 
-                                {{-- Badges Stock / Commande --}}
-                                @if($produit['sur_commande'])
-                                    <div class="absolute top-2 right-2 bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md shadow-sm">
-                                        Sur Cde
-                                    </div>
-                                @elseif($produit['stock'] > 0 && $produit['stock'] <= 3)
+                                {{-- Badges Stock --}}
+                                @if(! $produit['sur_commande'] && $produit['stock'] > 0 && $produit['stock'] <= 3)
                                     <div class="absolute top-2 right-2 bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md shadow-sm">
                                         {{ $produit['stock'] }} rest.
                                     </div>

@@ -50,7 +50,6 @@
                             MF
                         </div>
                     @endif
-                    <span class="text-white font-bold text-base tracking-tight">Maffood</span>
                 </div>
 
                 {{-- Accroche --}}

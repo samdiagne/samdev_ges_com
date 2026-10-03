@@ -20,15 +20,11 @@
         {{-- BADGES --}}
         <div class="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 flex flex-col gap-1">
 
-            @if($produit->sur_commande)
-                <span class="bg-blue-500 text-white text-[9px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg font-bold whitespace-nowrap">
-                    Sur commande
-                </span>
-            @elseif($produit->stock <= 0)
+            @if(! $produit->sur_commande && $produit->stock <= 0)
                 <span class="bg-red-500 text-white text-[9px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg font-bold whitespace-nowrap">
                     Rupture
                 </span>
-            @elseif($produit->estStockFaible())
+            @elseif(! $produit->sur_commande && $produit->estStockFaible())
                 <span class="bg-orange-500 text-white text-[9px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg font-bold whitespace-nowrap">
                     Stock limité
                 </span>

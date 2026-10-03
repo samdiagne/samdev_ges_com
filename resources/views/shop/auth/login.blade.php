@@ -108,8 +108,8 @@
     <p class="text-center text-sm text-gray-500 mt-6">
         Pas encore de compte ?
         <a href="{{ route('compte.register') }}"
-           class="text-primary hover:text-primary/80 font-medium transition-colors">
-            Créer un compte
+           class="text-primary hover:text-primary/80 font-semibold transition-colors">
+            S'inscrire
         </a>
     </p>
 @endsection

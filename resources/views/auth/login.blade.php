@@ -142,11 +142,12 @@
         </button>
     </form>
 
-    {{-- Lien boutique --}}
+    {{-- Lien inscription --}}
     <p class="text-center text-sm text-gray-500 mt-6">
-        <a href="{{ route('shop.home') }}"
-           class="text-primary hover:text-primary/80 font-medium transition-colors">
-            ← Retour à la boutique
+        Pas encore de compte ?
+        <a href="{{ route('compte.register') }}"
+           class="text-primary hover:text-primary/80 font-semibold transition-colors">
+            S'inscrire
         </a>
     </p>
 @endsection
