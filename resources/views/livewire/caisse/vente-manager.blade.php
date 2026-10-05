@@ -174,6 +174,17 @@
                             </td>
                             <td class="px-4 py-3 sticky right-0 bg-white border-l border-gray-100">
                                 <div class="flex items-center justify-end gap-1">
+                                    <button type="button"
+                                            onclick="imprimerTicketDirect('{{ route('caisse.ticket', $vente->id) }}?auto=1')"
+                                            class="w-8 h-8 flex items-center justify-center
+                                                   rounded-lg text-gray-400 hover:text-emerald-600
+                                                   hover:bg-emerald-50 transition-colors"
+                                            title="Imprimer le ticket">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                                        </svg>
+                                    </button>
                                     <button wire:click="view({{ $vente->id }})"
                                             class="w-8 h-8 flex items-center justify-center
                                                    rounded-lg text-gray-400 hover:text-primary
@@ -333,15 +344,46 @@
                     </div>
 
                     {{-- Actions --}}
-                    <div class="flex gap-3 pt-2">
+                    <div class="flex flex-col sm:flex-row gap-2.5 pt-2">
+                        <button type="button"
+                                onclick="imprimerTicketDirect('{{ route('caisse.ticket', $voirVente->id) }}?auto=1')"
+                                class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white
+                                       text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm active:scale-98">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                            </svg>
+                            <span>🖨️ Imprimer le ticket</span>
+                        </button>
                         <a href="{{ route('factures.show', $voirVente->id) }}"
                            class="flex-1 py-2.5 bg-primary hover:bg-primary/90 text-white
-                                  text-sm font-medium rounded-xl transition-colors text-center">
-                            🧾 Voir la facture
+                                  text-sm font-semibold rounded-xl transition-colors text-center flex items-center justify-center gap-2">
+                            <span>🧾 Voir la facture</span>
                         </a>
                     </div>
                 </div>
             </div>
         </div>
     @endif
+
+    {{-- Iframe invisible pour impression rapide du ticket sans quitter la page --}}
+    <iframe id="vente-ticket-frame" style="position: absolute; width: 0; height: 0; border: 0; visibility: hidden;"></iframe>
+
+    @push('scripts')
+    <script>
+        window.imprimerTicketDirect = function(url) {
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            if (isMobile) {
+                window.open(url, '_blank');
+                return;
+            }
+            const frame = document.getElementById('vente-ticket-frame');
+            if (frame) {
+                frame.src = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
+            } else {
+                window.open(url, '_blank', 'width=380,height=600');
+            }
+        };
+    </script>
+    @endpush
 </div>
