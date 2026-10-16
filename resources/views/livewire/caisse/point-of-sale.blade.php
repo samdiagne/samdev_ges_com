@@ -13,6 +13,18 @@
         </div>
     @endif
 
+    {{-- Succès flash global --}}
+    @if(session('pos_success'))
+        <div x-data="{ show: true }" x-show="show"
+             x-init="setTimeout(() => show = false, 3500)"
+             class="fixed top-20 right-6 z-50 flex items-center gap-3 bg-green-600 text-white px-5 py-3 rounded-2xl shadow-xl text-sm font-medium">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            {{ session('pos_success') }}
+        </div>
+    @endif
+
     {{-- ══════════════════════════════════════════════════════════════════════
          COLONNE GAUCHE / CENTRE — CATALOGUE PRODUITS PLEINE HAUTEUR (70%)
     ══════════════════════════════════════════════════════════════════════ --}}
@@ -20,6 +32,55 @@
 
         {{-- ── En-tête : Recherche & Filtres Catégories ── --}}
         <div class="p-3 sm:p-4 border-b border-gray-100 bg-white space-y-2.5 flex-shrink-0">
+
+            {{-- Barre d'état de la session de caisse --}}
+            <div class="flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-xl {{ $sessionActive ? 'bg-orange-50/70 border border-orange-100 text-orange-950' : 'bg-red-50 border border-red-100 text-red-900' }}">
+                <div class="flex items-center gap-2 min-w-0">
+                    @if($sessionActive)
+                        <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse flex-shrink-0"></span>
+                        <div class="text-xs truncate">
+                            <span class="font-bold text-gray-900">{{ $sessionActive->reference }}</span>
+                            <span class="text-gray-400 mx-1">•</span>
+                            <span class="text-gray-600">Ouvert à {{ $sessionActive->ouvert_le->format('H:i') }} ({{ $sessionActive->duree() }})</span>
+                            <span class="text-gray-400 mx-1">•</span>
+                            <span class="text-gray-600 font-medium">Espèces : <strong class="text-primary">{{ number_format($sessionActive->fond_caisse_ouverture, 0, ',', ' ') }} F</strong></span>
+                            <span class="text-gray-400 mx-1">•</span>
+                            <span class="text-gray-600 font-medium">Wave : <strong class="text-sky-600">{{ number_format($sessionActive->fond_caisse_wave_ouverture ?? 0, 0, ',', ' ') }} F</strong></span>
+                        </div>
+                    @else
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500 flex-shrink-0"></span>
+                        <span class="text-xs font-semibold text-red-700">Caisse fermée — Aucune session active</span>
+                    @endif
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    @if($sessionActive)
+                        <button wire:click="preparerCloture"
+                                type="button"
+                                class="inline-flex items-center gap-1.5 px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg shadow-sm transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                            </svg>
+                            Clôturer la caisse
+                        </button>
+                    @else
+                        <button wire:click="$set('afficherModalOuverture', true)"
+                                type="button"
+                                class="inline-flex items-center gap-1.5 px-3 py-1 bg-primary hover:bg-primary/90 text-white text-xs font-bold rounded-lg shadow-sm transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+                            </svg>
+                            Ouvrir la caisse
+                        </button>
+                    @endif
+
+                    <a href="{{ route('caisse.rapport-journalier') }}"
+                       title="Voir le rapport quotidien"
+                       class="inline-flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-gray-100 text-gray-700 text-xs font-semibold rounded-lg border border-gray-200 transition-colors">
+                        📊 Rapport du jour
+                    </a>
+                </div>
+            </div>
+
             <div class="flex items-center gap-3">
                 {{-- Barre de recherche --}}
                 <div class="relative flex-1">
@@ -467,9 +528,20 @@
                  x-data="{
                      montant: {{ (float) $montantRecu }},
                      total: {{ (float) $total }},
+                     canalMonnaie: 'especes',
+                     partWave: 0,
                      get monnaie() {
                          let m = parseFloat(this.montant) || 0;
                          return m > this.total ? Math.round(m - this.total) : 0;
+                     },
+                     get monnaieWave() {
+                         if (this.monnaie <= 0) return 0;
+                         if (this.canalMonnaie === 'wave') return this.monnaie;
+                         if (this.canalMonnaie === 'especes') return 0;
+                         return Math.min(this.monnaie, Math.max(0, parseFloat(this.partWave) || 0));
+                     },
+                     get monnaieEspeces() {
+                         return Math.max(0, this.monnaie - this.monnaieWave);
                      },
                      formatMoney(val) {
                          return new Intl.NumberFormat('fr-FR').format(Math.round(val));
@@ -478,9 +550,18 @@
                          this.montant = val;
                          $wire.set('montantRecu', val);
                      },
+                     setCanal(c) {
+                         this.canalMonnaie = c;
+                         if (c === 'wave') {
+                             this.partWave = this.monnaie;
+                         } else if (c === 'especes') {
+                             this.partWave = 0;
+                         }
+                     },
                      valider() {
                          let m = parseFloat(this.montant) || 0;
-                         $wire.processPayment(m);
+                         let mw = this.monnaieWave;
+                         $wire.processPayment(m, mw);
                      }
                  }">
                 <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
@@ -616,14 +697,77 @@
                             @endif
                         </div>
 
-                        {{-- Monnaie à rendre instantanée --}}
+                        {{-- Monnaie à rendre instantanée et choix du canal (Espèces vs Wave) --}}
                         <div x-show="monnaie > 0"
                              x-transition
-                             class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
-                            <p class="text-xs font-medium text-emerald-700">Monnaie à rendre au client</p>
-                            <p class="text-2xl font-extrabold text-emerald-700 mt-0.5">
-                                <span x-text="formatMoney(monnaie)"></span> FCFA
-                            </p>
+                             class="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-3.5 space-y-3">
+                            <div class="text-center">
+                                <p class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Monnaie totale à rendre</p>
+                                <p class="text-2xl font-black text-emerald-800 mt-0.5">
+                                    <span x-text="formatMoney(monnaie)"></span> FCFA
+                                </p>
+                            </div>
+
+                            {{-- Sélecteur de canal de rendu de monnaie --}}
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1 text-center">
+                                    Où faites-vous la monnaie ?
+                                </label>
+                                <div class="grid grid-cols-3 gap-1.5">
+                                    <button type="button"
+                                            @click="setCanal('especes')"
+                                            :class="canalMonnaie === 'especes' ? 'bg-emerald-600 text-white shadow-md border-emerald-600' : 'bg-white text-gray-700 border-gray-200 hover:border-emerald-300'"
+                                            class="py-1.5 px-1 rounded-xl text-xs font-bold border transition-all text-center flex flex-col items-center gap-0.5">
+                                        <span>💵 Espèces</span>
+                                        <span class="text-[9px] font-normal opacity-85">100% tiroir</span>
+                                    </button>
+
+                                    <button type="button"
+                                            @click="setCanal('wave')"
+                                            :class="canalMonnaie === 'wave' ? 'bg-sky-600 text-white shadow-md border-sky-600' : 'bg-white text-gray-700 border-gray-200 hover:border-sky-300'"
+                                            class="py-1.5 px-1 rounded-xl text-xs font-bold border transition-all text-center flex flex-col items-center gap-0.5">
+                                        <span>📱 Wave</span>
+                                        <span class="text-[9px] font-normal opacity-85">100% transfert</span>
+                                    </button>
+
+                                    <button type="button"
+                                            @click="setCanal('mixte')"
+                                            :class="canalMonnaie === 'mixte' ? 'bg-purple-600 text-white shadow-md border-purple-600' : 'bg-white text-gray-700 border-gray-200 hover:border-purple-300'"
+                                            class="py-1.5 px-1 rounded-xl text-xs font-bold border transition-all text-center flex flex-col items-center gap-0.5">
+                                        <span>🔀 Mixte</span>
+                                        <span class="text-[9px] font-normal opacity-85">Espèces + Wave</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {{-- Saisie de la part Wave si Mixte --}}
+                            <div x-show="canalMonnaie === 'mixte'" x-transition class="bg-white p-2.5 rounded-xl border border-purple-200 space-y-1.5">
+                                <label class="block text-xs font-bold text-purple-900 flex items-center justify-between">
+                                    <span>Part rendue par transfert Wave :</span>
+                                    <span class="text-[10px] text-gray-400 font-normal">Max: <span x-text="formatMoney(monnaie)"></span> F</span>
+                                </label>
+                                <div class="relative">
+                                    <input type="number"
+                                           x-model.number="partWave"
+                                           :max="monnaie"
+                                           min="0"
+                                           placeholder="Ex: 500"
+                                           class="w-full px-3 py-1.5 text-sm font-bold border border-purple-300 rounded-lg text-purple-900 focus:outline-none focus:ring-1 focus:ring-purple-500 bg-purple-50/20"/>
+                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-purple-400">FCFA</span>
+                                </div>
+                            </div>
+
+                            {{-- Détail visuel de la répartition --}}
+                            <div class="grid grid-cols-2 gap-2 text-xs font-bold pt-1 border-t border-emerald-200/60">
+                                <div class="bg-white p-2 rounded-lg border border-emerald-100 flex items-center justify-between">
+                                    <span class="text-gray-600 font-medium">💵 Espèces :</span>
+                                    <span class="text-emerald-700"><span x-text="formatMoney(monnaieEspeces)"></span> F</span>
+                                </div>
+                                <div class="bg-sky-50 p-2 rounded-lg border border-sky-100 flex items-center justify-between">
+                                    <span class="text-sky-800 font-medium">📱 Wave :</span>
+                                    <span class="text-sky-700"><span x-text="formatMoney(monnaieWave)"></span> F</span>
+                                </div>
+                            </div>
                         </div>
                     @endif
 
@@ -685,11 +829,27 @@
                 <p class="text-xs text-gray-400 mb-3">{{ $derniereReference }}</p>
 
                 @if($monnaieRendue > 0)
-                    <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-3 mb-4">
-                        <p class="text-xs text-emerald-600 font-semibold">Monnaie rendue</p>
-                        <p class="text-2xl font-extrabold text-emerald-700">
+                    <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-3.5 mb-4 space-y-2">
+                        <p class="text-xs text-emerald-600 font-bold uppercase tracking-wider">Monnaie rendue</p>
+                        <p class="text-2xl font-black text-emerald-700">
                             {{ number_format($monnaieRendue, 0, ',', ' ') }} FCFA
                         </p>
+                        @if($monnaieRendueWave > 0)
+                            <div class="pt-2 border-t border-emerald-200/60 grid grid-cols-2 gap-2 text-xs text-left">
+                                <div class="bg-white p-2 rounded-xl border border-emerald-100 font-semibold text-gray-700">
+                                    <div class="text-[10px] text-gray-400 font-normal">En Espèces</div>
+                                    <div class="text-emerald-700 font-bold text-sm">{{ number_format($monnaieRendueEspeces, 0, ',', ' ') }} F</div>
+                                </div>
+                                <div class="bg-sky-50 p-2 rounded-xl border border-sky-100 font-semibold text-sky-900">
+                                    <div class="text-[10px] text-sky-500 font-normal">Via Wave</div>
+                                    <div class="text-sky-700 font-bold text-sm">{{ number_format($monnaieRendueWave, 0, ',', ' ') }} F</div>
+                                </div>
+                            </div>
+                            <div class="bg-sky-100/70 border border-sky-200 rounded-xl p-2 text-[11px] text-sky-800 font-medium text-left flex items-start gap-1.5">
+                                <span>📱</span>
+                                <span>Effectuez le transfert Wave de <strong>{{ number_format($monnaieRendueWave, 0, ',', ' ') }} FCFA</strong> vers le numéro du client.</span>
+                            </div>
+                        @endif
                     </div>
                 @endif
 
@@ -718,6 +878,387 @@
                             Nouvelle vente
                         </button>
                     </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- ══════════════════════════════════════════════════════════════════════
+         MODAL 1 : OUVERTURE DE CAISSE
+    ══════════════════════════════════════════════════════════════════════ --}}
+    @if($afficherModalOuverture)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
+                <div class="p-5 bg-gradient-to-r from-primary to-orange-600 text-white flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <span class="p-2 rounded-xl bg-white/20">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+                            </svg>
+                        </span>
+                        <div>
+                            <h3 class="font-bold text-base leading-tight">Ouverture de Caisse</h3>
+                            <p class="text-xs text-white/80">Saisie du fond de caisse initial</p>
+                        </div>
+                    </div>
+                    @if($sessionCaisseId)
+                        <button type="button" wire:click="$set('afficherModalOuverture', false)" class="text-white/80 hover:text-white p-1">
+                            ✕
+                        </button>
+                    @endif
+                </div>
+
+                <form wire:submit.prevent="ouvrirSession" class="p-5 space-y-4">
+                    <div class="bg-orange-50 border border-orange-100 rounded-2xl p-3.5 text-xs text-orange-900 flex items-start gap-2.5">
+                        <span class="text-base flex-shrink-0">💡</span>
+                        <span>Renseignez les fonds de départ pour démarrer les encaissements et assurer un inventaire rigoureux en fin de service.</span>
+                    </div>
+
+                    {{-- Fond espèces --}}
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                            <span>💵 Fond de caisse Espèces (Tiroir)</span>
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input type="number" step="any" min="0"
+                                   wire:model="fondCaisseOuverture"
+                                   placeholder="Ex: 50 000"
+                                   class="w-full px-4 py-2.5 text-base font-bold border border-gray-200 rounded-2xl focus:ring-primary focus:border-primary">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">FCFA</span>
+                        </div>
+                        @error('fondCaisseOuverture')
+                            <p class="text-xs text-red-600 mt-1 font-semibold">{{ $message }}</p>
+                        @enderror
+
+                        {{-- Raccourcis montants fréquents --}}
+                        <div class="grid grid-cols-4 gap-1.5 mt-1.5">
+                            @foreach([0, 25000, 50000, 100000] as $montant)
+                                <button type="button"
+                                        wire:click="$set('fondCaisseOuverture', '{{ $montant }}')"
+                                        class="py-1 px-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-xl transition-colors">
+                                    {{ number_format($montant, 0, ',', ' ') }} F
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Fond Wave --}}
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                            <span class="flex items-center gap-1.5 text-sky-700">
+                                <span>📱 Solde initial Wave (Compte caissier)</span>
+                                <span class="text-red-500">*</span>
+                            </span>
+                            <span class="text-[10px] text-gray-400 font-normal lowercase">(pour faire la monnaie Wave)</span>
+                        </label>
+                        <div class="relative">
+                            <input type="number" step="any" min="0"
+                                   wire:model="fondCaisseWaveOuverture"
+                                   placeholder="Ex: 25 000 (ou 0)"
+                                   class="w-full px-4 py-2.5 text-base font-bold border border-sky-200 bg-sky-50/30 rounded-2xl focus:ring-sky-500 focus:border-sky-500 text-sky-900">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-sky-400">FCFA</span>
+                        </div>
+                        @error('fondCaisseWaveOuverture')
+                            <p class="text-xs text-red-600 mt-1 font-semibold">{{ $message }}</p>
+                        @enderror
+
+                        {{-- Raccourcis montants fréquents Wave --}}
+                        <div class="grid grid-cols-4 gap-1.5 mt-1.5">
+                            @foreach([0, 10000, 25000, 50000] as $montant)
+                                <button type="button"
+                                        wire:click="$set('fondCaisseWaveOuverture', '{{ $montant }}')"
+                                        class="py-1 px-2 bg-sky-50 hover:bg-sky-100 text-sky-800 text-xs font-semibold rounded-xl transition-colors border border-sky-100">
+                                    {{ number_format($montant, 0, ',', ' ') }} F
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div class="pt-2 flex gap-2">
+                        @if($sessionCaisseId)
+                            <button type="button"
+                                    wire:click="$set('afficherModalOuverture', false)"
+                                    class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-2xl transition-colors">
+                                Annuler
+                            </button>
+                        @endif
+                        <button type="submit"
+                                class="flex-1 py-3 bg-primary hover:bg-primary/95 text-white text-sm font-bold rounded-2xl shadow-lg shadow-primary/25 transition-all flex items-center justify-center gap-2">
+                            <span>Démarrer la session</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
+
+    {{-- ══════════════════════════════════════════════════════════════════════
+         MODAL 2 : CLÔTURE DE CAISSE & CALCUL DES ÉCARTS
+    ══════════════════════════════════════════════════════════════════════ --}}
+    @if($afficherModalCloture && $resumeCloture)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+            <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-200 my-auto">
+                <div class="p-4 sm:p-5 bg-gradient-to-r from-red-600 to-rose-700 text-white flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <span class="p-2 rounded-xl bg-white/20">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                            </svg>
+                        </span>
+                        <div>
+                            <h3 class="font-bold text-base leading-tight">Clôture de Caisse</h3>
+                            <p class="text-xs text-white/80">Session {{ $resumeCloture['reference'] }} • Durée : {{ $resumeCloture['duree'] }}</p>
+                        </div>
+                    </div>
+                    <button type="button" wire:click="$set('afficherModalCloture', false)" class="text-white/80 hover:text-white p-1 text-sm">
+                        ✕
+                    </button>
+                </div>
+
+                <div class="p-5 space-y-4 max-h-[78vh] overflow-y-auto">
+                    {{-- Récapitulatif des encaissements --}}
+                    <div class="bg-gray-50 rounded-2xl p-3.5 border border-gray-100 space-y-2">
+                        <div class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                            Synthèse des ventes de la session
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <div class="flex justify-between bg-white p-2 rounded-lg border border-gray-100">
+                                <span class="text-gray-600">💵 Espèces :</span>
+                                <strong class="text-gray-900">{{ number_format($resumeCloture['ventes_cash'], 0, ',', ' ') }} F</strong>
+                            </div>
+                            <div class="flex justify-between bg-white p-2 rounded-lg border border-gray-100">
+                                <span class="text-gray-600">Wave :</span>
+                                <strong class="text-sky-600">{{ number_format($resumeCloture['ventes_wave'], 0, ',', ' ') }} F</strong>
+                            </div>
+                            <div class="flex justify-between bg-white p-2 rounded-lg border border-gray-100">
+                                <span class="text-gray-600">Orange M. :</span>
+                                <strong class="text-orange-600">{{ number_format($resumeCloture['ventes_om'], 0, ',', ' ') }} F</strong>
+                            </div>
+                            <div class="flex justify-between bg-white p-2 rounded-lg border border-gray-100">
+                                <span class="text-gray-600">💳 Carte :</span>
+                                <strong class="text-purple-600">{{ number_format($resumeCloture['ventes_carte'], 0, ',', ' ') }} F</strong>
+                            </div>
+                        </div>
+                        <div class="flex justify-between text-xs pt-1 border-t border-gray-200 font-bold">
+                            <span class="text-gray-700">Total Ventes Encaissées :</span>
+                            <span class="text-primary text-sm">{{ number_format($resumeCloture['total_ventes'], 0, ',', ' ') }} FCFA</span>
+                        </div>
+                    </div>
+
+                    {{-- Calcul théorique des espèces --}}
+                    <div class="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-3.5 text-xs space-y-1.5">
+                        <div class="font-bold text-amber-900 text-[11px] uppercase tracking-wider flex items-center justify-between">
+                            <span>💵 1. Bilan Tiroir-Caisse (Espèces)</span>
+                            <span class="text-[10px] text-amber-700 font-semibold">Tiroir physique</span>
+                        </div>
+                        <div class="flex justify-between text-gray-700">
+                            <span>Fond initial à l'ouverture :</span>
+                            <span class="font-semibold">{{ number_format($resumeCloture['fond_initial'], 0, ',', ' ') }} FCFA</span>
+                        </div>
+                        <div class="flex justify-between text-gray-700">
+                            <span>+ Recettes en espèces :</span>
+                            <span class="font-semibold text-green-700">+ {{ number_format($resumeCloture['ventes_cash'], 0, ',', ' ') }} FCFA</span>
+                        </div>
+                        @if(($resumeCloture['monnaie_rendue_wave'] ?? 0) > 0)
+                            <div class="flex justify-between text-emerald-800 bg-emerald-100/60 p-1.5 rounded-lg border border-emerald-200/60 font-medium">
+                                <span class="flex items-center gap-1">
+                                    <span>➕ Monnaie compensée par Wave :</span>
+                                    <span class="text-[10px] text-emerald-600 font-normal">(gardée en espèces)</span>
+                                </span>
+                                <span class="font-bold text-emerald-700">+ {{ number_format($resumeCloture['monnaie_rendue_wave'], 0, ',', ' ') }} FCFA</span>
+                            </div>
+                        @endif
+                        <div class="flex justify-between text-gray-700">
+                            <span>- Dépenses décaissées en espèces :</span>
+                            <span class="font-semibold text-red-600">- {{ number_format($resumeCloture['depenses_cash'], 0, ',', ' ') }} FCFA</span>
+                        </div>
+                        <div class="flex justify-between pt-1 border-t border-amber-200 text-xs sm:text-sm font-bold text-amber-950">
+                            <span>Solde Espèces Théorique :</span>
+                            <span>{{ number_format($resumeCloture['theorique_cash'], 0, ',', ' ') }} FCFA</span>
+                        </div>
+                    </div>
+
+                    {{-- Saisie des espèces réelles & écart espèces --}}
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold text-gray-800 uppercase tracking-wider mb-1 flex items-center justify-between">
+                            <span>Espèces physiques comptées <span class="text-red-500">*</span></span>
+                            <button type="button"
+                                    wire:click="$set('montantReelEspeces', '{{ $resumeCloture['theorique_cash'] }}')"
+                                    class="text-[10px] text-primary hover:underline font-bold capitalize">
+                                Copier théorique ({{ number_format($resumeCloture['theorique_cash'], 0, ',', ' ') }} F)
+                            </button>
+                        </label>
+                        <div class="relative">
+                            <input type="number" step="any" min="0"
+                                   wire:model.live.debounce.150ms="montantReelEspeces"
+                                   placeholder="Saisissez le total physique compté"
+                                   class="w-full px-4 py-2.5 text-base font-bold border-2 rounded-2xl focus:ring-primary focus:border-primary {{ $resumeCloture['ecart'] < 0 ? 'border-red-300 bg-red-50/30' : ($resumeCloture['ecart'] > 0 ? 'border-blue-300 bg-blue-50/30' : 'border-green-300 bg-green-50/30') }}">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">FCFA</span>
+                        </div>
+                        @error('montantReelEspeces')
+                            <p class="text-xs text-red-600 mt-0.5 font-semibold">{{ $message }}</p>
+                        @enderror
+
+                        {{-- Badge Écart Espèces --}}
+                        @php $ecartCloture = (float) $resumeCloture['ecart']; @endphp
+                        <div class="p-2.5 rounded-xl text-xs flex items-center justify-between font-bold {{ $ecartCloture === 0.0 ? 'bg-green-100 text-green-900 border border-green-200' : ($ecartCloture > 0 ? 'bg-blue-100 text-blue-900 border border-blue-200' : 'bg-red-100 text-red-900 border border-red-200') }}">
+                            <span>
+                                @if($ecartCloture === 0.0)
+                                    ✓ Espèces conformes (0 F)
+                                @elseif($ecartCloture > 0)
+                                    ▲ Excédent espèces constaté
+                                @else
+                                    ▼ Manquant espèces (Déficit)
+                                @endif
+                            </span>
+                            <span class="text-sm">
+                                {{ $ecartCloture > 0 ? '+' : '' }}{{ number_format($ecartCloture, 0, ',', ' ') }} FCFA
+                            </span>
+                        </div>
+                    </div>
+
+                    {{-- Calcul théorique Wave --}}
+                    <div class="bg-sky-50/70 border border-sky-200/80 rounded-2xl p-3.5 text-xs space-y-1.5 mt-3">
+                        <div class="font-bold text-sky-950 text-[11px] uppercase tracking-wider flex items-center justify-between">
+                            <span>📱 2. Bilan Compte Wave (Caissier)</span>
+                            <span class="text-[10px] text-sky-700 font-semibold">Compte mobile</span>
+                        </div>
+                        <div class="flex justify-between text-gray-700">
+                            <span>Solde initial Wave :</span>
+                            <span class="font-semibold">{{ number_format($resumeCloture['fond_wave_initial'] ?? 0, 0, ',', ' ') }} FCFA</span>
+                        </div>
+                        <div class="flex justify-between text-gray-700">
+                            <span>+ Encaissements Wave reçus :</span>
+                            <span class="font-semibold text-sky-700">+ {{ number_format($resumeCloture['ventes_wave'], 0, ',', ' ') }} FCFA</span>
+                        </div>
+                        @if(($resumeCloture['monnaie_rendue_wave'] ?? 0) > 0)
+                            <div class="flex justify-between text-red-700 bg-red-50 p-1.5 rounded-lg border border-red-100 font-medium">
+                                <span>- Monnaies rendues via Wave :</span>
+                                <span class="font-bold text-red-600">- {{ number_format($resumeCloture['monnaie_rendue_wave'], 0, ',', ' ') }} FCFA</span>
+                            </div>
+                        @endif
+                        @if(($resumeCloture['depenses_wave'] ?? 0) > 0)
+                            <div class="flex justify-between text-gray-700">
+                                <span>- Dépenses payées par Wave :</span>
+                                <span class="font-semibold text-red-600">- {{ number_format($resumeCloture['depenses_wave'], 0, ',', ' ') }} FCFA</span>
+                            </div>
+                        @endif
+                        <div class="flex justify-between pt-1 border-t border-sky-200 text-xs sm:text-sm font-bold text-sky-950">
+                            <span>Solde Wave Théorique :</span>
+                            <span>{{ number_format($resumeCloture['theorique_wave'] ?? 0, 0, ',', ' ') }} FCFA</span>
+                        </div>
+                    </div>
+
+                    {{-- Saisie solde Wave réel & écart Wave --}}
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold text-gray-800 uppercase tracking-wider mb-1 flex items-center justify-between">
+                            <span>Solde final réel sur compte Wave <span class="text-red-500">*</span></span>
+                            <button type="button"
+                                    wire:click="$set('montantReelWave', '{{ $resumeCloture['theorique_wave'] ?? 0 }}')"
+                                    class="text-[10px] text-sky-600 hover:underline font-bold capitalize">
+                                Copier théorique ({{ number_format($resumeCloture['theorique_wave'] ?? 0, 0, ',', ' ') }} F)
+                            </button>
+                        </label>
+                        <div class="relative">
+                            <input type="number" step="any" min="0"
+                                   wire:model.live.debounce.150ms="montantReelWave"
+                                   placeholder="Solde affiché sur l'application Wave"
+                                   class="w-full px-4 py-2.5 text-base font-bold border-2 rounded-2xl focus:ring-sky-500 focus:border-sky-500 {{ ($resumeCloture['ecart_wave'] ?? 0) < 0 ? 'border-red-300 bg-red-50/30 text-red-900' : (($resumeCloture['ecart_wave'] ?? 0) > 0 ? 'border-blue-300 bg-blue-50/30 text-sky-900' : 'border-green-300 bg-green-50/30 text-sky-900') }}">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-sky-400">FCFA</span>
+                        </div>
+                        @error('montantReelWave')
+                            <p class="text-xs text-red-600 mt-0.5 font-semibold">{{ $message }}</p>
+                        @enderror
+
+                        {{-- Badge Écart Wave --}}
+                        @php $ecartWave = (float) ($resumeCloture['ecart_wave'] ?? 0); @endphp
+                        <div class="p-2.5 rounded-xl text-xs flex items-center justify-between font-bold {{ $ecartWave === 0.0 ? 'bg-green-100 text-green-900 border border-green-200' : ($ecartWave > 0 ? 'bg-blue-100 text-blue-900 border border-blue-200' : 'bg-red-100 text-red-900 border border-red-200') }}">
+                            <span>
+                                @if($ecartWave === 0.0)
+                                    ✓ Solde Wave conforme (0 F)
+                                @elseif($ecartWave > 0)
+                                    ▲ Excédent Wave constaté
+                                @else
+                                    ▼ Manquant Wave (Déficit)
+                                @endif
+                            </span>
+                            <span class="text-sm">
+                                {{ $ecartWave > 0 ? '+' : '' }}{{ number_format($ecartWave, 0, ',', ' ') }} FCFA
+                            </span>
+                        </div>
+
+                        {{-- Notes / Justifications --}}
+                        <div class="pt-1">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">
+                                Justification / Observations (optionnel)
+                            </label>
+                            <textarea wire:model="notesCloture"
+                                      rows="2"
+                                      placeholder="Explication d'un écart, remarque sur le service..."
+                                      class="w-full p-2.5 text-xs border border-gray-200 rounded-xl focus:ring-primary focus:border-primary"></textarea>
+                        </div>
+                    </div>
+
+                    {{-- Actions --}}
+                    <div class="pt-2 flex gap-2">
+                        <button type="button"
+                                wire:click="$set('afficherModalCloture', false)"
+                                class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs sm:text-sm font-semibold rounded-2xl transition-colors">
+                            Retour au POS
+                        </button>
+                        <button type="button"
+                                wire:click="cloturerSession"
+                                class="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-bold rounded-2xl shadow-lg shadow-red-600/25 transition-all flex items-center justify-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span>Confirmer la clôture</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- ══════════════════════════════════════════════════════════════════════
+         MODAL 3 : SUCCÈS CLÔTURE DE CAISSE & ACTIONS (TICKET Z, RAPPORT)
+    ══════════════════════════════════════════════════════════════════════ --}}
+    @if($afficherModalSuccesCloture)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden text-center p-6 space-y-4 border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
+                <div class="w-16 h-16 rounded-full bg-green-100 text-green-600 mx-auto flex items-center justify-center text-3xl">
+                    ✓
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900">Session Clôturée avec Succès !</h3>
+                    <p class="text-xs text-gray-500 mt-1">Les chiffres ont été enregistrés et figés dans le journal comptable.</p>
+                </div>
+
+                <div class="space-y-2 pt-2">
+                    @if($derniereSessionClotureeId)
+                        <a href="{{ route('caisse.sessions.ticket-z', $derniereSessionClotureeId) }}"
+                           target="_blank"
+                           class="w-full py-2.5 bg-primary hover:bg-primary/95 text-white text-xs sm:text-sm font-bold rounded-xl shadow-md shadow-primary/25 transition-all flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                            </svg>
+                            <span>Télécharger Ticket Z (PDF)</span>
+                        </a>
+                    @endif
+
+                    <a href="{{ route('caisse.rapport-journalier') }}"
+                       class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs sm:text-sm font-semibold rounded-xl transition-colors flex items-center justify-center gap-2">
+                        📊 Voir mon Rapport Quotidien
+                    </a>
+
+                    <button wire:click="$set('afficherModalSuccesCloture', false); $set('afficherModalOuverture', true);"
+                            class="w-full py-2.5 bg-secondary hover:bg-secondary/90 text-white text-xs sm:text-sm font-bold rounded-xl transition-colors">
+                        Ouvrir une nouvelle session
+                    </button>
                 </div>
             </div>
         </div>

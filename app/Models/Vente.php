@@ -18,12 +18,15 @@ class Vente extends Model
         'reference',
         'client_id',
         'user_id',
+        'session_caisse_id',
         'source',
         'statut',
         'total',
         'remise',
         'montant_recu',
         'monnaie_rendue',
+        'monnaie_rendue_especes',
+        'monnaie_rendue_wave',
         'mode_paiement',
         'notes',
         'vendu_le',
@@ -32,15 +35,22 @@ class Vente extends Model
     protected function casts(): array
     {
         return [
-            'total'          => 'decimal:2',
-            'remise'         => 'decimal:2',
-            'montant_recu'   => 'decimal:2',
-            'monnaie_rendue' => 'decimal:2',
-            'vendu_le'       => 'datetime',
+            'total'                  => 'decimal:2',
+            'remise'                 => 'decimal:2',
+            'montant_recu'           => 'decimal:2',
+            'monnaie_rendue'         => 'decimal:2',
+            'monnaie_rendue_especes' => 'decimal:2',
+            'monnaie_rendue_wave'    => 'decimal:2',
+            'vendu_le'               => 'datetime',
         ];
     }
 
     // ── Relations ─────────────────────────────────
+
+    public function sessionCaisse(): BelongsTo
+    {
+        return $this->belongsTo(SessionCaisse::class, 'session_caisse_id');
+    }
 
     public function client(): BelongsTo
     {

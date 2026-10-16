@@ -15,6 +15,7 @@ class Depense extends Model
     protected $fillable = [
         'depense_categorie_id',
         'user_id',
+        'session_caisse_id',
         'description',
         'montant',
         'date_depense',
@@ -32,6 +33,11 @@ class Depense extends Model
     }
 
     // ── Relations ─────────────────────────────────
+
+    public function sessionCaisse(): BelongsTo
+    {
+        return $this->belongsTo(SessionCaisse::class, 'session_caisse_id');
+    }
 
     public function categorie(): BelongsTo
     {

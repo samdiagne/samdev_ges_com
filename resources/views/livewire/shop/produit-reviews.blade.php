@@ -233,7 +233,7 @@
                         Votre avis <span class="text-red-500">*</span>
                     </label>
                     <textarea wire:model="comment" rows="4"
-                              placeholder="Partagez votre expérience avec ce Produit..."
+                              placeholder="Partagez votre expérience avec ce produit..."
                               class="w-full px-3 py-2.5 border rounded-xl text-sm
                                      focus:outline-none transition-colors resize-none
                                      {{ $errors->has('comment')

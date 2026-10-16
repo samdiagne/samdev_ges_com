@@ -207,7 +207,7 @@
                     Commander — {{ number_format($total, 0, ',', ' ') }} FCFA
                 </a>
 
-                {{-- Séparateur --}}
+                {{-- Bouton WhatsApp direct (Désactivé pour privilégier le tunnel de commande)
                 @if($wa)
                     <div class="flex items-center gap-3">
                         <div class="flex-1 border-t border-gray-100"></div>
@@ -215,7 +215,6 @@
                         <div class="flex-1 border-t border-gray-100"></div>
                     </div>
 
-                    {{-- Commander via WhatsApp --}}
                     <a href="https://wa.me/{{ $wa }}?text={{ urlencode($msg) }}"
                        target="_blank"
                        class="flex items-center justify-center gap-2 w-full py-3 bg-green-500
@@ -227,6 +226,7 @@
                         Commander via WhatsApp
                     </a>
                 @endif
+                --}}
 
                 {{-- Badges confiance --}}
                 <div class="flex items-center justify-center gap-4 pt-1">

@@ -42,6 +42,12 @@
                     'icon'  => 'receipt',
                     'roles' => ['admin', 'gestionnaire'],
                 ],
+                [
+                    'label' => 'Rapport Quotidien',
+                    'route' => 'caisse.rapport-journalier',
+                    'icon'  => 'chart-bar',
+                    'roles' => ['admin', 'gestionnaire'],
+                ],
             ],
         ],
         [

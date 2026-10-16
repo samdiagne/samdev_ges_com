@@ -15,7 +15,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="csrf-token" content="{{ csrf_token() }}"/>
     <meta name="google-site-verification" content="jbqwi92eZFZEShq8RZBrBJxrYqAdKmJRTZI74Sveets" />
-    @php $logo = App\Models\Parametre::first()->logo; @endphp
+    @php $logo = App\Models\Parametre::first()?->logo; @endphp
     <title>@yield('title', 'Mon Restaurant') — Dashboard</title>
     @if($logo && file_exists(storage_path('app/public/' . $logo)))
         <link rel="icon" type="image/webp" href="{{ Storage::url($logo) }}"/>

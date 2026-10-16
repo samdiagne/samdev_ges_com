@@ -55,11 +55,12 @@ class CheckoutController extends Controller
         ]);
 
         $sousTotal = collect($panier)->sum(fn($i) => $i['prix'] * $i['quantite']);
+        $modePaiement = config('paydunya.enabled') ? 'paydunya' : 'whatsapp';
 
-        $commande = DB::transaction(function () use ($request, $panier, $sousTotal) {
+        $commande = DB::transaction(function () use ($request, $panier, $sousTotal, $modePaiement) {
             $commande = Commande::create([
                 'reference'         => 'CMD-' . strtoupper(uniqid()),
-                'user_id'    => auth()->id(),
+                'user_id'           => auth()->id(),
                 'nom_client'        => $request->nom_client,
                 'email_client'      => $request->email_client,
                 'telephone_client'  => $request->telephone_client,
@@ -69,7 +70,7 @@ class CheckoutController extends Controller
                 'sous_total'        => $sousTotal,
                 'frais_livraison'   => 0,
                 'total'             => $sousTotal,
-                'mode_paiement'     => 'paydunya',
+                'mode_paiement'     => $modePaiement,
                 'statut_paiement'   => 'en_attente',
                 'statut'            => 'en_attente',
             ]);
@@ -88,7 +89,16 @@ class CheckoutController extends Controller
             return $commande;
         });
 
-        return $this->initiatePaydunya($commande);
+        if (config('paydunya.enabled')) {
+            return $this->initiatePaydunya($commande);
+        }
+
+        session()->forget('panier');
+        $this->sendCommandeEmails($commande->fresh('lignes'));
+
+        return redirect()
+            ->route('shop.confirmation', $commande->reference)
+            ->with('success', 'Votre commande a été enregistrée avec succès !');
     }
 
     private function sendCommandeEmails(Commande $commande): void

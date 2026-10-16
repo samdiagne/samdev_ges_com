@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'enabled'     => env('PAYDUNYA_ENABLED', false),
     'master_key'  => env('PAYDUNYA_MASTER_KEY'),
     'public_key' => env('PAYDUNYA_PUBLIC_KEY'),
     'private_key' => env('PAYDUNYA_PRIVATE_KEY'),

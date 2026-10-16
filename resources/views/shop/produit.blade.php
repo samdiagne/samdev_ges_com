@@ -1,5 +1,5 @@
 @extends('layouts.shop')
-@section('title', $produit->nom . ' à Dakar')
+@section('title', $produit->nom . ' — ' . ($parametres->nom ?? 'MAF\'FOOD'))
 @section('description', $produit->description_courte ?: Str::limit($produit->description ?? $produit->nom, 160))
 @section('og_type', 'product')
 @if($produit->image_principale)

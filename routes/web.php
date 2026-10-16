@@ -6,6 +6,7 @@ use App\Http\Controllers\FactureController;
 use App\Http\Controllers\EtatController;
 use App\Http\Controllers\AvisController;
 use App\Http\Controllers\DevisController;
+use App\Http\Controllers\SessionCaisseController;
 
 // ── Racine → boutique ─────────────────────────────────────────────────────
 Route::get('/', fn() => redirect()->route('shop.home'));
@@ -88,6 +89,13 @@ Route::middleware(['auth', 'active'])->group(function () {
             $devise = $settings?->devise ?? 'FCFA';
             return view('caisse.ticket', compact('vente', 'settings', 'devise'));
         })->name('ticket');
+
+        // Sessions & Clôture de Caisse
+        Route::get('/sessions/{session}/ticket-z', [SessionCaisseController::class, 'ticketZ'])->name('sessions.ticket-z');
+
+        // Rapport Quotidien
+        Route::get('/rapport-journalier', fn() => view('caisse.rapport-journalier'))->name('rapport-journalier');
+        Route::get('/rapport-journalier/pdf', [SessionCaisseController::class, 'rapportJournalierPdf'])->name('rapport-journalier.pdf');
     });
 
     // ── Produits ──────────────────────────────────────────────────────────

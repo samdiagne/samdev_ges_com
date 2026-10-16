@@ -225,6 +225,18 @@
                 <td class="label bold">Monnaie</td>
                 <td class="value">{{ number_format($vente->monnaie_rendue, 0, ',', ' ') }} {{ $devise }}</td>
             </tr>
+            @if(($vente->monnaie_rendue_wave ?? 0) > 0)
+                <tr style="font-size: 11px;">
+                    <td class="label" style="padding-left: 8px; color: #555;">↳ dont par Wave :</td>
+                    <td class="value" style="color: #0284c7;">{{ number_format($vente->monnaie_rendue_wave, 0, ',', ' ') }} {{ $devise }}</td>
+                </tr>
+                @if(($vente->monnaie_rendue_especes ?? 0) > 0)
+                    <tr style="font-size: 11px;">
+                        <td class="label" style="padding-left: 8px; color: #555;">↳ dont Espèces :</td>
+                        <td class="value">{{ number_format($vente->monnaie_rendue_especes, 0, ',', ' ') }} {{ $devise }}</td>
+                    </tr>
+                @endif
+            @endif
         @endif
     </table>
 

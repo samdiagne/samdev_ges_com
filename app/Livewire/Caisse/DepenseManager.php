@@ -98,9 +98,15 @@ class DepenseManager extends Component
             $cheminJustificatif = $this->justificatif->store('justificatifs', 'public');
         }
 
+        $sessionActive = \App\Models\SessionCaisse::where('user_id', Auth::id())
+            ->where('statut', 'ouverte')
+            ->latest('id')
+            ->first();
+
         $data = [
             'depense_categorie_id' => $this->depense_categorie_id,
-            'user_id'       => Auth::id(),
+            'user_id'              => Auth::id(),
+            'session_caisse_id'    => $sessionActive?->id,
             'description'          => $this->description,
             'montant'              => (float) $this->montant,
             'date_depense'         => $this->date_depense,
@@ -112,6 +118,7 @@ class DepenseManager extends Component
         if ($this->isEditing) {
             $depense = Depense::findOrFail($this->editingId);
             if (! $this->isDeletable($depense)) unset($data['montant']);
+            unset($data['session_caisse_id']);
             $depense->update($data);
             session()->flash('success', 'Dépense modifiée avec succès !');
         } else {

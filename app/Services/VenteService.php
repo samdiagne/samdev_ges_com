@@ -35,6 +35,14 @@ class VenteService
             $montantRecu    = (float) ($paiement['montant_recu'] ?? $total);
             $monnaieRendue  = round(max(0, $montantRecu - $total), 2);
 
+            // ── Répartition de la monnaie (Espèces vs Wave) ────
+            $monnaieWave    = 0.0;
+            $monnaieEspeces = 0.0;
+            if ($monnaieRendue > 0) {
+                $monnaieWave = round(min($monnaieRendue, max(0, (float) ($paiement['monnaie_rendue_wave'] ?? 0))), 2);
+                $monnaieEspeces = round($monnaieRendue - $monnaieWave, 2);
+            }
+
             // ── Date de vente ──────────────────────────
             $dateVente = $paiement['date_vente'] ?? null;
             $venduLe   = ($dateVente && $dateVente !== now()->toDateString())
@@ -44,20 +52,31 @@ class VenteService
             $modePaiement = $paiement['mode_paiement'] ?? 'cash';
             $estARegler   = ($modePaiement === 'a_regler');
 
+            $sessionCaisseId = $paiement['session_caisse_id'] ?? null;
+            if (! $sessionCaisseId && Auth::check()) {
+                $sessionCaisseId = \App\Models\SessionCaisse::where('user_id', Auth::id())
+                    ->where('statut', 'ouverte')
+                    ->latest('id')
+                    ->value('id');
+            }
+
             // ── Créer la vente ─────────────────────────
             $vente = Vente::create([
-                'reference'      => $this->genererReference(),
-                'client_id'      => $clientId,
-                'user_id'        => Auth::id(),
-                'source'         => 'boutique',
-                'statut'         => $estARegler ? 'en_attente' : 'completee',
-                'total'          => $total,
-                'remise'         => $remise,
-                'montant_recu'   => $estARegler ? 0 : $montantRecu,
-                'monnaie_rendue' => $estARegler ? 0 : $monnaieRendue,
-                'mode_paiement'  => $modePaiement,
-                'notes'          => $paiement['notes'] ?? null,
-                'vendu_le'       => $venduLe,
+                'reference'              => $this->genererReference(),
+                'client_id'              => $clientId,
+                'user_id'                => Auth::id(),
+                'session_caisse_id'      => $sessionCaisseId,
+                'source'                 => 'boutique',
+                'statut'                 => $estARegler ? 'en_attente' : 'completee',
+                'total'                  => $total,
+                'remise'                 => $remise,
+                'montant_recu'           => $estARegler ? 0 : $montantRecu,
+                'monnaie_rendue'         => $estARegler ? 0 : $monnaieRendue,
+                'monnaie_rendue_especes' => $estARegler ? 0 : $monnaieEspeces,
+                'monnaie_rendue_wave'    => $estARegler ? 0 : $monnaieWave,
+                'mode_paiement'          => $modePaiement,
+                'notes'                  => $paiement['notes'] ?? null,
+                'vendu_le'               => $venduLe,
             ]);
 
             // ── Lignes + stock ─────────────────────────

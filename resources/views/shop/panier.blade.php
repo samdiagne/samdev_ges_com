@@ -148,14 +148,13 @@
                         Passer la commande →
                     </a>
 
-                    {{-- Séparateur --}}
+                    {{-- Bouton WhatsApp direct (Désactivé pour privilégier le tunnel de commande)
                     <div class="flex items-center gap-3 my-4">
                         <div class="flex-1 border-t border-gray-100"></div>
                         <span class="text-xs text-gray-400 font-medium">ou</span>
                         <div class="flex-1 border-t border-gray-100"></div>
                     </div>
 
-                    {{-- Bouton WhatsApp --}}
                     @php
                         $parametres = App\Models\Parametre::first();
                         $wa = preg_replace('/[^0-9]/', '', $parametres->whatsapp ?? $parametres->telephone ?? '');
@@ -163,7 +162,6 @@
 
                     @if($wa)
                         @if(count($panier) > 0)
-                            {{-- Panier avec Produits → message avec détails commande --}}
                             @php
                                 $msg  = "Bonjour *{$parametres->nom}* 👋\n\n";
                                 $msg .= "Je souhaite passer une commande :\n\n";
@@ -186,8 +184,9 @@
                                 </svg>
                                 Commander via WhatsApp
                             </a>
-
-                        @else
+                        @endif
+                    @endif
+                    --}}
                             {{-- Panier vide → liste de sujets --}}
                             <div x-data="{ open: false, sujet: '' }">
 

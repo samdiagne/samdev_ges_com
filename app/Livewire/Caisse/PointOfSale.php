@@ -6,7 +6,9 @@ use Livewire\Component;
 use App\Models\Produit;
 use App\Models\Client;
 use App\Models\Categorie;
+use App\Models\SessionCaisse;
 use App\Services\VenteService;
+use Illuminate\Support\Facades\Auth;
 
 class PointOfSale extends Component
 {
@@ -36,17 +38,36 @@ class PointOfSale extends Component
     public bool   $afficherConfirmationVider = false;
     public string $erreurPaiement        = '';
 
-    public ?int   $derniereVenteId       = null;
-    public string $derniereReference     = '';
-    public float  $monnaieRendue         = 0;
+    public ?int   $derniereVenteId          = null;
+    public string $derniereReference        = '';
+    public float  $monnaieRendue            = 0;
+    public float  $monnaieRendueEspeces     = 0;
+    public float  $monnaieRendueWave        = 0;
+    public string $canalMonnaie             = 'especes'; // especes, wave, mixte
+    public float  $partMonnaieWave          = 0;
 
-    public float  $sousTotal             = 0;
-    public float  $total                 = 0;
+    public float  $sousTotal                = 0;
+    public float  $total                    = 0;
+
+    // ── Session & Clôture de Caisse ──
+    public ?int   $sessionCaisseId            = null;
+    public bool   $afficherModalOuverture     = false;
+    public string $fondCaisseOuverture        = '';
+    public string $fondCaisseWaveOuverture    = '';
+
+    public bool   $afficherModalCloture       = false;
+    public string $montantReelEspeces         = '';
+    public string $montantReelWave            = '';
+    public string $notesCloture               = '';
+    public ?array $resumeCloture              = null;
+    public bool   $afficherModalSuccesCloture = false;
+    public ?int   $derniereSessionClotureeId  = null;
 
     public function mount(): void
     {
         $this->loadProducts();
         $this->dateVente = now()->toDateString();
+        $this->verifierSession();
     }
 
     public function loadProducts(): void
@@ -247,8 +268,20 @@ class PointOfSale extends Component
     public function openPaymentModal(): void
     {
         if (empty($this->panier)) { session()->flash('pos_error', 'Le panier est vide !'); return; }
+        
+        if (! $this->sessionCaisseId) {
+            $this->verifierSession();
+            if (! $this->sessionCaisseId) {
+                session()->flash('pos_error', 'Veuillez ouvrir votre session de caisse avant d\'encaisser !');
+                $this->afficherModalOuverture = true;
+                return;
+            }
+        }
+
         $this->erreurPaiement        = '';
         $this->montantRecu           = $this->total;
+        $this->canalMonnaie          = 'especes';
+        $this->partMonnaieWave       = 0;
         $this->afficherModalPaiement = true;
     }
 
@@ -259,15 +292,203 @@ class PointOfSale extends Component
         $this->montantRecu = $this->total;
     }
 
-    public function processPayment($montantSaisi = null): void
+    // ── Gestion des Sessions de Caisse ───────────────────────
+
+    public function verifierSession(): void
+    {
+        $session = SessionCaisse::where('user_id', Auth::id())
+            ->where('statut', 'ouverte')
+            ->latest('id')
+            ->first();
+
+        if ($session) {
+            $this->sessionCaisseId = $session->id;
+            $this->afficherModalOuverture = false;
+        } else {
+            $this->sessionCaisseId = null;
+            $this->afficherModalOuverture = true;
+        }
+    }
+
+    public function ouvrirSession(): void
+    {
+        $this->validate([
+            'fondCaisseOuverture'     => 'required|numeric|min:0',
+            'fondCaisseWaveOuverture' => 'required|numeric|min:0',
+        ], [
+            'fondCaisseOuverture.required'     => 'Le fond de caisse espèces est obligatoire.',
+            'fondCaisseOuverture.numeric'      => 'Le fond de caisse espèces doit être un nombre.',
+            'fondCaisseOuverture.min'          => 'Le fond de caisse espèces ne peut pas être négatif.',
+            'fondCaisseWaveOuverture.required' => 'Le solde de caisse Wave est obligatoire (saisir 0 si vide).',
+            'fondCaisseWaveOuverture.numeric'  => 'Le solde de caisse Wave doit être un nombre.',
+            'fondCaisseWaveOuverture.min'      => 'Le solde de caisse Wave ne peut pas être négatif.',
+        ]);
+
+        $tz = config('app.timezone', 'Africa/Dakar');
+        $session = SessionCaisse::create([
+            'reference'                  => SessionCaisse::genererReference(),
+            'user_id'                    => Auth::id(),
+            'fond_caisse_ouverture'      => (float) $this->fondCaisseOuverture,
+            'fond_caisse_wave_ouverture' => (float) $this->fondCaisseWaveOuverture,
+            'ouvert_le'                  => now($tz),
+            'statut'                     => 'ouverte',
+        ]);
+
+        $this->sessionCaisseId = $session->id;
+        $this->afficherModalOuverture = false;
+        $this->fondCaisseOuverture = '';
+        $this->fondCaisseWaveOuverture = '';
+        session()->flash('pos_success', "Session {$session->reference} ouverte avec succès !");
+    }
+
+    public function preparerCloture(): void
+    {
+        $session = SessionCaisse::find($this->sessionCaisseId);
+        if (! $session || ! $session->estOuverte()) {
+            $this->verifierSession();
+            return;
+        }
+
+        $totaux = $session->totaux_en_direct;
+        $this->montantReelEspeces = (string) $totaux['theorique_cash'];
+        $this->montantReelWave    = (string) $totaux['theorique_wave'];
+        $this->notesCloture       = '';
+        $this->calculerResumeCloture($session, $totaux);
+        $this->afficherModalCloture = true;
+    }
+
+    public function updatedMontantReelEspeces(): void
+    {
+        $this->rafraichirResumeCloture();
+    }
+
+    public function updatedMontantReelWave(): void
+    {
+        $this->rafraichirResumeCloture();
+    }
+
+    private function rafraichirResumeCloture(): void
+    {
+        if ($this->sessionCaisseId) {
+            $session = SessionCaisse::find($this->sessionCaisseId);
+            if ($session) {
+                $this->calculerResumeCloture($session, $session->totaux_en_direct);
+            }
+        }
+    }
+
+    private function calculerResumeCloture(SessionCaisse $session, array $totaux): void
+    {
+        $reelEspeces = is_numeric($this->montantReelEspeces) ? (float) $this->montantReelEspeces : 0.0;
+        $theoriqueEspeces = (float) $totaux['theorique_cash'];
+        $ecartEspeces = round($reelEspeces - $theoriqueEspeces, 2);
+
+        $reelWave = is_numeric($this->montantReelWave) ? (float) $this->montantReelWave : 0.0;
+        $theoriqueWave = (float) $totaux['theorique_wave'];
+        $ecartWave = round($reelWave - $theoriqueWave, 2);
+
+        $this->resumeCloture = array_merge($totaux, [
+            'reference'         => $session->reference,
+            'ouvert_le'         => $session->ouvert_le?->format('d/m/Y à H:i'),
+            'duree'             => $session->duree(),
+            'fond_initial'      => (float) $session->fond_caisse_ouverture,
+            'fond_wave_initial' => (float) ($session->fond_caisse_wave_ouverture ?? 0),
+            'montant_reel'      => $reelEspeces,
+            'ecart'             => $ecartEspeces,
+            'montant_reel_wave' => $reelWave,
+            'ecart_wave'        => $ecartWave,
+        ]);
+    }
+
+    public function cloturerSession(): void
+    {
+        $this->validate([
+            'montantReelEspeces' => 'required|numeric|min:0',
+            'montantReelWave'    => 'required|numeric|min:0',
+            'notesCloture'       => 'nullable|string|max:500',
+        ], [
+            'montantReelEspeces.required' => 'Le comptage physique des espèces est obligatoire.',
+            'montantReelEspeces.min'      => 'Le montant espèces ne peut pas être négatif.',
+            'montantReelWave.required'    => 'Le solde réel Wave est obligatoire.',
+            'montantReelWave.min'         => 'Le solde Wave ne peut pas être négatif.',
+        ]);
+
+        $session = SessionCaisse::find($this->sessionCaisseId);
+        if (! $session || ! $session->estOuverte()) {
+            session()->flash('pos_error', 'Session déjà fermée ou introuvable.');
+            $this->afficherModalCloture = false;
+            $this->verifierSession();
+            return;
+        }
+
+        $totaux = $session->totaux_en_direct;
+        $reelEspeces = (float) $this->montantReelEspeces;
+        $ecartEspeces = round($reelEspeces - $totaux['theorique_cash'], 2);
+
+        $reelWave = (float) $this->montantReelWave;
+        $ecartWave = round($reelWave - $totaux['theorique_wave'], 2);
+
+        $tz  = config('app.timezone', 'Africa/Dakar');
+        $session->update([
+            'ferme_le'                  => now($tz),
+            'statut'                    => 'fermee',
+            'total_ventes_cash'         => $totaux['ventes_cash'],
+            'total_ventes_wave'         => $totaux['ventes_wave'],
+            'total_ventes_om'           => $totaux['ventes_om'],
+            'total_ventes_carte'        => $totaux['ventes_carte'],
+            'total_ventes'              => $totaux['total_ventes'],
+            'total_monnaie_rendue_wave' => $totaux['monnaie_rendue_wave'],
+            'total_depenses_cash'       => $totaux['depenses_cash'],
+            'total_depenses'            => $totaux['total_depenses'],
+            'solde_theorique_especes'   => $totaux['theorique_cash'],
+            'solde_theorique_wave'      => $totaux['theorique_wave'],
+            'montant_reel_especes'      => $reelEspeces,
+            'montant_reel_wave'         => $reelWave,
+            'ecart'                     => $ecartEspeces,
+            'ecart_wave'                => $ecartWave,
+            'notes_fermeture'           => $this->notesCloture ?: null,
+        ]);
+
+        $this->derniereSessionClotureeId = $session->id;
+        $this->sessionCaisseId = null;
+        $this->afficherModalCloture = false;
+        $this->afficherModalSuccesCloture = true;
+    }
+
+    public function processPayment($montantSaisi = null, $monnaieWaveSaisie = null): void
     {
         if (empty($this->panier)) return;
+        
+        if (! $this->sessionCaisseId) {
+            $this->verifierSession();
+            if (! $this->sessionCaisseId) {
+                session()->flash('pos_error', 'Veuillez ouvrir votre session de caisse avant d\'encaisser !');
+                $this->afficherModalPaiement = false;
+                $this->afficherModalOuverture = true;
+                return;
+            }
+        }
+
         if ($montantSaisi !== null && (float) $montantSaisi > 0) {
             $this->montantRecu = (float) $montantSaisi;
         }
         if ($this->modePaiement !== 'a_regler' && $this->montantRecu < $this->total) {
             $this->addError('montantRecu', 'Montant insuffisant !'); return;
         }
+
+        // Calcul de la monnaie rendue via Wave
+        $monnaieTotale = max(0, round($this->montantRecu - $this->total, 2));
+        $monnaieWave = 0.0;
+        if ($monnaieTotale > 0) {
+            if ($monnaieWaveSaisie !== null) {
+                $monnaieWave = min($monnaieTotale, max(0, (float) $monnaieWaveSaisie));
+            } elseif ($this->canalMonnaie === 'wave') {
+                $monnaieWave = $monnaieTotale;
+            } elseif ($this->canalMonnaie === 'mixte') {
+                $monnaieWave = min($monnaieTotale, max(0, (float) $this->partMonnaieWave));
+            }
+        }
+
         try {
             $venteService = app(VenteService::class);
             $clientId = $this->clientSelectionneId;
@@ -278,19 +499,23 @@ class PointOfSale extends Component
             $vente = $venteService->creerVente(
                 panier: $this->panier,
                 paiement: [
-                    'mode_paiement' => $this->modePaiement,
-                    'montant_recu'  => $this->montantRecu,
-                    'remise'        => $this->remise,
-                    'notes'         => $this->notes,
-                    'date_vente'    => $this->dateVente ?: now()->toDateString(),
+                    'mode_paiement'          => $this->modePaiement,
+                    'montant_recu'           => $this->montantRecu,
+                    'monnaie_rendue_wave'    => $monnaieWave,
+                    'remise'                 => $this->remise,
+                    'notes'                  => $this->notes,
+                    'date_vente'             => $this->dateVente ?: now()->toDateString(),
+                    'session_caisse_id'      => $this->sessionCaisseId,
                 ],
                 clientId: $clientId
             );
-            $this->derniereVenteId       = $vente->id;
-            $this->derniereReference     = $vente->reference;
-            $this->monnaieRendue         = $vente->monnaie_rendue;
-            $this->afficherModalPaiement = false;
-            $this->afficherModalSucces   = true;
+            $this->derniereVenteId          = $vente->id;
+            $this->derniereReference        = $vente->reference;
+            $this->monnaieRendue            = (float) $vente->monnaie_rendue;
+            $this->monnaieRendueEspeces     = (float) $vente->monnaie_rendue_especes;
+            $this->monnaieRendueWave        = (float) $vente->monnaie_rendue_wave;
+            $this->afficherModalPaiement    = false;
+            $this->afficherModalSucces      = true;
             $this->clearCart();
             $this->loadProducts();
 
@@ -305,6 +530,9 @@ class PointOfSale extends Component
         $categories = Categorie::where('est_active', true)
             ->whereHas('produits', fn($q) => $q->where('est_actif', true)->where(fn($sq) => $sq->where('stock', '>', 0)->orWhere('sur_commande', true)))
             ->get(['id', 'nom']);
-        return view('livewire.caisse.point-of-sale', compact('categories'));
+
+        $sessionActive = $this->sessionCaisseId ? SessionCaisse::find($this->sessionCaisseId) : null;
+
+        return view('livewire.caisse.point-of-sale', compact('categories', 'sessionActive'));
     }
 }

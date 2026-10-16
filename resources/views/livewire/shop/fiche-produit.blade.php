@@ -131,8 +131,19 @@
                         Vous économisez {{ number_format($produit->ancien_prix - $produit->prix_vente, 0, ',', ' ') }} FCFA
                     </p>
                 @endif
+
+                {{-- Tarif spécial par palier / gros --}}
+                @if($produit->quantite_palier && $produit->prix_palier)
+                    <div class="mt-2 bg-amber-50 border border-amber-200/70 rounded-xl px-3 py-2 flex items-center gap-2 text-xs text-amber-900 font-medium">
+                        <span class="text-base">💡</span>
+                        <span>
+                            <strong>Tarif spécial par lot :</strong> {{ number_format($produit->prix_palier, 0, ',', ' ') }} FCFA / unité dès {{ $produit->quantite_palier }} achetés
+                        </span>
+                    </div>
+                @endif
+
                 {{-- Stock --}}
-                <div class="flex items-center gap-2 mt-2">
+                <div class="flex items-center gap-2 mt-3">
                     @if($produit->sur_commande)
                         <span class="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600">
                             <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
@@ -201,7 +212,7 @@
                         @if($quantity > 1)
                             <span class="text-sm text-gray-500">
                                 = <span class="font-bold text-dark">
-                                    {{ number_format($produit->prix_vente * $quantity, 0, ',', ' ') }} FCFA
+                                    {{ number_format($produit->prixPourQuantite($quantity) * $quantity, 0, ',', ' ') }} FCFA
                                 </span>
                             </span>
                         @endif
@@ -210,7 +221,7 @@
                     <div class="flex gap-3">
                         <button wire:click="addToCart"
                                 @class([
-                                    'flex-1 py-3.5 rounded-2xl font-semibold text-sm
+                                    'w-full py-3.5 rounded-2xl font-semibold text-sm
                                      transition-all flex items-center justify-center gap-2',
                                     'bg-green-500 text-white' => $added,
                                     'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25' => !$added,
@@ -219,7 +230,7 @@
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                 </svg>
-                                Ajouté !
+                                Ajouté au panier !
                             @else
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -228,25 +239,13 @@
                                 Ajouter au panier
                             @endif
                         </button>
-
-                        <button onclick="Livewire.dispatch('open-cart')"
-                                class="px-5 py-3.5 rounded-2xl font-semibold text-sm
-                                       border-2 border-gray-200 text-gray-600
-                                       hover:border-primary hover:text-primary
-                                       transition-all flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-                            </svg>
-                            Panier
-                        </button>
                     </div>
 
                     {{-- WhatsApp CTA --}}
                     @if($parametres?->whatsapp)
                         @php
                             $wa  = preg_replace('/[^0-9]/', '', $parametres->whatsapp);
-                            $msg = urlencode("Bonjour *{$parametres->nom}* \nJe suis intéressé par *{$produit->nom}* à {$produit->prix_vente} FCFA.\nPouvez-vous me donner plus d'informations ?");
+                            $msg = urlencode("Bonjour *{$parametres->nom}* 👋\nJe suis intéressé(e) par *{$produit->nom}* à " . number_format($produit->prix_vente, 0, ',', ' ') . " FCFA.\nPouvez-vous me donner plus d'informations ?");
                         @endphp
                         <a href="https://wa.me/{{ $wa }}?text={{ $msg }}"
                            target="_blank"
@@ -257,20 +256,20 @@
                             <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                             </svg>
-                            Renseigner sur WhatsApp
+                            Poser une question sur WhatsApp
                         </a>
                     @endif
                 </div>
             @else
-                {{-- Rupture (uniquement pour les Produits non sur commande) --}}
+                {{-- Rupture (uniquement pour les produits non sur commande) --}}
                 <div class="bg-red-50 border border-red-100 rounded-2xl p-4 text-center">
                     <p class="text-red-600 font-medium text-sm mb-3">
-                        Ce Produit est actuellement indisponible
+                        Ce produit est actuellement indisponible
                     </p>
                     @if($parametres?->whatsapp)
                         @php
                             $wa  = preg_replace('/[^0-9]/', '', $parametres->whatsapp);
-                            $msg = urlencode("Bonjour *{$parametres->nom}* \nJe suis intéressé par *{$produit->nom}* mais il est en rupture. Pouvez-vous me prévenir dès qu'il sera disponible ?");
+                            $msg = urlencode("Bonjour *{$parametres->nom}* 👋\nJe suis intéressé(e) par *{$produit->nom}* mais il est actuellement en rupture. Pouvez-vous me prévenir dès qu'il sera disponible ?");
                         @endphp
                         <a href="https://wa.me/{{ $wa }}?text={{ $msg }}"
                            target="_blank"
@@ -370,9 +369,9 @@
             {{-- Badges de confiance --}}
             <div class="grid grid-cols-3 gap-3">
                 @foreach([
-                    ['icon' => 'truck', 'title' => 'Livraison rapide',   'sub' => 'Dakar & environs'],
+                    ['icon' => 'truck', 'title' => 'Livraison rapide',   'sub' => 'À domicile & bureau'],
                     ['icon' => 'check', 'title' => 'Qualité garantie',   'sub' => 'Fraîcheur assurée'],
-                    ['icon' => 'lock',  'title' => 'Paiement sécurisé', 'sub' => 'Wave · OM · Cash'],
+                    ['icon' => 'lock',  'title' => 'Règlement simple',   'sub' => 'Wave · OM · Espèces'],
                 ] as $badge)
                     <div class="bg-gray-50 rounded-xl p-3 text-center">
                         <p class="text-xl mb-1">
@@ -392,7 +391,7 @@
     {{-- ── Onglets : Description / Ingrédients ── --}}
     @php $ingredients = $produit->ingredients ?? []; @endphp
     @if($produit->description || count($ingredients) > 0)
-        <div x-data="{ tab: '{{ count($ingredients) > 0 ? 'ingredients' : 'description' }}' }"
+        <div x-data="{ tab: 'description' }"
              class="mt-12">
 
             {{-- Tab nav --}}

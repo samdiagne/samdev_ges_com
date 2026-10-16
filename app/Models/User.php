@@ -76,4 +76,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Commande::class);
     }
+
+    public function sessionsCaisse(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(SessionCaisse::class);
+    }
 }
