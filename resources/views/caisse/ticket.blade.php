@@ -182,6 +182,9 @@
                     <td class="col-qty bold">{{ $ligne->quantite }}x</td>
                     <td class="col-name">
                         <span class="bold">{{ $ligne->nom_produit }}</span>
+                        @if(! empty($ligne->details))
+                            <br/><span style="font-size: 11px; font-weight: 600; color: #444; line-height: 1.2;">{{ $ligne->details }}</span>
+                        @endif
                         @if($ligne->remise > 0)
                             <br/><span class="small">Remise : -{{ number_format($ligne->remise, 0, ',', ' ') }}</span>
                         @endif

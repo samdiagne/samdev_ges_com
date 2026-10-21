@@ -85,14 +85,16 @@ class VenteService
                     'vente_id'      => $vente->id,
                     'produit_id'    => $item['produit_id'],
                     'nom_produit'   => $item['nom'],
+                    'details'       => $item['details'] ?? null,
                     'prix_unitaire' => $item['prix_unitaire'],
                     'quantite'      => $item['quantite'],
                     'remise'        => $item['remise'] ?? 0,
                     'total'         => $item['total'],
                 ]);
 
+                // Décrémenter le stock du produit principal (si non sur_commande)
                 $plat = Produit::find($item['produit_id']);
-                if ($plat) {
+                if ($plat && ! $plat->sur_commande && $plat->stock > 0) {
                     $this->stockService->decrementerStock(
                         $plat,
                         $item['quantite'],
@@ -100,6 +102,34 @@ class VenteService
                         $vente->id,
                         'Vente #' . $vente->reference
                     );
+                }
+
+                // Décrémenter le stock du jus sélectionné dans le menu
+                if (! empty($item['jus_id'])) {
+                    $jus = Produit::find($item['jus_id']);
+                    if ($jus && ! $jus->sur_commande && $jus->stock > 0) {
+                        $this->stockService->decrementerStock(
+                            $jus,
+                            $item['quantite'],
+                            'vente',
+                            $vente->id,
+                            'Vente #' . $vente->reference . ' (Menu: ' . $item['nom'] . ')'
+                        );
+                    }
+                }
+
+                // Décrémenter le stock du burger/tacos sélectionné dans le menu si géré en stock
+                if (! empty($item['sandwich_id'])) {
+                    $sandwich = Produit::find($item['sandwich_id']);
+                    if ($sandwich && ! $sandwich->sur_commande && $sandwich->stock > 0) {
+                        $this->stockService->decrementerStock(
+                            $sandwich,
+                            $item['quantite'],
+                            'vente',
+                            $vente->id,
+                            'Vente #' . $vente->reference . ' (Menu: ' . $item['nom'] . ')'
+                        );
+                    }
                 }
             }
 

@@ -13,6 +13,7 @@ class VenteLigne extends Model
         'vente_id',
         'produit_id',
         'nom_produit',
+        'details',
         'prix_unitaire',
         'quantite',
         'remise',

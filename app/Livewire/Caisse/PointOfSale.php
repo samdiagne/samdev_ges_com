@@ -63,6 +63,18 @@ class PointOfSale extends Component
     public bool   $afficherModalSuccesCloture = false;
     public ?int   $derniereSessionClotureeId  = null;
 
+    // ── Composition Menu Fast-Food ──
+    public bool   $afficherModalMenu          = false;
+    public ?int   $menuProduitId              = null;
+    public string $menuProduitNom             = '';
+    public string $menuTypeSandwich           = 'burger'; // 'burger' ou 'tacos'
+    public ?int   $menuSandwichId             = null;
+    public ?int   $menuJusId                  = null;
+    public float  $menuPrixTotal              = 0;
+    public array  $listeBurgers               = [];
+    public array  $listeTacos                 = [];
+    public array  $listeBoissonsMenu          = [];
+
     public function mount(): void
     {
         $this->loadProducts();
@@ -110,13 +122,26 @@ class PointOfSale extends Component
 
     public function addToCart(int $platId): void
     {
+        $plat = Produit::find($platId);
+        if (! $plat || (! $plat->sur_commande && $plat->stock <= 0)) {
+            session()->flash('pos_error', 'Plat indisponible !'); return;
+        }
+
+        // Si le produit appartient à la catégorie "Menus Fast-Food" (catégorie 25 ou nom contenant "Menu")
+        if ($plat->categorie_id == 25 || str_starts_with(strtolower($plat->nom), 'menu')) {
+            $this->ouvrirModalMenu($platId);
+            return;
+        }
+
         $cleTrouvee = null;
         foreach ($this->panier as $cle => $item) {
-            if ($item['produit_id'] === $platId) { $cleTrouvee = $cle; break; }
+            if (($item['produit_id'] === $platId) && ! ($item['is_menu'] ?? false)) {
+                $cleTrouvee = $cle;
+                break;
+            }
         }
 
         if ($cleTrouvee !== null) {
-            $plat = Produit::find($platId);
             if (! $plat->sur_commande && $this->panier[$cleTrouvee]['quantite'] >= $plat->stock) {
                 session()->flash('pos_error', 'Stock insuffisant !'); return;
             }
@@ -125,10 +150,6 @@ class PointOfSale extends Component
             $this->recalcTotals();
             return;
         } else {
-            $plat = Produit::find($platId);
-            if (! $plat || (! $plat->sur_commande && $plat->stock <= 0)) {
-                session()->flash('pos_error', 'Plat indisponible !'); return;
-            }
             $this->panier[] = [
                 'produit_id'       => $plat->id,
                 'nom'              => $plat->nom,
@@ -140,9 +161,207 @@ class PointOfSale extends Component
                 'quantite_palier'  => $plat->quantite_palier,
                 'prix_palier'      => $plat->prix_palier ? (float) $plat->prix_palier : null,
                 'prix_base'        => (float) $plat->prix_vente,
+                'is_menu'          => false,
             ];
         }
         $this->recalcTotals();
+    }
+
+    // ── Composition Menu Fast-Food ───────────────────────────
+
+    public function ouvrirModalMenu(int $produitId): void
+    {
+        $produit = Produit::find($produitId);
+        if (! $produit) return;
+
+        $this->menuProduitId  = $produit->id;
+        $this->menuProduitNom = $produit->nom;
+
+        // Pré-sélection du type (burger ou tacos)
+        $nomLower = strtolower($produit->nom);
+        if (str_contains($nomLower, 'tacos')) {
+            $this->menuTypeSandwich = 'tacos';
+        } else {
+            $this->menuTypeSandwich = 'burger';
+        }
+
+        // Charger les burgers (Catégorie 20)
+        $this->listeBurgers = Produit::where('categorie_id', 20)
+            ->where('est_actif', true)
+            ->orderBy('prix_vente')
+            ->get(['id', 'nom', 'prix_vente', 'stock', 'sur_commande'])
+            ->map(fn($p) => [
+                'id'           => $p->id,
+                'nom'          => $p->nom,
+                'prix_vente'   => (float) $p->prix_vente,
+                'stock'        => $p->stock,
+                'sur_commande' => $p->sur_commande,
+            ])
+            ->toArray();
+
+        // Charger les tacos (Catégorie 23)
+        $this->listeTacos = Produit::where('categorie_id', 23)
+            ->where('est_actif', true)
+            ->orderBy('prix_vente')
+            ->get(['id', 'nom', 'prix_vente', 'stock', 'sur_commande'])
+            ->map(fn($p) => [
+                'id'           => $p->id,
+                'nom'          => $p->nom,
+                'prix_vente'   => (float) $p->prix_vente,
+                'stock'        => $p->stock,
+                'sur_commande' => $p->sur_commande,
+            ])
+            ->toArray();
+
+        // Charger les jus 250 ml et boissons individuelles
+        $this->listeBoissonsMenu = Produit::whereIn('categorie_id', [4, 5])
+            ->where('est_actif', true)
+            ->where(function ($q) {
+                $q->where('nom', 'like', '%250%')
+                  ->orWhere('categorie_id', 5)
+                  ->orWhere('prix_vente', '<=', 500);
+            })
+            ->where('nom', 'not like', '%1 L%')
+            ->where('nom', 'not like', '%1L%')
+            ->where('nom', 'not like', '%Pack%')
+            ->orderBy('nom')
+            ->get(['id', 'nom', 'prix_vente', 'stock', 'sur_commande'])
+            ->map(fn($p) => [
+                'id'           => $p->id,
+                'nom'          => $p->nom,
+                'prix_vente'   => (float) $p->prix_vente,
+                'stock'        => $p->stock,
+                'sur_commande' => $p->sur_commande,
+            ])
+            ->toArray();
+
+        // Sélection par défaut
+        $this->autoSelectSandwich();
+
+        if (! empty($this->listeBoissonsMenu)) {
+            $this->menuJusId = $this->listeBoissonsMenu[0]['id'];
+        }
+
+        $this->calculerPrixMenu();
+        $this->afficherModalMenu = true;
+    }
+
+    public function setMenuTypeSandwich(string $type): void
+    {
+        $this->menuTypeSandwich = $type;
+        $menuProduit = Produit::where('categorie_id', 25)
+            ->where('nom', 'like', "%{$type}%")
+            ->first();
+        if ($menuProduit) {
+            $this->menuProduitId  = $menuProduit->id;
+            $this->menuProduitNom = $menuProduit->nom;
+        }
+        $this->autoSelectSandwich();
+        $this->calculerPrixMenu();
+    }
+
+    private function autoSelectSandwich(): void
+    {
+        if ($this->menuTypeSandwich === 'burger' && ! empty($this->listeBurgers)) {
+            $this->menuSandwichId = $this->listeBurgers[0]['id'];
+        } elseif ($this->menuTypeSandwich === 'tacos' && ! empty($this->listeTacos)) {
+            $this->menuSandwichId = $this->listeTacos[0]['id'];
+        }
+    }
+
+    public function selectMenuSandwich(int $id): void
+    {
+        $this->menuSandwichId = $id;
+        $this->calculerPrixMenu();
+    }
+
+    public function selectMenuJus(int $id): void
+    {
+        $this->menuJusId = $id;
+    }
+
+    public function calculerPrixMenu(): void
+    {
+        $sandwich = null;
+        if ($this->menuTypeSandwich === 'burger') {
+            foreach ($this->listeBurgers as $b) {
+                if ($b['id'] === $this->menuSandwichId) { $sandwich = $b; break; }
+            }
+        } else {
+            foreach ($this->listeTacos as $t) {
+                if ($t['id'] === $this->menuSandwichId) { $sandwich = $t; break; }
+            }
+        }
+
+        $prixBase = $sandwich ? (float) $sandwich['prix_vente'] : 2000.0;
+        // Règle formulée par le client : Prix du burger/tacos + 1 000 FCFA
+        $this->menuPrixTotal = round($prixBase + 1000, 2);
+    }
+
+    public function validerAjoutMenu(): void
+    {
+        if (! $this->menuSandwichId) {
+            session()->flash('pos_error', 'Veuillez choisir un burger ou un tacos.');
+            return;
+        }
+        if (! $this->menuJusId) {
+            session()->flash('pos_error', 'Veuillez choisir un jus ou une boisson.');
+            return;
+        }
+
+        $sandwich = Produit::find($this->menuSandwichId);
+        $jus      = Produit::find($this->menuJusId);
+
+        if (! $sandwich || ! $jus) {
+            session()->flash('pos_error', 'Produit sélectionné introuvable.');
+            return;
+        }
+
+        $typeLabel = ($this->menuTypeSandwich === 'burger') ? 'Burger' : 'Tacos';
+        $nomLigne  = "Menu {$typeLabel} : {$sandwich->nom}";
+        $emoji     = ($this->menuTypeSandwich === 'tacos') ? '🌯' : '🍔';
+        $details   = "{$emoji} {$sandwich->nom} • 🍟 Frites • 🥤 {$jus->nom}";
+
+        $cleTrouvee = null;
+        foreach ($this->panier as $cle => $item) {
+            if (
+                ($item['is_menu'] ?? false) &&
+                ($item['sandwich_id'] ?? null) === $sandwich->id &&
+                ($item['jus_id'] ?? null) === $jus->id
+            ) {
+                $cleTrouvee = $cle;
+                break;
+            }
+        }
+
+        if ($cleTrouvee !== null) {
+            $this->panier[$cleTrouvee]['quantite']++;
+            $this->panier[$cleTrouvee]['total'] = round($this->panier[$cleTrouvee]['prix_unitaire'] * $this->panier[$cleTrouvee]['quantite'], 2);
+        } else {
+            $this->panier[] = [
+                'produit_id'       => $this->menuProduitId,
+                'nom'              => $nomLigne,
+                'prix_unitaire'    => $this->menuPrixTotal,
+                'quantite'         => 1,
+                'remise'           => 0,
+                'total'            => $this->menuPrixTotal,
+                'stock_max'        => null,
+                'quantite_palier'  => null,
+                'prix_palier'      => null,
+                'prix_base'        => $this->menuPrixTotal,
+                'is_menu'          => true,
+                'sandwich_id'      => $sandwich->id,
+                'sandwich_nom'     => $sandwich->nom,
+                'sandwich_type'    => $this->menuTypeSandwich,
+                'jus_id'           => $jus->id,
+                'jus_nom'          => $jus->nom,
+                'details'          => $details,
+            ];
+        }
+
+        $this->recalcTotals();
+        $this->afficherModalMenu = false;
+        session()->flash('pos_success', "{$nomLigne} ajouté au panier !");
     }
 
     public function updateQuantity(int $index, $quantite): void
@@ -202,6 +421,13 @@ class PointOfSale extends Component
     private function recalcLine(int $index): void
     {
         $item = $this->panier[$index];
+
+        if ($item['is_menu'] ?? false) {
+            $this->panier[$index]['total'] = round(
+                ($this->panier[$index]['prix_unitaire'] * $item['quantite']) - ($item['remise'] ?? 0), 2
+            );
+            return;
+        }
 
         $palierQte = $item['quantite_palier'] ?? null;
         $palierPrix = $item['prix_palier'] ?? null;

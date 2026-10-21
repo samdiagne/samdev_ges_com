@@ -365,6 +365,11 @@
                         <p class="text-xs sm:text-sm font-bold text-dark truncate">
                             {{ $item['nom'] }}
                         </p>
+                        @if(! empty($item['details']))
+                            <p class="text-[10px] text-orange-600 font-semibold truncate" title="{{ $item['details'] }}">
+                                {{ $item['details'] }}
+                            </p>
+                        @endif
                         <p class="text-[11px] text-gray-400">
                             {{ number_format($item['prix_unitaire'], 0, ',', ' ') }} FCFA
                             @if(($item['remise'] ?? 0) > 0)
@@ -480,6 +485,210 @@
             </button>
         </div>
     </div>
+
+    {{-- ══════════════════════════════════════════════════════════════════════
+         MODAL COMPOSITION MENU FAST-FOOD (BURGER / TACOS + JUS)
+    ══════════════════════════════════════════════════════════════════════ --}}
+    @if($afficherModalMenu)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto"
+             @keydown.escape.window="$wire.set('afficherModalMenu', false)">
+            <div class="absolute inset-0 cursor-pointer" wire:click="$set('afficherModalMenu', false)"></div>
+
+            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border border-gray-100 my-auto animate-in fade-in zoom-in-95 duration-200"
+                 @click.stop>
+                {{-- En-tête --}}
+                <div class="p-4 sm:p-5 bg-gradient-to-r from-orange-500 via-primary to-orange-600 text-white flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <span class="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-xl flex-shrink-0 shadow-inner">
+                            {{ $menuTypeSandwich === 'tacos' ? '🌯' : '🍔' }}
+                        </span>
+                        <div>
+                            <h3 class="font-extrabold text-base sm:text-lg leading-tight">Composer votre {{ $menuProduitNom ?? 'Menu Fast-Food' }}</h3>
+                            <p class="text-xs text-white/90">Formule complète : 1 Sandwich + Frites + 1 Boisson 250ml</p>
+                        </div>
+                    </div>
+                    <button type="button"
+                            wire:click="$set('afficherModalMenu', false)"
+                            class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors">
+                        ✕
+                    </button>
+                </div>
+
+                {{-- Corps du modal --}}
+                <div class="p-5 space-y-5 max-h-[75vh] overflow-y-auto">
+
+                    {{-- ── ÉTAPE 1 : Choix du Sandwich ── --}}
+                    <div>
+                        <div class="flex items-center justify-between mb-2.5">
+                            <label class="text-xs font-extrabold uppercase tracking-wider text-gray-800 flex items-center gap-2">
+                                <span class="w-5 h-5 rounded-full bg-orange-100 text-primary text-[11px] flex items-center justify-center font-black">1</span>
+                                <span>Choisir le sandwich</span>
+                            </label>
+
+                            {{-- Switch Onglets Burger / Tacos --}}
+                            <div class="inline-flex p-1 bg-gray-100 rounded-xl text-xs font-bold">
+                                <button type="button"
+                                        wire:click="setMenuTypeSandwich('burger')"
+                                        @class([
+                                            'px-3 py-1 rounded-lg transition-all flex items-center gap-1.5',
+                                            'bg-white text-primary shadow-sm' => $menuTypeSandwich === 'burger',
+                                            'text-gray-500 hover:text-gray-900' => $menuTypeSandwich !== 'burger',
+                                        ])>
+                                    <span>🍔 Burgers</span>
+                                    <span class="text-[10px] px-1.5 py-0.2 rounded-full {{ $menuTypeSandwich === 'burger' ? 'bg-primary/10 text-primary' : 'bg-gray-200 text-gray-500' }}">
+                                        {{ count($listeBurgers) }}
+                                    </span>
+                                </button>
+                                <button type="button"
+                                        wire:click="setMenuTypeSandwich('tacos')"
+                                        @class([
+                                            'px-3 py-1 rounded-lg transition-all flex items-center gap-1.5',
+                                            'bg-white text-primary shadow-sm' => $menuTypeSandwich === 'tacos',
+                                            'text-gray-500 hover:text-gray-900' => $menuTypeSandwich !== 'tacos',
+                                        ])>
+                                    <span>🌮 Tacos</span>
+                                    <span class="text-[10px] px-1.5 py-0.2 rounded-full {{ $menuTypeSandwich === 'tacos' ? 'bg-primary/10 text-primary' : 'bg-gray-200 text-gray-500' }}">
+                                        {{ count($listeTacos) }}
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- Grille des Sandwichs --}}
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                            @php
+                                $listeActuelle = ($menuTypeSandwich === 'burger') ? $listeBurgers : $listeTacos;
+                            @endphp
+                            @foreach($listeActuelle as $sandwich)
+                                @php
+                                    $estChoisi = ($menuSandwichId === $sandwich['id']);
+                                    $prixMenuCalcule = (float) $sandwich['prix_vente'] + 1000;
+                                @endphp
+                                <button type="button"
+                                        wire:click="selectMenuSandwich({{ $sandwich['id'] }})"
+                                        @class([
+                                            'relative p-3 rounded-2xl border-2 text-left transition-all flex flex-col justify-between group',
+                                            'border-primary bg-orange-50/60 shadow-sm ring-1 ring-primary/30' => $estChoisi,
+                                            'border-gray-200 bg-white hover:border-orange-200 hover:bg-gray-50/60' => ! $estChoisi,
+                                        ])>
+                                    {{-- Coche de sélection --}}
+                                    @if($estChoisi)
+                                        <div class="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center text-[10px] font-bold shadow-sm">
+                                            ✓
+                                        </div>
+                                    @endif
+
+                                    <div>
+                                        <span class="text-lg mb-1 block">
+                                            {{ $menuTypeSandwich === 'burger' ? '🍔' : '🌮' }}
+                                        </span>
+                                        <p class="text-xs font-bold text-gray-900 leading-snug line-clamp-2">
+                                            {{ $sandwich['nom'] }}
+                                        </p>
+                                    </div>
+
+                                    <div class="mt-2 pt-1.5 border-t border-gray-100/80">
+                                        <p class="text-xs font-extrabold text-primary">
+                                            {{ number_format($prixMenuCalcule, 0, ',', ' ') }} FCFA
+                                        </p>
+                                        <p class="text-[10px] text-gray-400 font-medium">
+                                            (solo : {{ number_format($sandwich['prix_vente'], 0, ',', ' ') }} F)
+                                        </p>
+                                    </div>
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- ── ÉTAPE 2 : Accompagnement (Frites d'office) ── --}}
+                    <div class="bg-amber-50/70 border border-amber-200/70 rounded-2xl p-3 flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-2xl flex-shrink-0">🍟</span>
+                            <div>
+                                <p class="text-xs font-bold text-amber-950">Portion de Frites Dorées</p>
+                                <p class="text-[11px] text-amber-700">Incluses d'office dans chaque formule Menu Fast-Food</p>
+                            </div>
+                        </div>
+                        <span class="px-2 py-0.5 bg-amber-200/80 text-amber-900 text-[10px] font-extrabold rounded-lg">
+                            INCLUS
+                        </span>
+                    </div>
+
+                    {{-- ── ÉTAPE 3 : Choix de la Boisson (Jus 250ml) ── --}}
+                    <div>
+                        <label class="block text-xs font-extrabold uppercase tracking-wider text-gray-800 mb-2 flex items-center gap-2">
+                            <span class="w-5 h-5 rounded-full bg-sky-100 text-sky-700 text-[11px] flex items-center justify-center font-black">2</span>
+                            <span>Choisir le Jus / Boisson (250 ml)</span>
+                        </label>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            @foreach($listeBoissonsMenu as $boisson)
+                                @php
+                                    $estChoisie = ($menuJusId === $boisson['id']);
+                                @endphp
+                                <button type="button"
+                                        wire:click="selectMenuJus({{ $boisson['id'] }})"
+                                        @class([
+                                            'relative p-2.5 rounded-xl border-2 text-left transition-all flex items-center gap-2',
+                                            'border-sky-500 bg-sky-50/70 shadow-sm ring-1 ring-sky-300' => $estChoisie,
+                                            'border-gray-200 bg-white hover:border-sky-200 hover:bg-gray-50' => ! $estChoisie,
+                                        ])>
+                                    <span class="text-lg flex-shrink-0">
+                                        {{ str_contains(strtolower($boisson['nom']), 'boisson') ? '🥤' : '🧃' }}
+                                    </span>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-xs font-bold text-gray-900 truncate">
+                                            {{ $boisson['nom'] }}
+                                        </p>
+                                        <p class="text-[10px] text-gray-400">
+                                            @if(! $boisson['sur_commande'] && $boisson['stock'] > 0)
+                                                <span class="text-emerald-600 font-medium">{{ $boisson['stock'] }} en stock</span>
+                                            @else
+                                                <span>Inclus dans le menu</span>
+                                            @endif
+                                        </p>
+                                    </div>
+                                    @if($estChoisie)
+                                        <span class="w-4 h-4 rounded-full bg-sky-500 text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                                            ✓
+                                        </span>
+                                    @endif
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Pied de modale : Calculateur & Validation --}}
+                <div class="p-4 sm:p-5 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div>
+                        <p class="text-[11px] text-gray-500">
+                            Sandwich + Frites + Boisson :
+                        </p>
+                        <p class="text-2xl font-black text-primary leading-tight">
+                            {{ number_format($menuPrixTotal, 0, ',', ' ') }}
+                            <span class="text-sm font-bold text-gray-500">FCFA</span>
+                        </p>
+                    </div>
+
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <button type="button"
+                                wire:click="$set('afficherModalMenu', false)"
+                                class="flex-1 sm:flex-none px-4 py-2.5 text-xs font-semibold text-gray-600 hover:bg-gray-200 rounded-xl transition-colors">
+                            Annuler
+                        </button>
+                        <button type="button"
+                                wire:click="validerAjoutMenu"
+                                class="flex-1 sm:flex-none px-6 py-2.5 bg-primary hover:bg-primary/95 text-white text-xs sm:text-sm font-bold rounded-xl shadow-lg shadow-primary/25 transition-all flex items-center justify-center gap-2">
+                            <span>Ajouter au ticket</span>
+                            <span>•</span>
+                            <span>{{ number_format($menuPrixTotal, 0, ',', ' ') }} F</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 
     {{-- ══════════════════════════════════════════════════════════════════════
          MODAL CONFIRMATION VIDER PANIER
