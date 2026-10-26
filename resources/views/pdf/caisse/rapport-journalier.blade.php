@@ -84,8 +84,11 @@
             <div class="kpi-value" style="color:#2B6CB0;">{{ number_format($stats['fond_total'], 0, ',', ' ') }} F</div>
         </div>
         <div class="kpi-card">
-            <div class="kpi-title">Sorties / Dépenses</div>
-            <div class="kpi-value" style="color:#C53030;">{{ number_format($stats['total_depenses'], 0, ',', ' ') }} F</div>
+            <div class="kpi-title">Sorties (Dép. & Achats)</div>
+            <div class="kpi-value" style="color:#C53030;">- {{ number_format($stats['total_sorties'], 0, ',', ' ') }} F</div>
+            <div style="font-size:7px; color:#888; margin-top:2px;">
+                Dép: {{ number_format($stats['total_depenses'], 0, ',', ' ') }} | Achats: {{ number_format($stats['total_achats'], 0, ',', ' ') }}
+            </div>
         </div>
         <div class="kpi-card">
             <div class="kpi-title">Écart Net Journalier</div>
@@ -135,7 +138,7 @@
                     <th class="right">Espèces</th>
                     <th class="right">Wave / OM / CB</th>
                     <th class="right">Total CA</th>
-                    <th class="right">Dépenses</th>
+                    <th class="right">Sorties (Dép.+Ach.)</th>
                     <th class="right">Écart</th>
                 </tr>
             </thead>
@@ -149,7 +152,9 @@
                             'ventes_om'      => (float) $session->total_ventes_om,
                             'ventes_carte'   => (float) $session->total_ventes_carte,
                             'total_depenses' => (float) $session->total_depenses,
+                            'total_achats'   => (float) ($session->total_achats ?? 0),
                         ];
+                        $sessionSorties = $totaux['total_depenses'] + ($totaux['total_achats'] ?? 0);
                         $autresPaiements = $totaux['ventes_wave'] + $totaux['ventes_om'] + $totaux['ventes_carte'];
                         $ecart = (float) ($session->ecart ?? 0);
                     @endphp
@@ -162,7 +167,12 @@
                         <td class="right">{{ number_format($totaux['ventes_cash'], 0, ',', ' ') }}</td>
                         <td class="right">{{ number_format($autresPaiements, 0, ',', ' ') }}</td>
                         <td class="right" style="color:#F27B20;">{{ number_format($totaux['total_ventes'], 0, ',', ' ') }}</td>
-                        <td class="right" style="color:#C53030;">{{ number_format($totaux['total_depenses'], 0, ',', ' ') }}</td>
+                        <td class="right" style="color:#C53030;">
+                            - {{ number_format($sessionSorties, 0, ',', ' ') }}
+                            @if(($totaux['total_achats'] ?? 0) > 0)
+                                <div style="font-size:7px; color:#888;">(dont ach. {{ number_format($totaux['total_achats'], 0, ',', ' ') }})</div>
+                            @endif
+                        </td>
                         <td class="right" style="color: {{ $ecart < 0 ? '#C53030' : ($ecart > 0 ? '#2B6CB0' : '#276749') }};">
                             {{ $session->ferme_le ? ($ecart > 0 ? '+' : '') . number_format($ecart, 0, ',', ' ') : '-' }}
                         </td>
@@ -176,10 +186,50 @@
                     <td class="right">{{ number_format($stats['ca_cash'], 0, ',', ' ') }} F</td>
                     <td class="right">{{ number_format($stats['ca_wave'] + $stats['ca_om'] + $stats['ca_carte'], 0, ',', ' ') }} F</td>
                     <td class="right">{{ number_format($stats['total_ca'], 0, ',', ' ') }} F</td>
-                    <td class="right" style="color:#C53030;">{{ number_format($stats['total_depenses'], 0, ',', ' ') }} F</td>
+                    <td class="right" style="color:#C53030;">- {{ number_format($stats['total_sorties'], 0, ',', ' ') }} F</td>
                     <td class="right" style="color: {{ $stats['ecart_net'] < 0 ? '#C53030' : ($stats['ecart_net'] > 0 ? '#2B6CB0' : '#276749') }};">
                         {{ $stats['ecart_net'] > 0 ? '+' : '' }}{{ number_format($stats['ecart_net'], 0, ',', ' ') }} F
                     </td>
+                </tr>
+            </tfoot>
+        </table>
+    @endif
+
+    {{-- Détail des Achats Réalisés durant la journée si présents --}}
+    @php
+        $tousLesAchats = $sessions->flatMap->achats->where('statut', '!=', 'annule');
+    @endphp
+    @if($tousLesAchats->isNotEmpty())
+        <div class="section-title">3. Détail des Achats & Décaissements Fournisseurs ({{ $tousLesAchats->count() }})</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Réf. Achat</th>
+                    <th>Heure</th>
+                    <th>Fournisseur</th>
+                    <th>Mode Paiement</th>
+                    <th>Statut</th>
+                    <th class="right">Montant Total</th>
+                    <th class="right">Payé Caisse</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($tousLesAchats as $achat)
+                    <tr>
+                        <td style="font-weight:bold;">{{ $achat->reference }}</td>
+                        <td>{{ $achat->date_achat ? \Carbon\Carbon::parse($achat->date_achat)->format('H:i') : '-' }}</td>
+                        <td>{{ $achat->fournisseur?->nom ?? 'Fournisseur divers' }}</td>
+                        <td>{{ strtoupper($achat->mode_paiement) }}</td>
+                        <td>{{ ucfirst($achat->statut_paiement ?? 'Payé') }}</td>
+                        <td class="right">{{ number_format($achat->montant_total, 0, ',', ' ') }} F</td>
+                        <td class="right" style="color:#C53030;">- {{ number_format($achat->montant_paye, 0, ',', ' ') }} F</td>
+                    </tr>
+                @endforeach
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="6">TOTAL SORTIES ACHATS DU JOUR</td>
+                    <td class="right" style="color:#C53030;">- {{ number_format($stats['total_achats'], 0, ',', ' ') }} F</td>
                 </tr>
             </tfoot>
         </table>

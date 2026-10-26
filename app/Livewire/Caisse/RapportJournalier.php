@@ -47,8 +47,13 @@ class RapportJournalier extends Component
 
         $parsedDate = Carbon::parse($this->date);
 
-        $query = SessionCaisse::with(['user', 'ventes.client', 'depenses.categorie'])
-            ->whereDate('ouvert_le', $parsedDate)
+        $query = SessionCaisse::with(['user', 'ventes.client', 'depenses.categorie', 'achats.fournisseur', 'achats.lignes'])
+            ->where(function ($q) use ($parsedDate) {
+                $q->whereDate('ouvert_le', $parsedDate);
+                if ($parsedDate->isToday()) {
+                    $q->orWhere('statut', 'ouverte');
+                }
+            })
             ->when($this->selectedUserId, fn($q) => $q->where('user_id', $this->selectedUserId))
             ->orderBy('ouvert_le', 'desc');
 
@@ -63,6 +68,7 @@ class RapportJournalier extends Component
             'ca_carte'        => 0,
             'total_depenses'  => 0,
             'total_achats'    => 0,
+            'total_sorties'   => 0,
             'fond_total'      => 0,
             'theorique_cash'  => 0,
             'reel_especes'    => 0,
@@ -78,7 +84,12 @@ class RapportJournalier extends Component
                 'ventes_om'      => (float) $session->total_ventes_om,
                 'ventes_carte'   => (float) $session->total_ventes_carte,
                 'total_depenses' => (float) $session->total_depenses,
+                'depenses_cash'  => (float) $session->total_depenses_cash,
+                'total_achats'   => (float) ($session->total_achats ?? 0),
+                'achats_cash'    => (float) ($session->total_achats_cash ?? 0),
+                'achats_wave'    => (float) ($session->total_achats_wave ?? 0),
                 'theorique_cash' => (float) $session->solde_theorique_especes,
+                'theorique_wave' => (float) $session->solde_theorique_wave,
             ];
 
             $stats['total_ca']       += $totaux['total_ventes'];
@@ -88,6 +99,7 @@ class RapportJournalier extends Component
             $stats['ca_carte']       += $totaux['ventes_carte'];
             $stats['total_depenses'] += $totaux['total_depenses'];
             $stats['total_achats']   += ($totaux['total_achats'] ?? 0);
+            $stats['total_sorties']  += $totaux['total_depenses'] + ($totaux['total_achats'] ?? 0);
             $stats['fond_total']     += (float) $session->fond_caisse_ouverture;
             $stats['theorique_cash'] += $totaux['theorique_cash'];
             $stats['reel_especes']   += (float) ($session->montant_reel_especes ?? $totaux['theorique_cash']);

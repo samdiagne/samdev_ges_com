@@ -148,7 +148,7 @@ class SessionCaisse extends Model
         $totalDepenses = (float) $depensesQuery->sum('montant');
 
         // Achats rattachés à cette session (sorties de caisse pour approvisionnement)
-        $achatsQuery = $this->achats()->whereIn('statut', ['recu', 'partiel']);
+        $achatsQuery = $this->achats()->where('statut', '!=', 'annule');
         $achatsCash  = (float) (clone $achatsQuery)->where('mode_paiement', 'cash')->sum('montant_paye');
         $achatsWave  = (float) (clone $achatsQuery)->where('mode_paiement', 'wave')->sum('montant_paye');
         $totalAchats = (float) $achatsQuery->sum('montant_paye');

@@ -127,11 +127,12 @@ class AchatForm extends Component
         $this->validate();
 
         DB::transaction(function () {
-            // Récupérer la session de caisse active du caissier connecté
+            // Récupérer la session de caisse active du caissier connecté (ou toute session active)
             $sessionActive = SessionCaisse::where('user_id', Auth::id())
                 ->where('statut', 'ouverte')
                 ->latest('ouvert_le')
-                ->first();
+                ->first()
+                ?? SessionCaisse::where('statut', 'ouverte')->latest('ouvert_le')->first();
 
             $data = [
                 'fournisseur_id'   => $this->fournisseur_id,
@@ -148,6 +149,10 @@ class AchatForm extends Component
 
             if ($this->isEditing) {
                 $achat = Achat::findOrFail($this->achatId);
+                // Si l'achat avait déjà une session, on la préserve, sinon on rattache la session active
+                if ($achat->session_caisse_id) {
+                    $data['session_caisse_id'] = $achat->session_caisse_id;
+                }
                 $achat->update($data);
                 $achat->lignes()->delete();
             } else {

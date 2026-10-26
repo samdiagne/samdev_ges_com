@@ -155,8 +155,39 @@
         </table>
     @endif
 
+    {{-- Achats réalisés pendant la session --}}
+    @if($session->achats()->count() > 0)
+        <div class="section-title">3. Achats & Approvisionnements Réalisés</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Réf. Achat</th>
+                    <th>Fournisseur</th>
+                    <th>Mode</th>
+                    <th>Statut</th>
+                    <th class="right">Montant Payé (FCFA)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($session->achats as $achat)
+                    <tr>
+                        <td style="font-weight:bold;">{{ $achat->reference }}</td>
+                        <td>{{ $achat->fournisseur?->nom ?? 'Comptant / Marché' }}</td>
+                        <td>{{ strtoupper($achat->mode_paiement ?? 'cash') }}</td>
+                        <td>{{ ucfirst($achat->statut) }}</td>
+                        <td class="right">- {{ number_format($achat->montant_paye, 0, ',', ' ') }} FCFA</td>
+                    </tr>
+                @endforeach
+                <tr style="background:#FFF0E6;">
+                    <td colspan="4" style="font-weight:bold; color:#D97706;">Total Achats Espèces (Sorties de caisse)</td>
+                    <td class="right" style="color:#D97706;">- {{ number_format($session->total_achats_cash ?? 0, 0, ',', ' ') }} FCFA</td>
+                </tr>
+            </tbody>
+        </table>
+    @endif
+
     {{-- Synthèse Tiroir Caisse & Écart --}}
-    <div class="section-title">{{ $session->depenses()->count() > 0 ? '3' : '2' }}. Contrôle des Espèces (Tiroir Physique)</div>
+    <div class="section-title">4. Contrôle des Espèces (Tiroir Physique)</div>
     <table class="summary-table">
         <tr>
             <td>Fond de caisse initial (à l'ouverture)</td>
@@ -176,6 +207,12 @@
             <td>- Dépenses décaissées en espèces</td>
             <td class="right">- {{ number_format($session->total_depenses_cash, 0, ',', ' ') }} FCFA</td>
         </tr>
+        @if(($session->total_achats_cash ?? 0) > 0)
+            <tr>
+                <td style="color:#D97706;">- Achats payés en espèces (Sorties de caisse)</td>
+                <td class="right" style="color:#D97706;">- {{ number_format($session->total_achats_cash, 0, ',', ' ') }} FCFA</td>
+            </tr>
+        @endif
         <tr class="total-row">
             <td>SOLDE THÉORIQUE ATTENDU EN ESPÈCES</td>
             <td class="right">{{ number_format($session->solde_theorique_especes, 0, ',', ' ') }} FCFA</td>
@@ -205,7 +242,7 @@
     @endif
 
     {{-- Contrôle du Compte Wave --}}
-    <div class="section-title">{{ $session->depenses()->count() > 0 ? '4' : '3' }}. Contrôle du Compte Wave (Caissier)</div>
+    <div class="section-title">5. Contrôle du Compte Wave (Caissier)</div>
     <table class="summary-table">
         <tr>
             <td>Solde Wave initial (à l'ouverture)</td>
@@ -219,6 +256,12 @@
             <tr style="background:#FEF2F2;">
                 <td style="color:#b91c1c; font-weight:bold;">- Monnaies rendues transférées via Wave</td>
                 <td class="right" style="color:#b91c1c;">- {{ number_format($session->total_monnaie_rendue_wave, 0, ',', ' ') }} FCFA</td>
+            </tr>
+        @endif
+        @if(($session->total_achats_wave ?? 0) > 0)
+            <tr>
+                <td style="color:#D97706;">- Achats payés par Wave (Sorties Wave)</td>
+                <td class="right" style="color:#D97706;">- {{ number_format($session->total_achats_wave, 0, ',', ' ') }} FCFA</td>
             </tr>
         @endif
         <tr class="total-row" style="background:#F0F9FF; border-color:#0284c7;">

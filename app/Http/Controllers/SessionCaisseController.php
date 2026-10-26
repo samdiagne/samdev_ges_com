@@ -23,7 +23,7 @@ class SessionCaisseController extends Controller
             abort(403, 'Accès non autorisé à cette clôture.');
         }
 
-        $session->load(['user', 'ventes.client', 'depenses.categorie']);
+        $session->load(['user', 'ventes.client', 'depenses.categorie', 'achats.fournisseur']);
 
         $parametres = Parametre::first();
         $logoBase64 = $this->getLogoBase64();
@@ -51,9 +51,14 @@ class SessionCaisseController extends Controller
         $targetUser = User::find($targetUserId) ?? $currentUser;
 
         // Récupérer les sessions du jour pour cet utilisateur
-        $sessions = SessionCaisse::with(['ventes', 'depenses'])
+        $sessions = SessionCaisse::with(['ventes', 'depenses', 'achats.fournisseur'])
             ->where('user_id', $targetUserId)
-            ->whereDate('ouvert_le', $date)
+            ->where(function ($q) use ($date) {
+                $q->whereDate('ouvert_le', $date);
+                if ($date->isToday()) {
+                    $q->orWhere('statut', 'ouverte');
+                }
+            })
             ->orderBy('ouvert_le', 'asc')
             ->get();
 
@@ -66,6 +71,8 @@ class SessionCaisseController extends Controller
             'ca_om'                     => 0,
             'ca_carte'                  => 0,
             'total_depenses'            => 0,
+            'total_achats'              => 0,
+            'total_sorties'             => 0,
             'fond_total'                => 0,
             'fond_wave_total'           => 0,
             'monnaie_rendue_wave_total' => 0,
@@ -85,6 +92,7 @@ class SessionCaisseController extends Controller
                 'ventes_om'           => (float) $session->total_ventes_om,
                 'ventes_carte'        => (float) $session->total_ventes_carte,
                 'total_depenses'      => (float) $session->total_depenses,
+                'total_achats'        => (float) ($session->total_achats ?? 0),
                 'monnaie_rendue_wave' => (float) $session->total_monnaie_rendue_wave,
                 'theorique_cash'      => (float) $session->solde_theorique_especes,
                 'theorique_wave'      => (float) $session->solde_theorique_wave,
@@ -96,6 +104,8 @@ class SessionCaisseController extends Controller
             $stats['ca_om']                     += $totaux['ventes_om'];
             $stats['ca_carte']                  += $totaux['ventes_carte'];
             $stats['total_depenses']            += $totaux['total_depenses'];
+            $stats['total_achats']              += ($totaux['total_achats'] ?? 0);
+            $stats['total_sorties']             += $totaux['total_depenses'] + ($totaux['total_achats'] ?? 0);
             $stats['fond_total']                += (float) $session->fond_caisse_ouverture;
             $stats['fond_wave_total']           += (float) ($session->fond_caisse_wave_ouverture ?? 0);
             $stats['monnaie_rendue_wave_total'] += (float) ($totaux['monnaie_rendue_wave'] ?? 0);
