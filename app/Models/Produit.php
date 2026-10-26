@@ -32,6 +32,7 @@ class Produit extends Model
         'sur_commande',
         'est_actif',
         'est_mis_en_avant',
+        'est_variante',
         'image_principale',
     ];
 
@@ -47,6 +48,7 @@ class Produit extends Model
             'sur_commande'      => 'boolean',
             'est_actif'         => 'boolean',
             'est_mis_en_avant'  => 'boolean',
+            'est_variante'      => 'boolean',
         ];
     }
 

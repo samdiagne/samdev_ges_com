@@ -75,6 +75,14 @@ class PointOfSale extends Component
     public array  $listeTacos                 = [];
     public array  $listeBoissonsMenu          = [];
 
+    // ── Sélecteur de Boissons / Jus (250ml, 1L, Canettes) ─────
+    public bool   $afficherModalBoisson       = false;
+    public string $boissonType                = ''; // 'jus_250', 'jus_1l', 'gazeuse'
+    public string $boissonTitre               = '';
+    public string $boissonIcone               = '🥤';
+    public float  $boissonPrix                = 0;
+    public array  $listeOptionsBoisson        = [];
+
     public function mount(): void
     {
         $this->loadProducts();
@@ -87,6 +95,9 @@ class PointOfSale extends Component
         $this->produits = Produit::where('est_actif', true)
             ->where(fn($q) => $q->where('stock', '>', 0)->orWhere('sur_commande', true))
             ->with('categorie')
+            ->when(! $this->rechercherPlat, fn($q) =>
+                $q->where('est_variante', false)
+            )
             ->when($this->filtreCategorie, fn($q) =>
                 $q->where('categorie_id', $this->filtreCategorie)
             )
@@ -130,6 +141,25 @@ class PointOfSale extends Component
         // Si le produit appartient à la catégorie "Menus Fast-Food" (catégorie 25 ou nom contenant "Menu")
         if ($plat->categorie_id == 25 || str_starts_with(strtolower($plat->nom), 'menu')) {
             $this->ouvrirModalMenu($platId);
+            return;
+        }
+
+        // Sélecteur Jus 250 ml (ID 44 ou 'Jus 250 ml')
+        $nomBas = strtolower(trim($plat->nom));
+        if ($plat->id == 44 || ($plat->categorie_id == 4 && str_contains($nomBas, '250') && ! str_contains($nomBas, 'pack') && ! $plat->est_variante)) {
+            $this->ouvrirModalBoisson('jus_250');
+            return;
+        }
+
+        // Sélecteur Jus 1 L
+        if ($plat->slug === 'jus-1-l' || ($plat->categorie_id == 4 && in_array($nomBas, ['jus 1 l', 'jus 1l', 'jus (1 l)', 'jus 1 l']) && ! $plat->est_variante)) {
+            $this->ouvrirModalBoisson('jus_1l');
+            return;
+        }
+
+        // Sélecteur Boisson gazeuse (ID 71 ou 'Boisson gazeuse')
+        if ($plat->id == 71 || ($plat->categorie_id == 5 && $nomBas === 'boisson gazeuse' && ! $plat->est_variante)) {
+            $this->ouvrirModalBoisson('gazeuse');
             return;
         }
 
@@ -361,6 +391,122 @@ class PointOfSale extends Component
 
         $this->recalcTotals();
         $this->afficherModalMenu = false;
+        session()->flash('pos_success', "{$nomLigne} ajouté au panier !");
+    }
+
+    // ── Sélecteur de Boissons / Jus ───────────────────────────
+
+    public function ouvrirModalBoisson(string $type): void
+    {
+        $this->boissonType = $type;
+
+        if ($type === 'jus_250') {
+            $this->boissonTitre = 'Choisir le parfum — Jus 250 ml';
+            $this->boissonIcone = '🥤';
+            $this->boissonPrix  = 500;
+            $this->listeOptionsBoisson = Produit::where('categorie_id', 4)
+                ->where('est_actif', true)
+                ->where('est_variante', true)
+                ->where('nom', 'like', '%250%')
+                ->where('nom', 'not like', '%pack%')
+                ->orderBy('nom')
+                ->get(['id', 'nom', 'prix_vente', 'stock', 'sur_commande', 'image_principale'])
+                ->toArray();
+        } elseif ($type === 'jus_1l') {
+            $this->boissonTitre = 'Choisir le parfum — Jus 1 L';
+            $this->boissonIcone = '🍾';
+            $this->boissonPrix  = 2000;
+            $this->listeOptionsBoisson = Produit::where('categorie_id', 4)
+                ->where('est_actif', true)
+                ->where('est_variante', true)
+                ->where(function ($q) {
+                    $q->where('nom', 'like', '%1 L%')
+                      ->orWhere('nom', 'like', '%1L%');
+                })
+                ->where('nom', 'not like', '%pack%')
+                ->orderBy('nom')
+                ->get(['id', 'nom', 'prix_vente', 'stock', 'sur_commande', 'image_principale'])
+                ->toArray();
+        } elseif ($type === 'gazeuse') {
+            $this->boissonTitre = 'Choisir la boisson gazeuse (33cl)';
+            $this->boissonIcone = '🥤';
+            $this->boissonPrix  = 500;
+            $this->listeOptionsBoisson = Produit::where('categorie_id', 5)
+                ->where('est_actif', true)
+                ->where('est_variante', true)
+                ->orderBy('nom')
+                ->get(['id', 'nom', 'prix_vente', 'stock', 'sur_commande', 'image_principale'])
+                ->toArray();
+        }
+
+        $this->afficherModalBoisson = true;
+    }
+
+    public function choisirOptionBoisson(int $produitOptionId): void
+    {
+        $option = Produit::find($produitOptionId);
+        if (! $option) return;
+
+        if (! $option->sur_commande && $option->stock <= 0) {
+            session()->flash('pos_error', "{$option->nom} est épuisé !");
+            return;
+        }
+
+        $nomLigne = match ($this->boissonType) {
+            'jus_250' => "Jus 250 ml : {$option->nom}",
+            'jus_1l'  => "Jus 1 L : {$option->nom}",
+            'gazeuse' => "Boisson gazeuse : {$option->nom}",
+            default   => $option->nom,
+        };
+
+        $prefix = match ($this->boissonType) {
+            'jus_250' => '🥤 Jus 250 ml',
+            'jus_1l'  => '🍾 Bouteille 1L',
+            'gazeuse' => '🥤 Canette 33cl',
+            default   => '🥤 Boisson',
+        };
+
+        $details = "{$prefix} • {$option->nom}";
+
+        $cleTrouvee = null;
+        foreach ($this->panier as $cle => $item) {
+            if ($item['produit_id'] === $option->id && ($item['details'] ?? null) === $details) {
+                $cleTrouvee = $cle;
+                break;
+            }
+        }
+
+        $prix = (float) $option->prix_vente;
+        if ($prix <= 0) {
+            $prix = $this->boissonPrix;
+        }
+
+        if ($cleTrouvee !== null) {
+            if (! $option->sur_commande && $this->panier[$cleTrouvee]['quantite'] >= $option->stock) {
+                session()->flash('pos_error', "Stock maximum disponible atteint pour {$option->nom} !");
+                return;
+            }
+            $this->panier[$cleTrouvee]['quantite']++;
+            $this->panier[$cleTrouvee]['total'] = round($this->panier[$cleTrouvee]['prix_unitaire'] * $this->panier[$cleTrouvee]['quantite'], 2);
+        } else {
+            $this->panier[] = [
+                'produit_id'       => $option->id,
+                'nom'              => $nomLigne,
+                'prix_unitaire'    => $prix,
+                'quantite'         => 1,
+                'remise'           => 0,
+                'total'            => $prix,
+                'stock_max'        => $option->sur_commande ? null : $option->stock,
+                'quantite_palier'  => $option->quantite_palier,
+                'prix_palier'      => $option->prix_palier ? (float) $option->prix_palier : null,
+                'prix_base'        => $prix,
+                'is_menu'          => false,
+                'details'          => $details,
+            ];
+        }
+
+        $this->afficherModalBoisson = false;
+        $this->recalcTotals();
         session()->flash('pos_success', "{$nomLigne} ajouté au panier !");
     }
 
@@ -623,6 +769,9 @@ class PointOfSale extends Component
             'ecart'             => $ecartEspeces,
             'montant_reel_wave' => $reelWave,
             'ecart_wave'        => $ecartWave,
+            'achats_cash'       => $totaux['achats_cash'] ?? 0,
+            'achats_wave'       => $totaux['achats_wave'] ?? 0,
+            'total_achats'      => $totaux['total_achats'] ?? 0,
         ]);
     }
 
@@ -666,6 +815,9 @@ class PointOfSale extends Component
             'total_monnaie_rendue_wave' => $totaux['monnaie_rendue_wave'],
             'total_depenses_cash'       => $totaux['depenses_cash'],
             'total_depenses'            => $totaux['total_depenses'],
+            'total_achats_cash'         => $totaux['achats_cash'],
+            'total_achats_wave'         => $totaux['achats_wave'],
+            'total_achats'              => $totaux['total_achats'],
             'solde_theorique_especes'   => $totaux['theorique_cash'],
             'solde_theorique_wave'      => $totaux['theorique_wave'],
             'montant_reel_especes'      => $reelEspeces,

@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\Achat;
 use App\Models\AchatLigne;
 use App\Models\Fournisseur;
+use App\Models\SessionCaisse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -126,16 +127,23 @@ class AchatForm extends Component
         $this->validate();
 
         DB::transaction(function () {
+            // Récupérer la session de caisse active du caissier connecté
+            $sessionActive = SessionCaisse::where('user_id', Auth::id())
+                ->where('statut', 'ouverte')
+                ->latest('ouvert_le')
+                ->first();
+
             $data = [
-                'fournisseur_id' => $this->fournisseur_id,
-                'user_id' => Auth::id(),
-                'statut'         => $this->statut,
-                'montant_total'  => $this->montantTotal,
-                'montant_paye'   => $this->montant_paye ?? 0,
-                'montant_du'     => max(0, $this->montantDu),
-                'mode_paiement'  => $this->mode_paiement ?: null,
-                'date_achat'     => $this->date_achat,
-                'notes'          => $this->notes ?: null,
+                'fournisseur_id'   => $this->fournisseur_id,
+                'user_id'          => Auth::id(),
+                'session_caisse_id'=> $sessionActive?->id,
+                'statut'           => $this->statut,
+                'montant_total'    => $this->montantTotal,
+                'montant_paye'     => $this->montant_paye ?? 0,
+                'montant_du'       => max(0, $this->montantDu),
+                'mode_paiement'    => $this->mode_paiement ?: null,
+                'date_achat'       => $this->date_achat,
+                'notes'            => $this->notes ?: null,
             ];
 
             if ($this->isEditing) {

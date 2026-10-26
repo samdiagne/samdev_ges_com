@@ -27,6 +27,9 @@ class SessionCaisse extends Model
         'total_monnaie_rendue_wave',
         'total_depenses_cash',
         'total_depenses',
+        'total_achats_cash',
+        'total_achats_wave',
+        'total_achats',
         'solde_theorique_especes',
         'solde_theorique_wave',
         'montant_reel_especes',
@@ -51,6 +54,9 @@ class SessionCaisse extends Model
             'total_monnaie_rendue_wave'  => 'decimal:2',
             'total_depenses_cash'        => 'decimal:2',
             'total_depenses'             => 'decimal:2',
+            'total_achats_cash'          => 'decimal:2',
+            'total_achats_wave'          => 'decimal:2',
+            'total_achats'               => 'decimal:2',
             'solde_theorique_especes'    => 'decimal:2',
             'solde_theorique_wave'       => 'decimal:2',
             'montant_reel_especes'       => 'decimal:2',
@@ -75,6 +81,11 @@ class SessionCaisse extends Model
     public function depenses(): HasMany
     {
         return $this->hasMany(Depense::class, 'session_caisse_id');
+    }
+
+    public function achats(): HasMany
+    {
+        return $this->hasMany(Achat::class, 'session_caisse_id');
     }
 
     // ── Méthodes & Helpers ─────────────────────────────────
@@ -112,6 +123,9 @@ class SessionCaisse extends Model
                 'total_ventes'        => (float) $this->total_ventes,
                 'depenses_cash'       => (float) $this->total_depenses_cash,
                 'total_depenses'      => (float) $this->total_depenses,
+                'achats_cash'         => (float) ($this->total_achats_cash ?? 0),
+                'achats_wave'         => (float) ($this->total_achats_wave ?? 0),
+                'total_achats'        => (float) ($this->total_achats ?? 0),
                 'monnaie_rendue_wave' => (float) $this->total_monnaie_rendue_wave,
                 'theorique_cash'      => (float) $this->solde_theorique_especes,
                 'theorique_wave'      => (float) $this->solde_theorique_wave,
@@ -133,14 +147,20 @@ class SessionCaisse extends Model
         $depensesWave  = (float) (clone $depensesQuery)->where('mode_paiement', 'wave')->sum('montant');
         $totalDepenses = (float) $depensesQuery->sum('montant');
 
+        // Achats rattachés à cette session (sorties de caisse pour approvisionnement)
+        $achatsQuery = $this->achats()->whereIn('statut', ['recu', 'partiel']);
+        $achatsCash  = (float) (clone $achatsQuery)->where('mode_paiement', 'cash')->sum('montant_paye');
+        $achatsWave  = (float) (clone $achatsQuery)->where('mode_paiement', 'wave')->sum('montant_paye');
+        $totalAchats = (float) $achatsQuery->sum('montant_paye');
+
         $fondCash = (float) $this->fond_caisse_ouverture;
         $fondWave = (float) ($this->fond_caisse_wave_ouverture ?? 0);
 
-        // Tiroir espèces : le fond initial + ventes cash + la part de monnaie non décaissée en espèces car rendue par Wave - dépenses cash
-        $theoriqueCash = round($fondCash + $ventesCash + $monnaieRendueWave - $depensesCash, 2);
+        // Tiroir espèces : fond + ventes cash + monnaie non décaissée - dépenses cash - achats cash
+        $theoriqueCash = round($fondCash + $ventesCash + $monnaieRendueWave - $depensesCash - $achatsCash, 2);
 
-        // Compte Wave : solde initial Wave + encaissements Wave reçus - transferts monnaie envoyés via Wave - dépenses Wave
-        $theoriqueWave = round($fondWave + $ventesWave - $monnaieRendueWave - $depensesWave, 2);
+        // Compte Wave : fond Wave + ventes Wave - monnaie rendue Wave - dépenses Wave - achats Wave
+        $theoriqueWave = round($fondWave + $ventesWave - $monnaieRendueWave - $depensesWave - $achatsWave, 2);
 
         return [
             'ventes_cash'         => $ventesCash,
@@ -151,6 +171,9 @@ class SessionCaisse extends Model
             'depenses_cash'       => $depensesCash,
             'depenses_wave'       => $depensesWave,
             'total_depenses'      => $totalDepenses,
+            'achats_cash'         => $achatsCash,
+            'achats_wave'         => $achatsWave,
+            'total_achats'        => $totalAchats,
             'monnaie_rendue_wave' => $monnaieRendueWave,
             'theorique_cash'      => $theoriqueCash,
             'theorique_wave'      => $theoriqueWave,

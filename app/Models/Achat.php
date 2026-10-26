@@ -17,6 +17,7 @@ class Achat extends Model
         'reference',
         'fournisseur_id',
         'user_id',
+        'session_caisse_id',
         'statut',
         'montant_total',
         'montant_paye',
@@ -53,5 +54,10 @@ class Achat extends Model
     public function lignes(): HasMany
     {
         return $this->hasMany(AchatLigne::class, 'achat_id');
+    }
+
+    public function sessionCaisse(): BelongsTo
+    {
+        return $this->belongsTo(SessionCaisse::class, 'session_caisse_id');
     }
 }

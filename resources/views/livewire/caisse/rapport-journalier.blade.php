@@ -111,6 +111,12 @@
             <div class="text-xs text-gray-500 mt-1">
                 Sorties d'espèces justifiées
             </div>
+            @if(($stats['total_achats'] ?? 0) > 0)
+                <div class="mt-2 pt-2 border-t border-gray-100 flex items-center justify-between">
+                    <span class="text-xs text-orange-600 font-semibold">🛒 Achats enregistrés</span>
+                    <span class="text-xs font-bold text-orange-700">{{ number_format($stats['total_achats'], 0, ',', ' ') }} FCFA</span>
+                </div>
+            @endif
         </div>
 
         {{-- Écart Net --}}
@@ -229,6 +235,7 @@
                                 $totaux = $session->estOuverte() ? $session->totaux_en_direct : [
                                     'total_ventes'   => (float) $session->total_ventes,
                                     'total_depenses' => (float) $session->total_depenses,
+                                    'total_achats'   => (float) ($session->total_achats ?? 0),
                                     'theorique_cash' => (float) $session->solde_theorique_especes,
                                 ];
                                 $ecartSess = (float) ($session->ecart ?? 0);
@@ -271,6 +278,11 @@
                                 </td>
                                 <td class="py-3 px-3 text-right font-medium text-red-600">
                                     {{ $totaux['total_depenses'] > 0 ? '-' . number_format($totaux['total_depenses'], 0, ',', ' ') . ' F' : '-' }}
+                                    @if(($totaux['total_achats'] ?? 0) > 0)
+                                        <div class="text-[10px] text-orange-600 font-medium mt-0.5">
+                                            🛒 Achats : {{ number_format($totaux['total_achats'], 0, ',', ' ') }} F
+                                        </div>
+                                    @endif
                                 </td>
                                 <td class="py-3 px-3 text-right">
                                     @if($session->ferme_le)

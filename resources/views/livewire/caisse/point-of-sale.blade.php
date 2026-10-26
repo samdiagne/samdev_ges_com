@@ -691,6 +691,107 @@
     @endif
 
     {{-- ══════════════════════════════════════════════════════════════════════
+         MODAL SÉLECTION PARFUM BOISSON / JUS (250ml, 1L, Canette 33cl)
+    ══════════════════════════════════════════════════════════════════════ --}}
+    @if($afficherModalBoisson)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto"
+             @keydown.escape.window="$wire.set('afficherModalBoisson', false)">
+            <div class="absolute inset-0 cursor-pointer" wire:click="$set('afficherModalBoisson', false)"></div>
+
+            <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden border border-gray-100 my-auto animate-in fade-in zoom-in-95 duration-200"
+                 @click.stop>
+                {{-- En-tête --}}
+                <div class="p-4 sm:p-5 bg-gradient-to-r from-emerald-600 via-primary to-orange-500 text-white flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <span class="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-xl flex-shrink-0 shadow-inner">
+                            {{ $boissonIcone }}
+                        </span>
+                        <div>
+                            <h3 class="font-extrabold text-base sm:text-lg leading-tight">{{ $boissonTitre }}</h3>
+                            <p class="text-xs text-white/90">Cliquez sur un parfum pour l'ajouter directement au ticket</p>
+                        </div>
+                    </div>
+                    <button type="button"
+                            wire:click="$set('afficherModalBoisson', false)"
+                            class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors">
+                        ✕
+                    </button>
+                </div>
+
+                {{-- Corps du modal : Grille des choix --}}
+                <div class="p-5 max-h-[70vh] overflow-y-auto">
+                    @if(! empty($listeOptionsBoisson))
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            @foreach($listeOptionsBoisson as $opt)
+                                @php
+                                    $isDispo = $opt['sur_commande'] || $opt['stock'] > 0;
+                                @endphp
+                                <button type="button"
+                                        wire:click="choisirOptionBoisson({{ $opt['id'] }})"
+                                        @disabled(! $isDispo)
+                                        @class([
+                                            'p-3.5 rounded-2xl border text-left flex flex-col justify-between transition-all group relative overflow-hidden',
+                                            'border-gray-200 hover:border-primary hover:bg-orange-50/40 hover:shadow-md cursor-pointer active:scale-95' => $isDispo,
+                                            'opacity-40 border-gray-200 bg-gray-50 cursor-not-allowed' => ! $isDispo,
+                                        ])>
+                                    <div class="flex items-start justify-between gap-2 mb-2">
+                                        <div class="w-10 h-10 rounded-xl bg-orange-100/70 text-orange-600 flex items-center justify-center text-lg flex-shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
+                                            @if($boissonType === 'gazeuse')
+                                                🥤
+                                            @elseif($boissonType === 'jus_1l')
+                                                🍾
+                                            @else
+                                                🧃
+                                            @endif
+                                        </div>
+                                        @if($opt['sur_commande'])
+                                            <span class="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-bold">
+                                                Dispo
+                                            </span>
+                                        @elseif($opt['stock'] > 0)
+                                            <span class="text-[10px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full font-bold">
+                                                {{ $opt['stock'] }} rest.
+                                            </span>
+                                        @else
+                                            <span class="text-[10px] text-red-600 bg-red-50 px-2 py-0.5 rounded-full font-bold">
+                                                Épuisé
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <div>
+                                        <p class="text-xs sm:text-sm font-black text-gray-900 group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+                                            {{ $opt['nom'] }}
+                                        </p>
+                                        <p class="text-[11px] font-bold text-gray-400 mt-1">
+                                            {{ number_format($opt['prix_vente'] > 0 ? $opt['prix_vente'] : $boissonPrix, 0, ',', ' ') }} FCFA
+                                        </p>
+                                    </div>
+                                </button>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="py-12 text-center text-gray-400">
+                            <p class="text-sm font-semibold">Aucune boisson disponible pour cette sélection.</p>
+                        </div>
+                    @endif
+                </div>
+
+                {{-- Pied du modal --}}
+                <div class="p-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+                    <p class="text-xs text-gray-500 font-medium">
+                        {{ count($listeOptionsBoisson) }} option{{ count($listeOptionsBoisson) > 1 ? 's' : '' }} disponible{{ count($listeOptionsBoisson) > 1 ? 's' : '' }}
+                    </p>
+                    <button type="button"
+                            wire:click="$set('afficherModalBoisson', false)"
+                            class="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-200 rounded-xl transition-colors">
+                        Fermer
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- ══════════════════════════════════════════════════════════════════════
          MODAL CONFIRMATION VIDER PANIER
     ══════════════════════════════════════════════════════════════════════ --}}
     @if($afficherConfirmationVider)
@@ -1285,6 +1386,14 @@
                             <span>- Dépenses décaissées en espèces :</span>
                             <span class="font-semibold text-red-600">- {{ number_format($resumeCloture['depenses_cash'], 0, ',', ' ') }} FCFA</span>
                         </div>
+                        @if(($resumeCloture['achats_cash'] ?? 0) > 0)
+                            <div class="flex justify-between text-orange-800 bg-orange-50/70 p-1.5 rounded-lg border border-orange-200/60 font-medium">
+                                <span class="flex items-center gap-1">
+                                    <span>🛒 Achats payés en espèces :</span>
+                                </span>
+                                <span class="font-semibold text-orange-700">- {{ number_format($resumeCloture['achats_cash'], 0, ',', ' ') }} FCFA</span>
+                            </div>
+                        @endif
                         <div class="flex justify-between pt-1 border-t border-amber-200 text-xs sm:text-sm font-bold text-amber-950">
                             <span>Solde Espèces Théorique :</span>
                             <span>{{ number_format($resumeCloture['theorique_cash'], 0, ',', ' ') }} FCFA</span>
@@ -1354,6 +1463,12 @@
                             <div class="flex justify-between text-gray-700">
                                 <span>- Dépenses payées par Wave :</span>
                                 <span class="font-semibold text-red-600">- {{ number_format($resumeCloture['depenses_wave'], 0, ',', ' ') }} FCFA</span>
+                            </div>
+                        @endif
+                        @if(($resumeCloture['achats_wave'] ?? 0) > 0)
+                            <div class="flex justify-between text-orange-800 bg-orange-50/70 p-1.5 rounded-lg border border-orange-200/60 font-medium">
+                                <span>🛒 Achats payés par Wave :</span>
+                                <span class="font-semibold text-orange-700">- {{ number_format($resumeCloture['achats_wave'], 0, ',', ' ') }} FCFA</span>
                             </div>
                         @endif
                         <div class="flex justify-between pt-1 border-t border-sky-200 text-xs sm:text-sm font-bold text-sky-950">

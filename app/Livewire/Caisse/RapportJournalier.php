@@ -62,6 +62,7 @@ class RapportJournalier extends Component
             'ca_om'           => 0,
             'ca_carte'        => 0,
             'total_depenses'  => 0,
+            'total_achats'    => 0,
             'fond_total'      => 0,
             'theorique_cash'  => 0,
             'reel_especes'    => 0,
@@ -86,6 +87,7 @@ class RapportJournalier extends Component
             $stats['ca_om']          += $totaux['ventes_om'];
             $stats['ca_carte']       += $totaux['ventes_carte'];
             $stats['total_depenses'] += $totaux['total_depenses'];
+            $stats['total_achats']   += ($totaux['total_achats'] ?? 0);
             $stats['fond_total']     += (float) $session->fond_caisse_ouverture;
             $stats['theorique_cash'] += $totaux['theorique_cash'];
             $stats['reel_especes']   += (float) ($session->montant_reel_especes ?? $totaux['theorique_cash']);
