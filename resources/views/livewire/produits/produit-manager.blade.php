@@ -29,7 +29,7 @@
             <h3 class="text-lg font-bold text-dark">Produits</h3>
             <p class="text-sm text-gray-400">{{ $produits->total() }} Produit(s) trouvé(s)</p>
         </div>
-        <a href="{{ route('produits.create') }}"
+        <a href="{{ route('produits.create', ['return_url' => $returnUrl]) }}"
            class="inline-flex items-center gap-2 bg-primary hover:bg-primary/90
                   text-white font-medium px-4 py-2.5 rounded-xl transition-all
                   shadow-lg shadow-primary/25 text-sm">
@@ -80,6 +80,22 @@
                 <option value="0">Inactifs</option>
             </select>
         </div>
+
+        @if($search || $filtreCategorie || $filtreStock || $filtreStatut !== '')
+            <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+                <span class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                    Filtres actifs
+                </span>
+                <button wire:click="resetFilters" type="button"
+                        class="text-primary hover:text-primary/80 font-semibold hover:underline flex items-center gap-1 transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    Réinitialiser les filtres
+                </button>
+            </div>
+        @endif
     </div>
 
     {{-- Flash --}}
@@ -221,7 +237,7 @@
                             {{-- Actions --}}
                             <td class="px-4 py-3 sticky right-0 bg-white border-l border-gray-100">
                                 <div class="flex items-center justify-end gap-1">
-                                    <a href="{{ route('produits.edit', $produit->id) }}"
+                                    <a href="{{ route('produits.edit', ['produit' => $produit->id, 'return_url' => $returnUrl]) }}"
                                        class="w-8 h-8 flex items-center justify-center rounded-lg
                                               text-gray-400 hover:text-primary hover:bg-primary/10
                                               transition-colors">

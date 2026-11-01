@@ -26,12 +26,68 @@ class ProduitManager extends Component
         'filtreCategorie' => ['except' => ''],
         'filtreStatut'    => ['except' => ''],
         'filtreStock'     => ['except' => ''],
+        'page'            => ['except' => 1],
     ];
+
+    public function mount(): void
+    {
+        // Restauration depuis la session si les paramètres ne sont pas passés dans la requête
+        if (! request()->has('search') && session()->has('produits_filtres.search')) {
+            $this->search = (string) session('produits_filtres.search');
+        }
+        if (! request()->has('filtreCategorie') && session()->has('produits_filtres.filtreCategorie')) {
+            $this->filtreCategorie = (string) session('produits_filtres.filtreCategorie');
+        }
+        if (! request()->has('filtreStatut') && session()->has('produits_filtres.filtreStatut')) {
+            $this->filtreStatut = (string) session('produits_filtres.filtreStatut');
+        }
+        if (! request()->has('filtreStock') && session()->has('produits_filtres.filtreStock')) {
+            $this->filtreStock = (string) session('produits_filtres.filtreStock');
+        }
+    }
 
     public function updatingSearch(): void          { $this->resetPage(); }
     public function updatingFiltreCategorie(): void { $this->resetPage(); }
     public function updatingFiltreStatut(): void    { $this->resetPage(); }
     public function updatingFiltreStock(): void     { $this->resetPage(); }
+
+    public function updatedSearch(): void          { $this->sauvegarderFiltres(); }
+    public function updatedFiltreCategorie(): void { $this->sauvegarderFiltres(); }
+    public function updatedFiltreStatut(): void    { $this->sauvegarderFiltres(); }
+    public function updatedFiltreStock(): void     { $this->sauvegarderFiltres(); }
+
+    private function sauvegarderFiltres(): void
+    {
+        session([
+            'produits_filtres' => [
+                'search'          => $this->search,
+                'filtreCategorie' => $this->filtreCategorie,
+                'filtreStatut'    => $this->filtreStatut,
+                'filtreStock'     => $this->filtreStock,
+            ],
+            'produits_return_url' => $this->getUrlRetour(),
+        ]);
+    }
+
+    public function resetFilters(): void
+    {
+        $this->reset(['search', 'filtreCategorie', 'filtreStatut', 'filtreStock']);
+        $this->resetPage();
+        session()->forget(['produits_filtres', 'produits_return_url']);
+    }
+
+    public function getUrlRetour(): string
+    {
+        $params = array_filter([
+            'search'          => $this->search ?: null,
+            'filtreCategorie' => $this->filtreCategorie ?: null,
+            'filtreStatut'    => $this->filtreStatut !== '' ? $this->filtreStatut : null,
+            'filtreStock'     => $this->filtreStock ?: null,
+            'page'            => $this->getPage() > 1 ? $this->getPage() : null,
+        ]);
+
+        return route('produits.index', $params);
+    }
 
     public function sortBy(string $champ): void
     {
@@ -98,6 +154,10 @@ class ProduitManager extends Component
             'rupture' => Produit::where('stock', '<=', 0)->where('sur_commande', false)->count(),
         ];
 
-        return view('livewire.produits.produit-manager', compact('produits', 'categories', 'stats'));
+        session(['produits_return_url' => $this->getUrlRetour()]);
+
+        $returnUrl = $this->getUrlRetour();
+
+        return view('livewire.produits.produit-manager', compact('produits', 'categories', 'stats', 'returnUrl'));
     }
 }

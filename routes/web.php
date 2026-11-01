@@ -100,9 +100,14 @@ Route::middleware(['auth', 'active'])->group(function () {
 
     // ── Produits ──────────────────────────────────────────────────────────
     Route::get('/produits',                    fn() => view('produits.index'))->name('produits.index');
-    Route::get('/produits/create',             fn() => view('produits.create'))->name('produits.create');
+    Route::get('/produits/create',             function() {
+        return view('produits.create', ['returnUrl' => request()->query('return_url')]);
+    })->name('produits.create');
     Route::get('/produits/{produit}/edit',     function(\App\Models\Produit $produit) {
-        return view('produits.edit', compact('produit'));
+        return view('produits.edit', [
+            'produit'   => $produit,
+            'returnUrl' => request()->query('return_url'),
+        ]);
     })->name('produits.edit');
 
     // ── Avis ──────────────────────────────────────────────────────────────

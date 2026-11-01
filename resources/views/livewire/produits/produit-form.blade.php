@@ -504,7 +504,7 @@
         {{-- Boutons action --}}
         <div class="flex items-center justify-between bg-white rounded-2xl
                     border border-gray-100 shadow-sm px-6 py-4">
-            <a href="{{ route('produits.index') }}"
+            <a href="{{ $returnUrl ?: route('produits.index') }}"
                class="px-4 py-2 text-sm font-medium text-gray-600
                       hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-colors">
                 ← Retour

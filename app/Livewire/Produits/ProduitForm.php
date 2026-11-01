@@ -17,6 +17,7 @@ class ProduitForm extends Component
 
     public bool   $isEditing  = false;
     public ?int   $produitId  = null;
+    public string $returnUrl  = '';     // URL de retour (avec filtres conservés)
 
     // Infos générales
     public string $nom                = '';
@@ -93,8 +94,12 @@ class ProduitForm extends Component
         }
     }
 
-    public function mount(?int $produitId = null): void
+    public function mount(?int $produitId = null, ?string $returnUrl = null): void
     {
+        // Priorité : URL de retour passée en paramètre, puis celle en session
+        $this->returnUrl = $returnUrl
+            ?? session('produits_return_url', route('produits.index'));
+
         if ($produitId) {
             $this->isEditing  = true;
             $this->produitId  = $produitId;
@@ -228,7 +233,7 @@ class ProduitForm extends Component
             ]);
         }
 
-        $this->redirect(route('produits.index'));
+        $this->redirect($this->returnUrl ?: route('produits.index'));
     }
 
     public function render()
