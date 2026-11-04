@@ -73,7 +73,7 @@ class PanierController extends Controller
         ]);
 
         $panier = session('panier', []);
-        $cle    = 'produit_' . $request->produit_id;
+        $cle    = $request->cle ?: ('produit_' . $request->produit_id);
 
         if (! isset($panier[$cle])) {
             return back();
@@ -83,7 +83,8 @@ class PanierController extends Controller
             unset($panier[$cle]);
         } else {
             $quantite = (int) $request->quantite;
-            $plat     = Produit::find($request->produit_id);
+            $platId   = $panier[$cle]['produit_id'] ?? $request->produit_id;
+            $plat     = Produit::find($platId);
 
             if ($plat && ! $plat->sur_commande && $quantite > $plat->stock) {
                 $quantite = max(1, $plat->stock);
@@ -100,7 +101,7 @@ class PanierController extends Controller
     public function remove(Request $request)
     {
         $panier = session('panier', []);
-        $cle    = 'produit_' . $request->produit_id;
+        $cle    = $request->cle ?: ('produit_' . $request->produit_id);
         unset($panier[$cle]);
         session(['panier' => $panier]);
 

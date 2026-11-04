@@ -100,6 +100,11 @@
                                           transition-colors line-clamp-2 leading-tight mb-1 block">
                                     {{ $item['nom'] }}
                                 </a>
+                                @if(! empty($item['details']))
+                                    <p class="text-xs text-orange-600 font-medium mb-1">
+                                        🧀 {{ $item['details'] }}
+                                    </p>
+                                @endif
                                 <p class="text-sm font-bold text-primary">
                                     {{ number_format($item['prix'], 0, ',', ' ') }} FCFA
                                 </p>

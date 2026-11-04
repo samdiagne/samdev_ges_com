@@ -112,11 +112,16 @@
 
             {{-- Prix --}}
             <div class="bg-gray-50 rounded-2xl p-5">
-                <div class="flex items-center gap-3 flex-wrap mb-3">
+                <div class="flex items-center gap-3 flex-wrap mb-2">
                     <p class="text-3xl font-bold text-dark">
-                        {{ number_format($produit->prix_vente, 0, ',', ' ') }}
+                        {{ number_format($this->prixUnitaireTotal, 0, ',', ' ') }}
                         <span class="text-lg font-normal text-gray-400">FCFA</span>
                     </p>
+                    @if($this->supplementTotalUnitaire > 0)
+                        <span class="text-xs font-semibold text-orange-700 bg-orange-100 px-2.5 py-1 rounded-xl">
+                            dont {{ number_format($this->supplementTotalUnitaire, 0, ',', ' ') }} F de supplément(s)
+                        </span>
+                    @endif
                     @if($produit->estEnPromotion())
                         <span class="bg-red-500 text-white text-sm font-bold px-2.5 py-1 rounded-xl">
                             -{{ $produit->pourcentageRemise() }}%
@@ -187,6 +192,80 @@
                 </p>
             @endif
 
+            {{-- ── Personnalisation / Suppléments (Burgers, Tacos, Sandwichs...) ── --}}
+            @if(! empty($supplementsDisponibles))
+                <div class="bg-gradient-to-br from-orange-50/70 via-amber-50/40 to-white border border-orange-200/80 rounded-2xl p-4 sm:p-5 space-y-3 shadow-xs">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-8 h-8 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center text-base font-bold flex-shrink-0">
+                                🧀
+                            </span>
+                            <div>
+                                <h3 class="text-sm font-bold text-gray-900 leading-tight">
+                                    Ajouter des suppléments
+                                </h3>
+                                <p class="text-[11px] text-gray-500">
+                                    Personnalisez votre recette selon votre goût
+                                </p>
+                            </div>
+                        </div>
+                        @if($this->supplementTotalUnitaire > 0)
+                            <span class="text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+                                +{{ number_format($this->supplementTotalUnitaire, 0, ',', ' ') }} F
+                            </span>
+                        @endif
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                        @foreach($supplementsDisponibles as $supp)
+                            @php
+                                $isChecked = ! empty($selectedSupplements[$supp['id']]);
+                            @endphp
+                            <button type="button"
+                                    wire:click="toggleSupplement({{ $supp['id'] }})"
+                                    @class([
+                                        'w-full text-left p-3 rounded-xl border transition-all flex items-center justify-between gap-3 group cursor-pointer select-none',
+                                        'bg-white border-primary shadow-sm ring-1.5 ring-primary/30' => $isChecked,
+                                        'bg-white/90 border-gray-200 hover:border-gray-300 hover:bg-white' => ! $isChecked,
+                                    ])>
+                                <div class="flex items-center gap-2.5 min-w-0">
+                                    {{-- Case à cocher stylisée --}}
+                                    <div @class([
+                                        'w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-colors border',
+                                        'bg-primary border-primary text-white' => $isChecked,
+                                        'bg-white border-gray-300 group-hover:border-primary' => ! $isChecked,
+                                    ])>
+                                        @if($isChecked)
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                        @endif
+                                    </div>
+
+                                    <div class="min-w-0">
+                                        <p @class([
+                                            'text-xs font-bold truncate leading-snug',
+                                            'text-primary' => $isChecked,
+                                            'text-gray-800' => ! $isChecked,
+                                        ])>
+                                            {{ $supp['nom'] }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <span @class([
+                                    'text-xs font-extrabold flex-shrink-0 px-2 py-0.5 rounded-md transition-colors',
+                                    'bg-primary text-white' => $isChecked,
+                                    'bg-gray-100 text-gray-700' => ! $isChecked,
+                                ])>
+                                    +{{ number_format($supp['prix_vente'], 0, ',', ' ') }} F
+                                </span>
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
             {{-- Sélecteur quantité + Ajouter panier --}}
             @if($produit->sur_commande || $produit->stock > 0)
                 <div class="space-y-3">
@@ -209,10 +288,10 @@
                                         'text-gray-300 cursor-not-allowed' => ! $produit->sur_commande && $quantity >= $produit->stock,
                                     ])>+</button>
                         </div>
-                        @if($quantity > 1)
+                        @if($quantity > 1 || $this->supplementTotalUnitaire > 0)
                             <span class="text-sm text-gray-500">
-                                = <span class="font-bold text-dark">
-                                    {{ number_format($produit->prixPourQuantite($quantity) * $quantity, 0, ',', ' ') }} FCFA
+                                = <span class="font-bold text-dark text-base text-primary">
+                                    {{ number_format($this->prixTotalLigne, 0, ',', ' ') }} FCFA
                                 </span>
                             </span>
                         @endif
@@ -236,7 +315,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
                                 </svg>
-                                Ajouter au panier
+                                Ajouter au panier • {{ number_format($this->prixTotalLigne, 0, ',', ' ') }} FCFA
                             @endif
                         </button>
                     </div>

@@ -110,6 +110,7 @@ class CommandeManager extends Component
                         'vente_id'      => $vente->id,
                         'produit_id'    => $ligne->produit_id,
                         'nom_produit'   => $ligne->nom_produit,
+                        'details'       => $ligne->details ?? null,
                         'prix_unitaire' => $ligne->prix_unitaire,
                         'quantite'      => $ligne->quantite,
                         'remise'        => 0,

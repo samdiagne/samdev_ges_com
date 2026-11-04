@@ -36,13 +36,21 @@
                             <div class="flex-1 min-w-0">
                                 {{-- Nom + Supprimer --}}
                                 <div class="flex items-start justify-between gap-2">
-                                    <a href="{{ route('shop.produit', $item['slug']) }}"
-                                       class="text-sm font-semibold text-dark hover:text-primary
-                                              transition-colors line-clamp-2 flex-1">
-                                        {{ $item['nom'] }}
-                                    </a>
+                                    <div class="flex-1 min-w-0">
+                                        <a href="{{ route('shop.produit', $item['slug']) }}"
+                                           class="text-sm font-semibold text-dark hover:text-primary
+                                                  transition-colors line-clamp-2">
+                                            {{ $item['nom'] }}
+                                        </a>
+                                        @if(! empty($item['details']))
+                                            <p class="text-xs text-orange-600 font-medium mt-0.5">
+                                                🧀 {{ $item['details'] }}
+                                            </p>
+                                        @endif
+                                    </div>
                                     <form action="{{ route('shop.panier.remove') }}" method="POST" class="flex-shrink-0">
                                         @csrf
+                                        <input type="hidden" name="cle" value="{{ $key }}"/>
                                         <input type="hidden" name="produit_id" value="{{ $item['produit_id'] }}"/>
                                         <button type="submit"
                                                 class="w-7 h-7 flex items-center justify-center
@@ -65,6 +73,7 @@
                                     <form action="{{ route('shop.panier.update') }}"
                                           method="POST" class="flex items-center">
                                         @csrf
+                                        <input type="hidden" name="cle" value="{{ $key }}"/>
                                         <input type="hidden" name="produit_id" value="{{ $item['produit_id'] }}"/>
                                         <div class="flex items-center gap-1.5 bg-gray-100 rounded-xl p-1">
                                             <button type="submit" name="quantite" value="{{ $item['quantite'] - 1 }}"

@@ -53,7 +53,9 @@ class CatalogueShop extends Component
 
     public function render()
     {
-        $query = Produit::where('est_actif', true)->with(['categorie', 'avisApprouves']);
+        $query = Produit::where('est_actif', true)
+            ->whereDoesntHave('categorie', fn($q) => $q->where('slug', 'supplements')->orWhere('id', 27))
+            ->with(['categorie', 'avisApprouves']);
 
         if ($this->search) {
             $query->where(fn($q) =>
@@ -93,6 +95,8 @@ class CatalogueShop extends Component
         $totalProducts = $produits->total();
 
         $categories = Categorie::where('est_active', true)
+            ->where('slug', '!=', 'supplements')
+            ->where('id', '!=', 27)
             ->withCount(['produitsActifs as produits_actifs_count'])
             ->having('produits_actifs_count', '>', 0)
             ->orderBy('ordre')

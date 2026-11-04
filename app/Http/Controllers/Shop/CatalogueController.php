@@ -13,6 +13,8 @@ class CatalogueController extends Controller
     public function index(Request $request)
     {
         $categories = Categorie::where('est_active', true)
+            ->where('slug', '!=', 'supplements')
+            ->where('id', '!=', 27)
             ->withCount('produitsActifs')
             ->having('produits_actifs_count', '>', 0)
             ->orderBy('ordre')

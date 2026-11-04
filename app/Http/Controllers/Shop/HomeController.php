@@ -13,29 +13,36 @@ class HomeController extends Controller
     {
         $misEnAvant = Produit::where('est_actif', true)
             ->where('est_mis_en_avant', true)
+            ->whereDoesntHave('categorie', fn($q) => $q->where('slug', 'supplements')->orWhere('id', 27))
             ->with(['categorie', 'avisApprouves'])
             ->limit(8)
             ->get();
 
         $categories = Categorie::where('est_active', true)
+            ->where('slug', '!=', 'supplements')
+            ->where('id', '!=', 27)
             ->withCount(['produitsActifs'])
             ->having('produits_actifs_count', '>', 0)
             ->orderBy('ordre')
             ->get();
 
         $nouveautes = Produit::where('est_actif', true)
+            ->whereDoesntHave('categorie', fn($q) => $q->where('slug', 'supplements')->orWhere('id', 27))
             ->with(['categorie', 'avisApprouves'])
             ->latest()
             ->limit(8)
             ->get();
 
         $platCarousel = Produit::where('est_actif', true)
+            ->whereDoesntHave('categorie', fn($q) => $q->where('slug', 'supplements')->orWhere('id', 27))
             ->with(['categorie', 'avisApprouves'])
             ->inRandomOrder()
             ->limit(8)
             ->get();
 
         $sectionsCategories = Categorie::where('est_active', true)
+            ->where('slug', '!=', 'supplements')
+            ->where('id', '!=', 27)
             ->orderBy('ordre')
             ->get()
             ->map(fn($cat) => [

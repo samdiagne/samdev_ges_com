@@ -126,4 +126,24 @@ class Produit extends Model
 
         return (float) $this->prix_vente;
     }
+
+    public function peutAvoirSupplements(): bool
+    {
+        // Produits éligibles aux suppléments (Burgers, Tacos, Sandwichs, Wraps, Chawarmas, Menus)
+        if (in_array((int) $this->categorie_id, [20, 21, 22, 23, 25])) {
+            return true;
+        }
+
+        $catSlug = $this->categorie?->slug ?? '';
+        $catNom  = strtolower($this->categorie?->nom ?? '');
+        $prodNom = strtolower($this->nom);
+
+        foreach (['burger', 'tacos', 'sandwich', 'wrap', 'chawarma', 'menu'] as $keyword) {
+            if (str_contains($catSlug, $keyword) || str_contains($catNom, $keyword) || str_contains($prodNom, $keyword)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

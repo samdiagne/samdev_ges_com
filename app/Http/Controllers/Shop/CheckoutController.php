@@ -76,10 +76,17 @@ class CheckoutController extends Controller
             ]);
 
             foreach ($panier as $item) {
+                $details = $item['details'] ?? null;
+                $nom = $item['nom'];
+                if ($details) {
+                    $nom .= ' (' . $details . ')';
+                }
+
                 CommandeLigne::create([
                     'commande_id'   => $commande->id,
                     'produit_id'    => $item['produit_id'],
-                    'nom_produit'   => $item['nom'],
+                    'nom_produit'   => $nom,
+                    'details'       => $details,
                     'prix_unitaire' => $item['prix'],
                     'quantite'      => $item['quantite'],
                     'total'         => $item['prix'] * $item['quantite'],

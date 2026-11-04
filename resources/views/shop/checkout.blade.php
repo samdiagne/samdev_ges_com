@@ -231,6 +231,11 @@
                                     <p class="text-xs font-medium text-dark truncate">
                                         {{ $item['nom'] }}
                                     </p>
+                                    @if(! empty($item['details']))
+                                        <p class="text-[11px] text-orange-600 font-medium truncate">
+                                            🧀 {{ $item['details'] }}
+                                        </p>
+                                    @endif
                                     <p class="text-xs text-gray-400">
                                         ×{{ $item['quantite'] }}
                                     </p>
