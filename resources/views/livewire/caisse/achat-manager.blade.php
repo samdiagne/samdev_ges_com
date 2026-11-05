@@ -549,10 +549,6 @@
             </div>
         </div>
     @endif
-                </div>
-            </div>
-        </div>
-    @endif
 
     {{-- Modal suppression --}}
     @if($afficherModalSuppression)
