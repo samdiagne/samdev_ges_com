@@ -88,6 +88,11 @@ class SessionCaisse extends Model
         return $this->hasMany(Achat::class, 'session_caisse_id');
     }
 
+    public function achatReglements(): HasMany
+    {
+        return $this->hasMany(AchatReglement::class, 'session_caisse_id');
+    }
+
     // ── Méthodes & Helpers ─────────────────────────────────
 
     public function estOuverte(): bool
@@ -147,11 +152,11 @@ class SessionCaisse extends Model
         $depensesWave  = (float) (clone $depensesQuery)->where('mode_paiement', 'wave')->sum('montant');
         $totalDepenses = (float) $depensesQuery->sum('montant');
 
-        // Achats rattachés à cette session (sorties de caisse pour approvisionnement)
-        $achatsQuery = $this->achats()->where('statut', '!=', 'annule');
-        $achatsCash  = (float) (clone $achatsQuery)->where('mode_paiement', 'cash')->sum('montant_paye');
-        $achatsWave  = (float) (clone $achatsQuery)->where('mode_paiement', 'wave')->sum('montant_paye');
-        $totalAchats = (float) $achatsQuery->sum('montant_paye');
+        // Sorties de caisse réelles liées aux règlements d'achats effectués pendant cette session
+        $reglementsQuery = $this->achatReglements();
+        $achatsCash  = (float) (clone $reglementsQuery)->where('mode_paiement', 'cash')->sum('montant');
+        $achatsWave  = (float) (clone $reglementsQuery)->where('mode_paiement', 'wave')->sum('montant');
+        $totalAchats = (float) $reglementsQuery->sum('montant');
 
         $fondCash = (float) $this->fond_caisse_ouverture;
         $fondWave = (float) ($this->fond_caisse_wave_ouverture ?? 0);

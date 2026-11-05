@@ -23,7 +23,7 @@ class SessionCaisseController extends Controller
             abort(403, 'Accès non autorisé à cette clôture.');
         }
 
-        $session->load(['user', 'ventes.client', 'depenses.categorie', 'achats.fournisseur']);
+        $session->load(['user', 'ventes.client', 'depenses.categorie', 'achats.fournisseur', 'achatReglements.achat.fournisseur']);
 
         $parametres = Parametre::first();
         $logoBase64 = $this->getLogoBase64();
@@ -51,7 +51,7 @@ class SessionCaisseController extends Controller
         $targetUser = User::find($targetUserId) ?? $currentUser;
 
         // Récupérer les sessions du jour pour cet utilisateur
-        $sessions = SessionCaisse::with(['ventes', 'depenses', 'achats.fournisseur'])
+        $sessions = SessionCaisse::with(['ventes', 'depenses', 'achats.fournisseur', 'achatReglements.achat.fournisseur'])
             ->where('user_id', $targetUserId)
             ->where(function ($q) use ($date) {
                 $q->whereDate('ouvert_le', $date);

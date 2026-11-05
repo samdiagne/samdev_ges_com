@@ -60,4 +60,20 @@ class Achat extends Model
     {
         return $this->belongsTo(SessionCaisse::class, 'session_caisse_id');
     }
+
+    public function reglements(): HasMany
+    {
+        return $this->hasMany(AchatReglement::class, 'achat_id');
+    }
+
+    public function recalculerPaiement(): void
+    {
+        $totalRegle = (float) $this->reglements()->sum('montant');
+        $montantTotal = (float) $this->montant_total;
+        $du = max(0, $montantTotal - $totalRegle);
+
+        $this->montant_paye = $totalRegle;
+        $this->montant_du = $du;
+        $this->save();
+    }
 }

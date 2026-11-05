@@ -155,31 +155,34 @@
         </table>
     @endif
 
-    {{-- Achats réalisés pendant la session --}}
-    @if($session->achats()->count() > 0)
-        <div class="section-title">3. Achats & Approvisionnements Réalisés</div>
+    {{-- Règlements d'Achats & Approvisionnements réalisés pendant la session --}}
+    @php
+        $reglementsSession = $session->achatReglements;
+    @endphp
+    @if($reglementsSession->count() > 0)
+        <div class="section-title">3. Règlements d'Achats & Approvisionnements (Sorties Réelles)</div>
         <table>
             <thead>
                 <tr>
-                    <th>Réf. Achat</th>
+                    <th>Réf. Règlement</th>
+                    <th>Facture Achat</th>
                     <th>Fournisseur</th>
                     <th>Mode</th>
-                    <th>Statut</th>
-                    <th class="right">Montant Payé (FCFA)</th>
+                    <th class="right">Montant Décaissé (FCFA)</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($session->achats as $achat)
+                @foreach($reglementsSession as $regl)
                     <tr>
-                        <td style="font-weight:bold;">{{ $achat->reference }}</td>
-                        <td>{{ $achat->fournisseur?->nom ?? 'Comptant / Marché' }}</td>
-                        <td>{{ strtoupper($achat->mode_paiement ?? 'cash') }}</td>
-                        <td>{{ ucfirst($achat->statut) }}</td>
-                        <td class="right">- {{ number_format($achat->montant_paye, 0, ',', ' ') }} FCFA</td>
+                        <td style="font-weight:bold;">{{ $regl->reference }}</td>
+                        <td>{{ $regl->achat?->reference ?? '-' }}</td>
+                        <td>{{ $regl->achat?->fournisseur?->nom ?? 'Comptant / Marché' }}</td>
+                        <td>{{ strtoupper($regl->mode_paiement ?? 'cash') }}</td>
+                        <td class="right">- {{ number_format($regl->montant, 0, ',', ' ') }} FCFA</td>
                     </tr>
                 @endforeach
                 <tr style="background:#FFF0E6;">
-                    <td colspan="4" style="font-weight:bold; color:#D97706;">Total Achats Espèces (Sorties de caisse)</td>
+                    <td colspan="4" style="font-weight:bold; color:#D97706;">Total Achats Espèces (Sorties Tiroir)</td>
                     <td class="right" style="color:#D97706;">- {{ number_format($session->total_achats_cash ?? 0, 0, ',', ' ') }} FCFA</td>
                 </tr>
             </tbody>

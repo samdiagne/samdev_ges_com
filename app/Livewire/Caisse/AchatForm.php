@@ -5,6 +5,7 @@ namespace App\Livewire\Caisse;
 use Livewire\Component;
 use App\Models\Achat;
 use App\Models\AchatLigne;
+use App\Models\AchatReglement;
 use App\Models\Fournisseur;
 use App\Models\SessionCaisse;
 use Illuminate\Support\Facades\Auth;
@@ -134,30 +135,73 @@ class AchatForm extends Component
                 ->first()
                 ?? SessionCaisse::where('statut', 'ouverte')->latest('ouvert_le')->first();
 
+            $montantPayeSaisi = max(0, (float) ($this->montant_paye ?? 0));
+            $montantDuInitial = max(0, round($this->montantTotal - $montantPayeSaisi, 2));
+
             $data = [
                 'fournisseur_id'   => $this->fournisseur_id,
                 'user_id'          => Auth::id(),
                 'session_caisse_id'=> $sessionActive?->id,
                 'statut'           => $this->statut,
                 'montant_total'    => $this->montantTotal,
-                'montant_paye'     => $this->montant_paye ?? 0,
-                'montant_du'       => max(0, $this->montantDu),
+                'montant_paye'     => $montantPayeSaisi,
+                'montant_du'       => $montantDuInitial,
                 'mode_paiement'    => $this->mode_paiement ?: null,
                 'date_achat'       => $this->date_achat,
                 'notes'            => $this->notes ?: null,
             ];
 
             if ($this->isEditing) {
-                $achat = Achat::findOrFail($this->achatId);
-                // Si l'achat avait déjà une session, on la préserve, sinon on rattache la session active
+                $achat = Achat::with('reglements')->findOrFail($this->achatId);
                 if ($achat->session_caisse_id) {
                     $data['session_caisse_id'] = $achat->session_caisse_id;
                 }
                 $achat->update($data);
                 $achat->lignes()->delete();
+
+                // Gestion des règlements en modification
+                $nbReglements = $achat->reglements()->count();
+                if ($nbReglements === 0 && $montantPayeSaisi > 0) {
+                    AchatReglement::create([
+                        'reference'         => AchatReglement::genererReference(),
+                        'achat_id'          => $achat->id,
+                        'session_caisse_id' => $sessionActive?->id,
+                        'user_id'           => Auth::id(),
+                        'montant'           => $montantPayeSaisi,
+                        'mode_paiement'     => $this->mode_paiement ?: 'cash',
+                        'date_reglement'    => now(),
+                        'notes'             => 'Paiement initial',
+                    ]);
+                } elseif ($nbReglements === 1) {
+                    $regl = $achat->reglements()->first();
+                    if ($montantPayeSaisi > 0) {
+                        $regl->update([
+                            'montant'       => $montantPayeSaisi,
+                            'mode_paiement' => $this->mode_paiement ?: 'cash',
+                        ]);
+                    } else {
+                        $regl->delete();
+                    }
+                }
+                $achat->recalculerPaiement();
             } else {
                 $data['reference'] = $this->generateRef();
                 $achat             = Achat::create($data);
+
+                // Si un paiement a été effectué à la création, créer le règlement correspondant
+                if ($montantPayeSaisi > 0) {
+                    AchatReglement::create([
+                        'reference'         => AchatReglement::genererReference(),
+                        'achat_id'          => $achat->id,
+                        'session_caisse_id' => $sessionActive?->id,
+                        'user_id'           => Auth::id(),
+                        'montant'           => $montantPayeSaisi,
+                        'mode_paiement'     => $this->mode_paiement ?: 'cash',
+                        'date_reglement'    => now(),
+                        'notes'             => 'Paiement initial lors de l\'enregistrement',
+                    ]);
+                    $achat->recalculerPaiement();
+                }
             }
 
             foreach ($this->lignes as $ligne) {

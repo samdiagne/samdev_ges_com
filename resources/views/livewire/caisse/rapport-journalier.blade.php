@@ -354,54 +354,51 @@
                                                 </div>
                                             </div>
 
-                                            {{-- SECTION 1 : ACHATS DE LA SESSION --}}
+                                            {{-- SECTION 1 : RÈGLEMENTS & ACHATS DE LA SESSION --}}
+                                            @php
+                                                $reglementsSession = $session->achatReglements;
+                                            @endphp
                                             <div class="border border-orange-200/80 rounded-xl p-3 bg-orange-50/30">
                                                 <div class="flex items-center justify-between pb-2 mb-2 border-b border-orange-100">
                                                     <h4 class="font-bold text-xs uppercase tracking-wider text-orange-950 flex items-center gap-1.5">
-                                                        <span>🛒 Achats effectués pendant la session</span>
+                                                        <span>🛒 Règlements d'Achats & Approvisionnements (Sorties réelles)</span>
                                                         <span class="px-1.5 py-0.2 rounded-full bg-orange-200/70 text-orange-800 text-[10px]">
-                                                            {{ $session->achats->count() }}
+                                                            {{ $reglementsSession->count() }}
                                                         </span>
                                                     </h4>
                                                     <span class="text-xs font-bold text-orange-800">
-                                                        Total payé : {{ number_format($totaux['total_achats'] ?? 0, 0, ',', ' ') }} FCFA
+                                                        Total décaissé : {{ number_format($totaux['total_achats'] ?? 0, 0, ',', ' ') }} FCFA
                                                     </span>
                                                 </div>
 
-                                                @if($session->achats->isEmpty())
-                                                    <p class="text-xs text-gray-400 italic py-1">Aucun achat rattaché à cette session.</p>
+                                                @if($reglementsSession->isEmpty())
+                                                    <p class="text-xs text-gray-400 italic py-1">Aucune sortie de caisse pour achat lors de cette session.</p>
                                                 @else
                                                     <div class="overflow-x-auto max-h-48 overflow-y-auto">
                                                         <table class="w-full text-xs">
                                                             <thead class="bg-orange-100/60 text-orange-950">
                                                                 <tr>
-                                                                    <th class="p-2 text-left">Réf. Achat</th>
+                                                                    <th class="p-2 text-left">Réf. Règlement</th>
+                                                                    <th class="p-2 text-left">Facture Achat</th>
                                                                     <th class="p-2 text-left">Date / Heure</th>
                                                                     <th class="p-2 text-left">Fournisseur</th>
                                                                     <th class="p-2 text-left">Mode</th>
-                                                                    <th class="p-2 text-left">Statut</th>
-                                                                    <th class="p-2 text-right">Montant Total</th>
-                                                                    <th class="p-2 text-right">Payé (Sortie)</th>
+                                                                    <th class="p-2 text-right">Montant Décaissé</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody class="divide-y divide-orange-100/60 bg-white">
-                                                                @foreach($session->achats as $a)
+                                                                @foreach($reglementsSession as $regl)
                                                                     <tr>
-                                                                        <td class="p-2 font-mono font-bold text-gray-800">{{ $a->reference }}</td>
-                                                                        <td class="p-2 text-gray-500">{{ $a->created_at->format('H:i • d/m/Y') }}</td>
-                                                                        <td class="p-2 text-gray-700 font-medium">{{ $a->fournisseur?->nom ?? 'Comptant / Marché' }}</td>
+                                                                        <td class="p-2 font-mono font-bold text-gray-800">{{ $regl->reference }}</td>
+                                                                        <td class="p-2 font-mono text-gray-600">{{ $regl->achat?->reference ?? '-' }}</td>
+                                                                        <td class="p-2 text-gray-500">{{ ($regl->date_reglement ?? $regl->created_at)->format('H:i • d/m/Y') }}</td>
+                                                                        <td class="p-2 text-gray-700 font-medium">{{ $regl->achat?->fournisseur?->nom ?? 'Comptant / Marché' }}</td>
                                                                         <td class="p-2 uppercase font-semibold text-[11px]">
-                                                                            <span class="px-2 py-0.5 rounded {{ $a->mode_paiement === 'cash' ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800' }}">
-                                                                                {{ $a->mode_paiement ?? 'cash' }}
+                                                                            <span class="px-2 py-0.5 rounded {{ $regl->mode_paiement === 'cash' ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800' }}">
+                                                                                {{ $regl->mode_paiement ?? 'cash' }}
                                                                             </span>
                                                                         </td>
-                                                                        <td class="p-2 text-[11px]">
-                                                                            <span class="px-2 py-0.5 rounded font-medium {{ $a->statut === 'recu' ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600' }}">
-                                                                                {{ ucfirst($a->statut) }}
-                                                                            </span>
-                                                                        </td>
-                                                                        <td class="p-2 text-right font-medium text-gray-600">{{ number_format($a->montant_total, 0, ',', ' ') }} F</td>
-                                                                        <td class="p-2 text-right font-black text-orange-700">- {{ number_format($a->montant_paye, 0, ',', ' ') }} F</td>
+                                                                        <td class="p-2 text-right font-black text-orange-700">- {{ number_format($regl->montant, 0, ',', ' ') }} F</td>
                                                                     </tr>
                                                                 @endforeach
                                                             </tbody>

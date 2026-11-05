@@ -47,7 +47,7 @@ class RapportJournalier extends Component
 
         $parsedDate = Carbon::parse($this->date);
 
-        $query = SessionCaisse::with(['user', 'ventes.client', 'depenses.categorie', 'achats.fournisseur', 'achats.lignes'])
+        $query = SessionCaisse::with(['user', 'ventes.client', 'depenses.categorie', 'achats.fournisseur', 'achats.lignes', 'achatReglements.achat.fournisseur'])
             ->where(function ($q) use ($parsedDate) {
                 $q->whereDate('ouvert_le', $parsedDate);
                 if ($parsedDate->isToday()) {
