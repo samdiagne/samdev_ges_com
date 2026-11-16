@@ -155,6 +155,39 @@
                     @endforeach
                 </div>
 
+                {{-- ── Bannières paliers groupe ─────────────────────────── --}}
+                @foreach($infoPaliers as $catId => $info)
+                    @if($info['palier'])
+                        @if($info['applique'])
+                            {{-- Palier atteint --}}
+                            <div class="mt-3 flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-xl text-xs">
+                                <span class="text-green-600 text-base">🎉</span>
+                                <div>
+                                    <span class="font-semibold text-green-700">
+                                        Palier {{ $info['label'] ?? 'groupe' }} atteint !
+                                    </span>
+                                    <span class="text-green-600">
+                                        Prix réduit à <strong>{{ number_format($info['palier']->prix_unitaire, 0, ',', ' ') }} FCFA/u</strong> appliqué.
+                                    </span>
+                                </div>
+                            </div>
+                        @elseif($info['manque'] > 0)
+                            {{-- Proche du palier --}}
+                            <div class="mt-3 flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-xl text-xs">
+                                <span class="text-amber-500 text-base">💡</span>
+                                <div>
+                                    <span class="font-semibold text-amber-700">
+                                        Plus que {{ $info['manque'] }} unité{{ $info['manque'] > 1 ? 's' : '' }} pour le palier !
+                                    </span>
+                                    <span class="text-amber-600">
+                                        {{ $info['label'] ?? '' }} → <strong>{{ number_format($info['palier']->prix_unitaire, 0, ',', ' ') }} FCFA/u</strong>
+                                    </span>
+                                </div>
+                            </div>
+                        @endif
+                    @endif
+                @endforeach
+
                 {{-- Vider le panier --}}
                 <div class="mt-4 text-right">
                     <button wire:click="clear"

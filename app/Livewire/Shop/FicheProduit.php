@@ -139,24 +139,28 @@ class FicheProduit extends Component
             $details = 'Supplément(s) : ' . implode(', ', array_map(fn($s) => $s['nom'] . ' (+' . number_format($s['prix'], 0, ',', ' ') . ' F)', $supplementsChoisis));
         }
 
-        $prixUnitaire = (float) $this->produit->prixPourQuantite($this->quantity) + $totalSupplements;
+        // prix_base = prix sans palier ni supplément (sert de référence pour le recalcul groupe)
+        $prixBase         = (float) $this->produit->prix_vente;
+        $prixUnitaire     = $prixBase + $totalSupplements;
 
         if (isset($panier[$cle])) {
             $nouvelle = $panier[$cle]['quantite'] + $this->quantity;
             $panier[$cle]['quantite'] = $this->produit->sur_commande ? $nouvelle : min($nouvelle, $this->produit->stock);
         } else {
             $panier[$cle] = [
-                'produit_id'   => $this->produit->id,
-                'nom'          => $this->produit->nom,
-                'prix'         => $prixUnitaire,
-                'prix_base'    => (float) $this->produit->prix_vente,
-                'image'        => $this->produit->image_principale,
-                'slug'         => $this->produit->slug,
-                'quantite'     => $this->quantity,
-                'stock'        => $this->produit->stock,
-                'sur_commande' => (bool) $this->produit->sur_commande,
-                'supplements'  => $supplementsChoisis,
-                'details'      => $details,
+                'produit_id'      => $this->produit->id,
+                'nom'             => $this->produit->nom,
+                'prix'            => $prixUnitaire,
+                'prix_base'       => $prixBase,
+                'prix_supplement' => $totalSupplements,  // suppléments séparés pour recalcul palier
+                'categorie_id'    => $this->produit->categorie_id, // nécessaire pour paliers groupe
+                'image'           => $this->produit->image_principale,
+                'slug'            => $this->produit->slug,
+                'quantite'        => $this->quantity,
+                'stock'           => $this->produit->stock,
+                'sur_commande'    => (bool) $this->produit->sur_commande,
+                'supplements'     => $supplementsChoisis,
+                'details'         => $details,
             ];
         }
 

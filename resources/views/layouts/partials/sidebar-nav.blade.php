@@ -101,6 +101,12 @@
                     'icon'  => 'tag',
                     'roles' => ['admin', 'gestionnaire'],
                 ],
+                [
+                    'label' => 'Paliers de Prix',
+                    'route' => 'paliers.index',
+                    'icon'  => 'receipt',
+                    'roles' => ['admin', 'gestionnaire'],
+                ],
             ],
         ],
         [

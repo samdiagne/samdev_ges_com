@@ -11,7 +11,8 @@ class PanierController extends Controller
 {
     public function index()
     {
-        $panier     = session('panier', []);
+        $panier     = app(\App\Services\CartService::class)->recalculerPaliersGroupe(session('panier', []));
+        session(['panier' => $panier]);
         $total      = collect($panier)->sum(fn($i) => $i['prix'] * $i['quantite']);
         $parametres = Parametre::first();
 
@@ -53,6 +54,7 @@ class PanierController extends Controller
             $panier[$cle]['quantite'] = $plat->stock;
         }
 
+        $panier = app(\App\Services\CartService::class)->recalculerPaliersGroupe($panier);
         session(['panier' => $panier]);
 
         if ($request->expectsJson()) {
@@ -93,6 +95,7 @@ class PanierController extends Controller
             $panier[$cle]['quantite'] = $quantite;
         }
 
+        $panier = app(\App\Services\CartService::class)->recalculerPaliersGroupe($panier);
         session(['panier' => $panier]);
 
         return back()->with('success', 'Panier mis à jour !');
@@ -103,6 +106,7 @@ class PanierController extends Controller
         $panier = session('panier', []);
         $cle    = $request->cle ?: ('produit_' . $request->produit_id);
         unset($panier[$cle]);
+        $panier = app(\App\Services\CartService::class)->recalculerPaliersGroupe($panier);
         session(['panier' => $panier]);
 
         return back()->with('success', 'Produit retiré du panier.');

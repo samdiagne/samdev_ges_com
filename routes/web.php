@@ -136,6 +136,9 @@ Route::middleware(['auth', 'active'])->group(function () {
     // ── Catégories ────────────────────────────────────────────────────────
     Route::get('/categories', fn() => view('categories.index'))->name('categories.index');
 
+    // ── Paliers de Prix ────────────────────────────────────────────────────
+    Route::get('/paliers', fn() => view('paliers.index'))->name('paliers.index');
+
     // ── Devis ─────────────────────────────────────────────────────────────
     Route::get('/devis',              fn() => view('devis.index'))->name('devis.index');
     Route::get('/devis/create',       fn() => view('devis.create'))->name('devis.create');

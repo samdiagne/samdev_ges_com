@@ -33,26 +33,28 @@ return new class extends Migration
         }
 
         // 2. Créer ou mettre à jour le produit générique Jus 1 L (dans Catégorie 4)
-        $jus1L = Produit::where('categorie_id', 4)->where('slug', 'jus-1-l')->first();
-        if (! $jus1L) {
-            $jus1L = Produit::create([
-                'categorie_id'       => 4,
-                'nom'                => 'Jus 1 L',
-                'slug'               => 'jus-1-l',
-                'prix_vente'         => 2000.00,
-                'est_actif'          => true,
-                'sur_commande'       => true,
-                'est_variante'       => false,
-                'description_courte' => 'Bouteille 1L de jus naturel au choix',
-            ]);
-        } else {
-            $jus1L->update([
-                'nom'                => 'Jus 1 L',
-                'prix_vente'         => 2000.00,
-                'est_actif'          => true,
-                'sur_commande'       => true,
-                'est_variante'       => false,
-            ]);
+        if (\Illuminate\Support\Facades\DB::table('categories')->where('id', 4)->exists()) {
+            $jus1L = Produit::where('categorie_id', 4)->where('slug', 'jus-1-l')->first();
+            if (! $jus1L) {
+                $jus1L = Produit::create([
+                    'categorie_id'       => 4,
+                    'nom'                => 'Jus 1 L',
+                    'slug'               => 'jus-1-l',
+                    'prix_vente'         => 2000.00,
+                    'est_actif'          => true,
+                    'sur_commande'       => true,
+                    'est_variante'       => false,
+                    'description_courte' => 'Bouteille 1L de jus naturel au choix',
+                ]);
+            } else {
+                $jus1L->update([
+                    'nom'                => 'Jus 1 L',
+                    'prix_vente'         => 2000.00,
+                    'est_actif'          => true,
+                    'sur_commande'       => true,
+                    'est_variante'       => false,
+                ]);
+            }
         }
 
         // 3. Configurer le produit générique Boisson gazeuse (ID 71)
@@ -90,19 +92,21 @@ return new class extends Migration
             ['nom' => 'Vimto (33 cl)',           'slug' => 'vimto-33cl'],
         ];
 
-        foreach ($sodas as $soda) {
-            Produit::updateOrCreate(
-                ['slug' => $soda['slug']],
-                [
-                    'categorie_id'       => 5,
-                    'nom'                => $soda['nom'],
-                    'prix_vente'         => 500.00,
-                    'est_actif'          => true,
-                    'sur_commande'       => true,
-                    'est_variante'       => true,
-                    'description_courte' => 'Canette fraîche 33cl',
-                ]
-            );
+        if (\Illuminate\Support\Facades\DB::table('categories')->where('id', 5)->exists()) {
+            foreach ($sodas as $soda) {
+                Produit::updateOrCreate(
+                    ['slug' => $soda['slug']],
+                    [
+                        'categorie_id'       => 5,
+                        'nom'                => $soda['nom'],
+                        'prix_vente'         => 500.00,
+                        'est_actif'          => true,
+                        'sur_commande'       => true,
+                        'est_variante'       => true,
+                        'description_courte' => 'Canette fraîche 33cl',
+                    ]
+                );
+            }
         }
     }
 

@@ -20,7 +20,8 @@ class CheckoutController extends Controller
 {
     public function index()
     {
-        $panier = session('panier', []);
+        $panier = app(\App\Services\CartService::class)->recalculerPaliersGroupe(session('panier', []));
+        session(['panier' => $panier]);
 
         if (empty($panier)) {
             return redirect()->route('shop.panier')
@@ -35,7 +36,8 @@ class CheckoutController extends Controller
 
     public function store(Request $request)
     {
-        $panier = session('panier', []);
+        $panier = app(\App\Services\CartService::class)->recalculerPaliersGroupe(session('panier', []));
+        session(['panier' => $panier]);
 
         if (empty($panier)) {
             return redirect()->route('shop.panier');

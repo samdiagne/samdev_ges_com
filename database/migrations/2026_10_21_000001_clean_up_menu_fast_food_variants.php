@@ -35,16 +35,18 @@ return new class extends Migration
                 'description_courte' => 'Menu Tacos au choix avec portion de frites et boisson fraîche 250ml',
             ]);
         } else {
-            Produit::create([
-                'id'                 => 75,
-                'categorie_id'       => 25,
-                'nom'                => 'Menu Tacos',
-                'slug'               => 'menu-tacos',
-                'prix_vente'         => 3000.00,
-                'est_actif'          => true,
-                'sur_commande'       => true,
-                'description_courte' => 'Menu Tacos au choix avec portion de frites et boisson fraîche 250ml',
-            ]);
+            if (\Illuminate\Support\Facades\DB::table('categories')->where('id', 25)->exists()) {
+                Produit::create([
+                    'id'                 => 75,
+                    'categorie_id'       => 25,
+                    'nom'                => 'Menu Tacos',
+                    'slug'               => 'menu-tacos',
+                    'prix_vente'         => 3000.00,
+                    'est_actif'          => true,
+                    'sur_commande'       => true,
+                    'description_courte' => 'Menu Tacos au choix avec portion de frites et boisson fraîche 250ml',
+                ]);
+            }
         }
 
         // 3. Supprimer (soft-delete) les anciennes variantes spécifiques de menus fast-food

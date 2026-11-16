@@ -6,14 +6,17 @@ use Livewire\Component;
 use Livewire\Attributes\On;
 use App\Models\Produit;
 use App\Models\Parametre;
+use App\Services\CartService;
 
 class CartDrawer extends Component
 {
-    // Variables alignées sur la vue
     public bool   $open   = false;
     public array  $panier = [];
     public float  $total  = 0;
     public int    $count  = 0;
+
+    // Infos paliers groupe pour l'affichage (bannière)
+    public array $infoPaliers = [];
 
     public function mount(): void
     {
@@ -30,22 +33,36 @@ class CartDrawer extends Component
     #[On('panier-mis-a-jour')]
     public function syncCart(): void
     {
-        $this->panier = session('panier', []);
+        $panier = session('panier', []);
 
-        // Rafraichit stock et sur_commande depuis la base (la session
-        // fige ces valeurs au moment de l'ajout au panier)
-        $produits = Produit::whereIn('id', collect($this->panier)->pluck('produit_id')->filter())
-            ->get(['id', 'stock', 'sur_commande'])
+        // Rafraîchit stock et sur_commande depuis la base
+        $produits = Produit::whereIn('id', collect($panier)->pluck('produit_id')->filter())
+            ->get(['id', 'stock', 'sur_commande', 'categorie_id'])
             ->keyBy('id');
 
-        foreach ($this->panier as $key => $item) {
+        foreach ($panier as $key => $item) {
             $produit = $produits->get($item['produit_id'] ?? null);
             if ($produit) {
-                $this->panier[$key]['stock']        = $produit->stock;
-                $this->panier[$key]['sur_commande'] = (bool) $produit->sur_commande;
+                $panier[$key]['stock']        = $produit->stock;
+                $panier[$key]['sur_commande'] = (bool) $produit->sur_commande;
+                // S'assurer que categorie_id est présent (nécessaire pour paliers groupe)
+                if (! isset($panier[$key]['categorie_id'])) {
+                    $panier[$key]['categorie_id'] = $produit->categorie_id;
+                }
             }
         }
 
+        // ── Recalcul des paliers groupe ──────────────────────────────────────
+        $cartSvc = app(CartService::class);
+        $panier  = $cartSvc->recalculerPaliersGroupe($panier);
+
+        // Infos paliers pour affichage bannière
+        $this->infoPaliers = $cartSvc->infoPaliersGroupe($panier);
+
+        // Sauvegarder le panier mis à jour en session
+        session(['panier' => $panier]);
+
+        $this->panier = $panier;
         $this->total  = round(collect($this->panier)->sum(fn($i) => $i['prix'] * $i['quantite']), 2);
         $this->count  = (int) collect($this->panier)->sum('quantite');
     }

@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\Produit;
 use App\Models\Client;
 use App\Models\Categorie;
+use App\Services\CartService;
 use App\Models\SessionCaisse;
 use App\Services\VenteService;
 use Illuminate\Support\Facades\Auth;
@@ -176,7 +177,7 @@ class PointOfSale extends Component
                 session()->flash('pos_error', 'Stock insuffisant !'); return;
             }
             $this->panier[$cleTrouvee]['quantite']++;
-            $this->recalcLine($cleTrouvee);
+            $this->panier = app(CartService::class)->recalculerPaliersGroupePOS($this->panier);
             $this->recalcTotals();
             return;
         } else {
@@ -191,13 +192,13 @@ class PointOfSale extends Component
                 'quantite_palier'  => $plat->quantite_palier,
                 'prix_palier'      => $plat->prix_palier ? (float) $plat->prix_palier : null,
                 'prix_base'        => (float) $plat->prix_vente,
+                'categorie_id'     => $plat->categorie_id,  // nécessaire pour paliers groupe
                 'is_menu'          => false,
             ];
         }
+        $this->panier = app(CartService::class)->recalculerPaliersGroupePOS($this->panier);
         $this->recalcTotals();
     }
-
-    // ── Composition Menu Fast-Food ───────────────────────────
 
     public function ouvrirModalMenu(int $produitId): void
     {
@@ -500,12 +501,14 @@ class PointOfSale extends Component
                 'quantite_palier'  => $option->quantite_palier,
                 'prix_palier'      => $option->prix_palier ? (float) $option->prix_palier : null,
                 'prix_base'        => $prix,
+                'categorie_id'     => $option->categorie_id,  // nécessaire pour paliers groupe
                 'is_menu'          => false,
                 'details'          => $details,
             ];
         }
 
         $this->afficherModalBoisson = false;
+        $this->panier = app(CartService::class)->recalculerPaliersGroupePOS($this->panier);
         $this->recalcTotals();
         session()->flash('pos_success', "{$nomLigne} ajouté au panier !");
     }
@@ -549,6 +552,8 @@ class PointOfSale extends Component
     {
         array_splice($this->panier, $index, 1);
         $this->panier = array_values($this->panier);
+        // Recalcul groupe après suppression (un article en moins peut changer les paliers)
+        $this->panier = app(CartService::class)->recalculerPaliersGroupePOS($this->panier);
         $this->recalcTotals();
     }
 
@@ -575,18 +580,13 @@ class PointOfSale extends Component
             return;
         }
 
-        $palierQte = $item['quantite_palier'] ?? null;
-        $palierPrix = $item['prix_palier'] ?? null;
-        $prixBase = $item['prix_base'] ?? $item['prix_unitaire'];
+        // Si un palier groupe est géré par CartService, ne pas l'écraser ici.
+        // On applique quand même le recalcul groupe complet via CartService.
+        $this->panier = app(CartService::class)->recalculerPaliersGroupePOS($this->panier);
 
-        if ($palierQte && $palierPrix && $item['quantite'] >= $palierQte) {
-            $this->panier[$index]['prix_unitaire'] = $palierPrix;
-        } else {
-            $this->panier[$index]['prix_unitaire'] = $prixBase;
-        }
-
+        // Recalcul du total de la ligne (CartService l'a déjà fait, mais on s'assure)
         $this->panier[$index]['total'] = round(
-            ($this->panier[$index]['prix_unitaire'] * $item['quantite']) - $item['remise'], 2
+            ($this->panier[$index]['prix_unitaire'] * $this->panier[$index]['quantite']) - ($this->panier[$index]['remise'] ?? 0), 2
         );
     }
 

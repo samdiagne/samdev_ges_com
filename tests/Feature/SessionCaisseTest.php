@@ -33,6 +33,19 @@ class SessionCaisseTest extends TestCase
         \App\Models\Parametre::firstOrCreate([
             'nom' => "Maf'food",
         ]);
+
+        // Catégories nécessaires pour le PointOfSale (produits menu, jus, etc.)
+        $catIds = [4 => 'Jus', 5 => 'Boissons', 20 => 'Burgers', 23 => 'Tacos', 25 => 'Menus Fast-Food'];
+        foreach ($catIds as $id => $nom) {
+            \Illuminate\Support\Facades\DB::table('categories')->insertOrIgnore([
+                'id'         => $id,
+                'nom'        => $nom,
+                'slug'       => \Illuminate\Support\Str::slug($nom),
+                'est_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
     }
 
     public function test_can_open_and_close_session_with_ecart_calculation(): void
@@ -139,12 +152,14 @@ class SessionCaisseTest extends TestCase
             ->assertSet('sessionCaisseId', null)
             ->assertSet('afficherModalOuverture', true)
             ->set('fondCaisseOuverture', '30000')
+            ->set('fondCaisseWaveOuverture', '0')
             ->call('ouvrirSession')
             ->assertSet('afficherModalOuverture', false)
             ->assertNotSet('sessionCaisseId', null)
             ->call('preparerCloture')
             ->assertSet('afficherModalCloture', true)
             ->set('montantReelEspeces', '30000')
+            ->set('montantReelWave', '0')
             ->call('cloturerSession')
             ->assertSet('afficherModalCloture', false)
             ->assertSet('afficherModalSuccesCloture', true);
