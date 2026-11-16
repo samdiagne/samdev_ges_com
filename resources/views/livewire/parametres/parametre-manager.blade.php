@@ -118,6 +118,17 @@
                         </div>
                     </div>
 
+                    {{-- Description / Paragraphe de présentation Footer --}}
+                    <div>
+                        <label class="block text-sm font-medium text-dark mb-1.5">
+                            Texte de présentation (Pied de page / Footer)
+                        </label>
+                        <textarea wire:model="texte_footer" rows="2"
+                                  placeholder="Présentation courte affichée sous le logo dans le pied de page du site..."
+                                  class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:border-primary focus:bg-white transition-colors"></textarea>
+                        <p class="text-[11px] text-gray-400 mt-1">Si laissé vide, un texte universel par défaut sera affiché.</p>
+                    </div>
+
                     {{-- Réseaux sociaux --}}
                     <div>
                         <label class="block text-sm font-bold text-dark mb-3">

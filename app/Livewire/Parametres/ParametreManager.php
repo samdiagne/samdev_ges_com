@@ -18,6 +18,7 @@ class ParametreManager extends Component
     public string  $whatsapp        = '';
     public string  $email           = '';
     public string  $adresse         = '';
+    public string  $texte_footer    = '';
     public string  $facebook        = '';
     public string  $instagram       = '';
     public string  $tiktok          = '';
@@ -67,6 +68,7 @@ class ParametreManager extends Component
         $this->whatsapp         = $parametres->whatsapp ?? '';
         $this->email            = $parametres->email ?? '';
         $this->adresse          = $parametres->adresse ?? '';
+        $this->texte_footer     = $parametres->texte_footer ?? '';
         $this->facebook         = $parametres->facebook ?? '';
         $this->instagram        = $parametres->instagram ?? '';
         $this->tiktok           = $parametres->tiktok ?? '';
@@ -89,6 +91,7 @@ class ParametreManager extends Component
             'whatsapp'        => 'nullable|string|max:100',
             'email'           => 'nullable|email|max:255',
             'adresse'         => 'nullable|string|max:500',
+            'texte_footer'    => 'nullable|string|max:500',
             'facebook'        => 'nullable|string|max:255',
             'instagram'       => 'nullable|string|max:255',
             'tiktok'          => 'nullable|string|max:255',
@@ -126,6 +129,7 @@ class ParametreManager extends Component
             'whatsapp'        => $this->whatsapp ?: null,
             'email'           => $this->email ?: null,
             'adresse'         => $this->adresse ?: null,
+            'texte_footer'    => $this->texte_footer ?: null,
             'facebook'        => $this->facebook ?: null,
             'instagram'       => $this->instagram ?: null,
             'tiktok'          => $this->tiktok ?: null,

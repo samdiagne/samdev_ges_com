@@ -16,6 +16,7 @@ class Parametre extends Model
         'whatsapp',
         'email',
         'adresse',
+        'texte_footer',
         'logo',
         'image_hero',
         'signature',

@@ -21,8 +21,7 @@
                 </div>
 
                 <p class="text-xs sm:text-sm leading-relaxed mb-4 sm:mb-5" style="color: #a8a29e;">
-                    Des plats cuisinés avec passion par des professionnels,
-                    livrés directement chez vous à Dakar.
+                    {{ $settings->texte_footer ?: 'Des produits et services de qualité supérieure, sélectionnés avec soin et livrés directement chez vous.' }}
                 </p>
 
                 {{-- Badges confiance --}}
