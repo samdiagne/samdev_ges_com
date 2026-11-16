@@ -421,11 +421,8 @@ style="height: 100dvh;">
                 @endif
             </div>
 
-            {{-- Droite : date --}}
+            {{-- Droite --}}
             <div class="flex items-center gap-3">
-                <span class="hidden md:block text-xs text-gray-400 font-medium">
-                    {{ now()->translatedFormat('l d F Y') }}
-                </span>
             </div>
         </header>
 
