@@ -2,14 +2,8 @@
 <html lang="fr"
       x-data="{
           sidebarOpen: true,
-          sidebarMobile: false,
-          darkMode: localStorage.getItem('dashboard_theme') === 'dark',
-          toggleDark() {
-              this.darkMode = !this.darkMode;
-              localStorage.setItem('dashboard_theme', this.darkMode ? 'dark' : 'light');
-          }
-      }"
-      :class="{ 'dark': darkMode }">
+          sidebarMobile: false
+      }">
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -23,16 +17,17 @@
     @else
         <link rel="icon" href="/favicon.ico"/>
     @endif
-    {{-- Anti-flash : applique le thème + prépare l'overlay avant le rendu Alpine --}}
+    {{-- Remise à zéro propre du localStorage pour forcer le thème clair naturel --}}
     <script>
-        var _dark = localStorage.getItem('dashboard_theme') === 'dark';
-        if (_dark) document.documentElement.classList.add('dark');
+        localStorage.removeItem('dashboard_theme');
+        document.documentElement.classList.remove('dark');
     </script>
     <style>
         #page-loader {
             position: fixed; inset: 0; z-index: 9999;
             display: flex; align-items: center; justify-content: center;
             transition: opacity 0.15s ease;
+            background: #F8F9FC;
         }
         #page-loader .pl-spinner {
             width: 28px; height: 28px; border-radius: 50%;
@@ -58,16 +53,14 @@
 </head>
 <body class="bg-light font-sans antialiased">
 
-{{-- Overlay anti-FOUC : masque la page jusqu'à ce qu'Alpine ait initialisé --}}
-<div id="page-loader" style="background: {{ request()->cookie('dashboard_theme') === 'dark' ? '#0C0A09' : '#F8F9FC' }};">
+{{-- Overlay anti-FOUC --}}
+<div id="page-loader">
     <div class="pl-spinner"></div>
 </div>
 <script>
-    // Correction immédiate de la couleur de fond selon le thème stocké
     (function () {
         var l = document.getElementById('page-loader');
         if (!l) return;
-        l.style.background = _dark ? '#0C0A09' : '#F8F9FC';
 
         // Disparaît dès qu'Alpine a tout initialisé
         document.addEventListener('alpine:initialized', function () {
@@ -420,47 +413,19 @@ style="height: 100dvh;">
             {{-- Centre : Logo --}}
             <div class="absolute left-1/2 -translate-x-1/2 pointer-events-none">
                 @if($logo && file_exists(storage_path('app/public/' . $logo)))
-                    <div class="px-2.5 py-1 rounded-xl bg-white/95 dark:bg-white/90 shadow-sm backdrop-blur-sm border border-gray-100/50 dark:border-white/10 transition-all flex items-center justify-center">
-                        <img src="{{ Storage::url($logo) }}"
-                             class="h-8 sm:h-12 w-auto max-w-[110px] sm:max-w-[170px] object-contain"/>
-                    </div>
+                    <img src="{{ Storage::url($logo) }}"
+                         alt="{{ App\Models\Parametre::first()?->nom ?? config('app.name', 'svmdev_ges_com') }}"
+                         class="h-10 sm:h-14 w-auto max-w-[120px] sm:max-w-[180px] object-contain"/>
                 @else
                     <span class="font-bold text-primary text-sm">{{ App\Models\Parametre::first()?->nom ?? config('app.name', 'svmdev_ges_com') }}</span>
                 @endif
             </div>
 
-            {{-- Droite : date + toggle thème --}}
+            {{-- Droite : date --}}
             <div class="flex items-center gap-3">
                 <span class="hidden md:block text-xs text-gray-400 font-medium">
                     {{ now()->translatedFormat('l d F Y') }}
                 </span>
-
-                {{-- Toggle Dark / Light --}}
-                <button @click="toggleDark()"
-                        title="Changer le thème"
-                        class="relative w-14 h-7 rounded-full border transition-all duration-300 flex-shrink-0
-                               focus:outline-none focus:ring-2 focus:ring-primary/30"
-                        :class="darkMode
-                            ? 'bg-stone-800 border-stone-700'
-                            : 'bg-gray-100 border-gray-200'">
-                    <span class="absolute inset-0 flex items-center justify-between px-1.5 pointer-events-none">
-                        <svg class="w-3.5 h-3.5 transition-opacity duration-200"
-                             :class="darkMode ? 'opacity-30' : 'opacity-100 text-amber-500'"
-                             fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.772 17.303a.75.75 0 00-1.06 1.06l1.59 1.591a.75.75 0 001.061-1.06l-1.59-1.591zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.166 5.106a.75.75 0 011.06 1.06L5.636 7.757a.75.75 0 01-1.06-1.06l1.59-1.591z"/>
-                        </svg>
-                        <svg class="w-3.5 h-3.5 transition-opacity duration-200"
-                             :class="darkMode ? 'opacity-100 text-amber-300' : 'opacity-30 text-gray-400'"
-                             fill="currentColor" viewBox="0 0 24 24">
-                            <path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clip-rule="evenodd"/>
-                        </svg>
-                    </span>
-                    <span class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full shadow-sm transition-all duration-300"
-                          :class="darkMode
-                              ? 'translate-x-7 bg-amber-200'
-                              : 'translate-x-0 bg-white'">
-                    </span>
-                </button>
             </div>
         </header>
 
