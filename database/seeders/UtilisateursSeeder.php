@@ -58,7 +58,7 @@ class UtilisateursSeeder extends Seeder
 
         // ── Utilisateurs par défaut ──────────────────────────────
         $adminUser = User::firstOrCreate(
-            ['email' => 'admin@maffood.sn'],
+            ['email' => 'admin@my-business.sn'],
             [
                 'name'      => 'Admin',
                 'password'  => bcrypt('Admin@2025!'),
@@ -68,7 +68,7 @@ class UtilisateursSeeder extends Seeder
         $adminUser->assignRole('admin');
 
         $gestionnaireUser = User::firstOrCreate(
-            ['email' => 'caisse@maffood.sn'],
+            ['email' => 'caisse@my-business.sn'],
             [
                 'name'      => 'Caissier',
                 'password'  => bcrypt('Caisse@2025!'),
@@ -78,7 +78,7 @@ class UtilisateursSeeder extends Seeder
         $gestionnaireUser->assignRole('gestionnaire');
 
         $this->command->info('Roles, permissions et utilisateurs crees.');
-        $this->command->info('   admin@maffood.sn   -> Admin@2025!');
-        $this->command->info('   caisse@maffood.sn  -> Caisse@2025!');
+        $this->command->info('   admin@my-business.sn   -> Admin@2025!');
+        $this->command->info('   caisse@my-business.sn  -> Caisse@2025!');
     }
 }

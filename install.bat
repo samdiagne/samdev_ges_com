@@ -89,8 +89,8 @@ echo                  INSTALLATION TERMINEE AVEC SUCCES !
 echo =====================================================================
 echo.
 echo Identifiants par defaut :
-echo   - Admin    : admin@maffood.sn / Admin@2025!
-echo   - Caissier : caisse@maffood.sn / Caisse@2025!
+echo   - Admin    : admin@my-business.sn / Admin@2025!
+echo   - Caissier : caisse@my-business.sn / Caisse@2025!
 echo.
 echo Pour lancer le serveur de developpement en local :
 echo   php artisan serve

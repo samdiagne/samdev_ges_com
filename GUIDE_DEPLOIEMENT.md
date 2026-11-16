@@ -1,138 +1,146 @@
-# 🍽️ Guide de Déploiement & Installation Client (Restaurant POS)
-
-Ce guide décrit la procédure complète pour déployer l'application chez un nouveau client sur une machine Windows (PC de caisse ou serveur local).
+# 🌐 GUIDE DE DÉPLOIEMENT & INSTALLATION — svmdev_ges_com
+> **Outil tout-en-un de Gestion Commerciale, Caisse POS, Facturation & Vitrine Web intégrée.**  
+> *Adaptable à tous les secteurs d'activité : commerces, boutiques, supérettes, restaurants, services, distribution.*
 
 ---
 
-## 📋 1. Prérequis sur la machine client
+## 🎯 1. Vue d'ensemble du système
 
-Avant de commencer, installez ces outils indispensables sur le poste client :
+**svmdev_ges_com** est une suite de gestion commerciale complète et moderne qui regroupe :
+- 🖥️ **Caisse & Point de Vente (POS)** : Interface tactile et rapide avec gestion des sessions, monnaie, écarts et paiements mixtes (Espèces, Wave, Orange Money, Carte).
+- 📦 **Catalogue & Gestion des Stocks** : Produits, catégories, gestion des variantes, paliers de tarifs dégressifs groupés.
+- 💼 **Ventes, Devis & Facturation** : Génération instantanée de tickets de caisse Z, factures et devis normalisés en PDF.
+- 🚚 **Achats & Gestion Fournisseurs** : Commandes d'achats, règlements fournisseurs, gestion des mouvements de stock.
+- 💳 **Dépenses d'exploitation** : Suivi des charges avec ventilation par catégorie de dépenses.
+- 👥 **Clients & Fidélité** : Base clients, historiques d'achats et comptes clients.
+- 🛍️ **Site Vitrine & Shop en Ligne intégré** : Tunnel de commande client avec panier dynamique et notification WhatsApp / Passerelle PayDunya.
 
-| Outil | Version recommandée | Lien de téléchargement |
+---
+
+## 📦 2. Prérequis & Pack d'Installation Rapide
+
+Pour équiper la machine d'un client rapidement sans télécharger les outils un par un sur internet :
+
+### Option A — Téléchargement des outils via pack centralisé
+Vous pouvez mettre à disposition de vos techniciens ou clients un dossier zippé (ex: sur Google Drive / Dropbox / clé USB) contenant les installeurs officiels :
+- `1_xampp-windows-x64-8.2.x-installer.exe`
+- `2_Composer-Setup.exe`
+- `3_Git-64-bit.exe`
+- `4_node-v20-x64.msi` *(optionnel car les fichiers de production `public/build` sont déjà compilés dans le dépôt)*
+
+### Option B — Téléchargements directs officiels
+| Outil | Version requise | Lien direct |
 |---|---|---|
-| **XAMPP** | PHP 8.2 ou PHP 8.3 | [apachefriends.org](https://www.apachefriends.org/fr/index.html) |
+| **XAMPP** | PHP 8.2 ou 8.3 | [apachefriends.org](https://www.apachefriends.org/fr/index.html) |
 | **Composer** | Version 2.x | [getcomposer.org/download](https://getcomposer.org/download/) |
 | **Git for Windows** | Dernière version | [git-scm.com](https://git-scm.com/download/win) |
-| **Node.js** *(optionnel si `public/build` est déjà inclus)* | Version 20+ LTS | [nodejs.org](https://nodejs.org/) |
 
-> ⚠️ **Important pour PHP dans XAMPP :**
-> Assurez-vous que le chemin PHP (`C:\xampp\php`) est bien ajouté à la variable d'environnement `PATH` de Windows, et que les extensions suivantes sont activées dans `C:\xampp\php\php.ini` :
-> - `extension=curl`
-> - `extension=fileinfo`
-> - `extension=gd`
-> - `extension=mbstring`
-> - `extension=openssl`
-> - `extension=pdo_mysql`
-> - `extension=zip`
+> ⚙️ **Vérification rapide dans XAMPP :**  
+> Dans `C:\xampp\php\php.ini`, vérifiez que ces extensions sont activées (sans point-virgule `;` au début) :  
+> `extension=curl`, `extension=fileinfo`, `extension=gd`, `extension=mbstring`, `extension=openssl`, `extension=pdo_mysql`, `extension=zip`.
 
 ---
 
-## 🚀 2. Procédure d'installation (Étape par étape)
+## 🚀 3. Installation chez le client en 4 étapes
 
-### Étape 2.1 : Cloner le dépôt
-Ouvrez le terminal (PowerShell ou Git Bash) dans le dossier web de XAMPP :
-```bash
+### Étape 3.1 : Cloner le projet dans XAMPP
+Ouvrez PowerShell ou l'invite de commandes :
+```powershell
 cd C:\xampp\htdocs
-git clone <URL_DU_DEPOT_GIT> nom-du-restaurant
-cd nom-du-restaurant
+git clone https://github.com/samdiagne/samdev_ges_com.git mon-commerce
+cd mon-commerce
 ```
 
-### Étape 2.2 : Créer la base de données
-1. Lancez **XAMPP Control Panel** et démarrez **Apache** et **MySQL**.
-2. Allez sur **phpMyAdmin** : `http://localhost/phpmyadmin`.
+### Étape 3.2 : Créer la Base de Données
+1. Démarrez **Apache** et **MySQL** dans le panneau de contrôle XAMPP.
+2. Rendez-vous sur `http://localhost/phpmyadmin`.
 3. Cliquez sur **Nouvelle base de données** :
-   - Nom : `resto_db` (ou le nom convenu)
+   - Nom : `commerce_db`
    - Interclassement : `utf8mb4_unicode_ci`
    - Cliquez sur **Créer**.
 
-### Étape 2.3 : Configuration du fichier `.env`
-1. Copiez le fichier modèle :
-   ```bash
-   cp .env.example .env
+### Étape 3.3 : Configurer le `.env`
+1. Copiez le fichier d'exemple :
+   ```powershell
+   copy .env.example .env
    ```
-2. Ouvrez `.env` avec le Bloc-notes ou VS Code et ajustez :
+2. Modifiez le nom de la base dans `.env` :
    ```env
-   APP_NAME="Nom du Restaurant"
+   APP_NAME="Nom de l'Entreprise"
    APP_URL=http://localhost:8000
 
-   DB_DATABASE=resto_db
+   DB_DATABASE=commerce_db
    DB_USERNAME=root
    DB_PASSWORD=
    ```
 
-### Étape 2.4 : Lancement automatique du script d'installation
-Double-cliquez simplement sur le fichier **`install.bat`** (ou lancez-le dans le terminal) :
-```cmd
-install.bat
+### Étape 3.4 : Exécuter l'installation automatique
+Double-cliquez simplement sur :
+👉 **`install.bat`**
+
+Le script configure automatiquement l'application, les clés de sécurité, le lien de stockage et crée la structure de base.
+
+---
+
+## 🎨 4. Personnalisation Visuelle avec l'IA (Prompt Magique)
+
+Grâce à notre mise à jour du template, **vous n'avez plus besoin de modifier le code HTML ni de toucher aux dégradés de la sidebar** ! La sidebar et tous les éléments de l'application s'adaptent désormais automatiquement à la couleur configurée dans Tailwind.
+
+Pour obtenir une palette harmonieuse adaptée au logo du client, copiez-collez le prompt ci-dessous dans **ChatGPT** ou **Claude** en joignant l'image du logo de votre client :
+
+```text
+Bonjour ! Je déploie une application de gestion commerciale (ERP/POS) pour mon client dont voici le logo ci-joint.
+
+Analyse les couleurs dominantes de ce logo et propose-moi 3 variations de palettes professionnelles et harmonieuses.
+Pour chaque variation, fournis-moi UNIQUEMENT le bloc de code Tailwind à copier-coller dans mon fichier tailwind.config.js sous cette forme :
+
+colors: {
+    primary:   '#XXXXXX', // Couleur principale (boutons, en-têtes, sidebar)
+    secondary: '#XXXXXX', // Couleur secondaire d'accent
+    accent:    '#XXXXXX', // Couleur de mise en valeur (badges, alertes)
+    dark:      '#1E293B', // Texte foncé
+    light:     '#F8FAFC', // Fond clair
+},
+
+Veille à un excellent contraste de lisibilité.
 ```
 
-Ce script exécute automatiquement :
-1. `composer install`
-2. `php artisan key:generate`
-3. `php artisan storage:link`
-4. `php artisan migrate --seed` (création des tables, rôles, permissions et admin)
-5. `npm install && npm run build` (si Node.js est présent)
-6. `php artisan optimize:clear`
+Une fois le code obtenu, remplacez simplement les couleurs dans [`tailwind.config.js`](file:///C:/xampp/htdocs/maf-food/tailwind.config.js), puis compilez :
+```powershell
+npm run build
+```
+*(L'ensemble de l'interface, des boutons, badges et de la sidebar prendra instantanément les nouvelles couleurs !)*
 
 ---
 
-## 🎨 3. Personnalisation de la Palette de Couleurs
+## 🔑 5. Identifiants de Connexion par Défaut
 
-Pour adapter l'interface aux couleurs du nouveau restaurant :
+Dès que la base est initialisée, deux comptes sécurisés sont immédiatement fonctionnels :
 
-1. Ouvrez `tailwind.config.js` et modifiez les codes couleurs :
-   ```javascript
-   theme: {
-       extend: {
-           colors: {
-               primary:   '#0284C7', // Couleur principale (boutons, badges)
-               secondary: '#10B981', // Couleur secondaire
-               accent:    '#38BDF8', // Accents
-               dark:      '#1E293B', // Textes et fonds sombres
-               light:     '#F8FAFC',
-           },
-       },
-   }
-   ```
-2. Ouvrez `resources/views/layouts/app.blade.php` (lignes 92 et 256) pour adapter le dégradé de la sidebar avec votre nouvelle couleur `primary` :
-   ```html
-   style="background: linear-gradient(180deg, #0284C7 0%, #0369A1 100%)"
-   ```
-3. Recompilez :
-   ```bash
-   npm run build
-   ```
-
----
-
-## 🔑 4. Comptes d'accès initiaux
-
-Une fois le seed terminé, deux comptes sont créés par défaut :
-
-| Rôle | Email | Mot de passe | Accès |
+| Profil | Identifiant (Email) | Mot de passe | Rôle & Permissions |
 |---|---|---|---|
-| **Administrateur** | `admin@maffood.sn` *(modifiable)* | `Admin@2025!` | Tout le système, paramètres, utilisateurs |
-| **Caissier / Gestionnaire** | `caisse@maffood.sn` *(modifiable)* | `Caisse@2025!` | Caisse POS, Ventes, Factures, Achats, Dépenses |
+| **Administrateur** | `admin@my-business.sn` | `Admin@2025!` | Accès total : Paramètres, Utilisateurs, Rapports, Audit |
+| **Caisse / Gestionnaire** | `caisse@my-business.sn` | `Caisse@2025!` | Ventes, Caisse POS, Facturation, Stocks, Achats |
 
-> 🔒 **Recommandation de sécurité :**  
-> Dès la première connexion, rendez-vous dans le menu **Utilisateurs** pour changer l'adresse email et le mot de passe de l'administrateur, ou créez directement le compte nominatif du gérant.
-
----
-
-## ⚙️ 5. Paramétrage Entreprise (Interface Web)
-
-Connectez-vous avec le compte administrateur et rendez-vous dans **Admin $\rightarrow$ Paramètres** (`/parametres`) :
-- Renseignez le nom officiel du restaurant.
-- Uploadez le logo du restaurant.
-- Numéro de téléphone & WhatsApp pour les commandes en ligne.
-- Adresse physique et mentions légales (NINEA / RC).
-- Préfixes de factures et devis.
+> 💡 **Conseil :** Dès la première connexion, rendez-vous dans le menu **Admin $\rightarrow$ Utilisateurs** pour mettre à jour l'email et le mot de passe de l'administrateur.
 
 ---
 
-## 🖥️ 6. Lancement au quotidien par le client
+## 🏢 6. Paramétrage Entreprise
 
-Pour que le caissier puisse démarrer la caisse en 1 clic :
-1. Créez un raccourci sur le Bureau Windows pointant vers le fichier **`start.bat`**.
-2. Renommez le raccourci : **« Démarrer Caisse Resto »** et attribuez-lui une belle icône.
-3. Un double-clic dessus démarre le serveur local et ouvre automatiquement Google Chrome sur `http://localhost:8000` !
+Connectez-vous avec le compte administrateur et rendez-vous dans **Admin $\rightarrow$ Paramètres** (`/parametres`) pour personnaliser :
+- Nom commercial & Slogan
+- Logo officiel de l'entreprise
+- Numéros Téléphone & WhatsApp pour les réceptions de commandes
+- Adresse physique et mentions légales (NINEA / Registre du Commerce)
+- Devise (ex: `FCFA`, `€`, `$`) et préfixes de factures / devis (`FAC-`, `DEV-`)
+
+---
+
+## 💻 7. Lancement Quotidien pour le Client
+
+Pour rendre l'utilisation enfantine pour le client et ses caissiers :
+1. Créez un raccourci Windows sur le Bureau pointant vers **`start.bat`**.
+2. Renommez le raccourci : **« Ouvrir la Caisse »** ou **« Gestion Commerciale »**.
+3. Associez-lui une icône personnalisée.
+4. Au clic, le serveur démarre et Google Chrome s'ouvre automatiquement sur la page de connexion !

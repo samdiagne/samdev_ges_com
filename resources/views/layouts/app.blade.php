@@ -36,8 +36,8 @@
         }
         #page-loader .pl-spinner {
             width: 28px; height: 28px; border-radius: 50%;
-            border: 3px solid rgba(242,123,32,0.15);
-            border-top-color: #F27B20;
+            border: 3px solid rgba(var(--color-primary-rgb, 242, 123, 32), 0.15);
+            border-top-color: var(--color-primary, #F27B20);
             animation: pl-spin 0.6s linear infinite;
         }
         @keyframes pl-spin { to { transform: rotate(360deg); } }
@@ -89,9 +89,8 @@ style="height: 100dvh;">
          SIDEBAR DESKTOP
     ═══════════════════════════════════════════ --}}
     <aside :class="sidebarOpen ? 'w-[220px]' : 'w-[64px]'"
-           style="background: linear-gradient(180deg, #F27B20 0%, #E06010 100%)"
-           class="hidden lg:flex flex-col text-white flex-shrink-0
-                  transition-all duration-300 ease-in-out relative overflow-hidden">
+           class="hidden lg:flex flex-col text-white flex-shrink-0 bg-gradient-to-b from-primary to-primary/90
+                  transition-all duration-300 ease-in-out relative overflow-hidden shadow-xl">
 
         <div class="absolute inset-0 sidebar-glow pointer-events-none"></div>
 
@@ -253,9 +252,8 @@ style="height: 100dvh;">
            x-transition:leave="transition transform duration-200 ease-in"
            x-transition:leave-start="translate-x-0"
            x-transition:leave-end="-translate-x-full"
-           style="background: linear-gradient(180deg, #F27B20 0%, #E06010 100%)"
-           class="fixed inset-y-0 left-0 z-50 w-[270px] text-white flex flex-col lg:hidden
-                  overflow-hidden">
+           class="fixed inset-y-0 left-0 z-50 w-[270px] text-white flex flex-col lg:hidden bg-gradient-to-b from-primary to-primary/90
+                  overflow-hidden shadow-2xl">
 
         <div class="absolute inset-0 sidebar-glow pointer-events-none"></div>
 
@@ -385,9 +383,7 @@ style="height: 100dvh;">
                        flex items-center justify-between flex-shrink-0"
                 style="min-height: 60px;">
 
-            <div class="absolute bottom-0 left-0 right-0 h-[2px]"
-                 style="background: linear-gradient(90deg, #F27B20, #FFB347, #2DB667);
-                        opacity: 0.4;"></div>
+            <div class="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary via-accent to-secondary opacity-40"></div>
 
             {{-- Gauche : toggle + titre --}}
             <div class="flex items-center gap-3 min-w-0 max-w-[calc(50%_-_60px)] sm:max-w-[calc(50%_-_100px)]">
