@@ -11,12 +11,13 @@
                     @php $logo = $settings->logo; @endphp
                     @if($logo && file_exists(storage_path('app/public/' . $logo)))
                         <img src="{{ Storage::url($logo) }}"
+                             alt="{{ $settings->nom }}"
                              class="h-12 sm:h-16 w-auto object-contain"/>
                     @else
                         <div class="w-9 h-9 sm:w-10 sm:h-10 bg-primary rounded-xl flex items-center
                                     justify-center font-bold text-white text-xs sm:text-sm">MF</div>
+                        <p class="font-bold text-white text-sm">{{ $settings->nom }}</p>
                     @endif
-                    <p class="font-bold text-white text-sm">{{ $settings->nom }}</p>
                 </div>
 
                 <p class="text-xs sm:text-sm leading-relaxed mb-4 sm:mb-5" style="color: #a8a29e;">
