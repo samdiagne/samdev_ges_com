@@ -420,10 +420,12 @@ style="height: 100dvh;">
             {{-- Centre : Logo --}}
             <div class="absolute left-1/2 -translate-x-1/2 pointer-events-none">
                 @if($logo && file_exists(storage_path('app/public/' . $logo)))
-                    <img src="{{ Storage::url($logo) }}"
-                         class="h-10 sm:h-16 w-auto max-w-[110px] sm:max-w-[180px] object-contain opacity-90"/>
+                    <div class="px-2.5 py-1 rounded-xl bg-white/95 dark:bg-white/90 shadow-sm backdrop-blur-sm border border-gray-100/50 dark:border-white/10 transition-all flex items-center justify-center">
+                        <img src="{{ Storage::url($logo) }}"
+                             class="h-8 sm:h-12 w-auto max-w-[110px] sm:max-w-[170px] object-contain"/>
+                    </div>
                 @else
-                    <span class="font-bold text-primary text-sm">Maffood</span>
+                    <span class="font-bold text-primary text-sm">{{ App\Models\Parametre::first()?->nom ?? config('app.name', 'svmdev_ges_com') }}</span>
                 @endif
             </div>
 
