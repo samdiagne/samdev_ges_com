@@ -20,7 +20,7 @@
         </h1>
         <p class="text-white/60 text-sm">
             En vigueur au {{ \Carbon\Carbon::now()->locale('fr')->isoFormat('D MMMM YYYY') }}
-            &nbsp;·&nbsp; {{ $settings->nom ?? 'Maffood' }}
+            &nbsp;·&nbsp; {{ $settings->nom ?? config('app.name', 'svmdev_ges_com') }}
         </p>
     </div>
 </div>
@@ -39,12 +39,12 @@
                     @foreach([
                         ['#article-1',  '1. Identification'],
                         ['#article-2',  '2. Objet'],
-                        ['#article-3',  '3. Menu'],
+                        ['#article-3',  '3. Catalogue'],
                         ['#article-4',  '4. Commandes'],
                         ['#article-5',  '5. Prix'],
                         ['#article-6',  '6. Paiement'],
                         ['#article-7',  '7. Livraison'],
-                        ['#article-8',  '8. Hygiène'],
+                        ['#article-8',  '8. Qualité'],
                         ['#article-9',  '9. Réclamations'],
                         ['#article-10', '10. Données'],
                         ['#article-11', '11. Responsabilité'],
@@ -87,9 +87,9 @@
             {{-- Article 1 --}}
             @php cgvSection('article-1', '1', 'Identification du vendeur') @endphp
             <div class="bg-white rounded-2xl border border-primary/10 p-5 text-sm text-gray-600 leading-relaxed space-y-1.5">
-                <p><span class="font-semibold text-dark">Raison sociale :</span> {{ $settings->nom ?? 'Maffood' }}</p>
+                <p><span class="font-semibold text-dark">Raison sociale :</span> {{ $settings->nom ?? config('app.name', 'svmdev_ges_com') }}</p>
                 @if($settings->adresse ?? false)
-                    <p><span class="font-semibold text-dark">Adresse :</span> {{ $settings->adresse }}, Dakar, Sénégal</p>
+                    <p><span class="font-semibold text-dark">Adresse :</span> {{ $settings->adresse }}</p>
                 @endif
                 @if($settings->telephone ?? false)
                     <p><span class="font-semibold text-dark">Téléphone :</span>
@@ -107,25 +107,25 @@
             {{-- Article 2 --}}
             @php cgvSection('article-2', '2', 'Objet') @endphp
             <div class="bg-white rounded-2xl border border-gray-100 p-5 text-sm text-gray-600 leading-relaxed space-y-3">
-                <p>Les présentes Conditions Générales de Vente (CGV) régissent l'ensemble des relations commerciales entre <strong class="text-dark">{{ $settings->nom ?? 'Maffood' }}</strong> (ci-après « le Restaurant ») et tout acheteur (ci-après « le Client ») effectuant une commande via le site en ligne ou sur place.</p>
+                <p>Les présentes Conditions Générales de Vente (CGV) régissent l'ensemble des relations commerciales entre <strong class="text-dark">{{ $settings->nom ?? config('app.name', 'svmdev_ges_com') }}</strong> (ci-après « le Vendeur ») et tout acheteur (ci-après « le Client ») effectuant une commande via le site en ligne ou sur place.</p>
                 <p>Tout achat implique l'acceptation pleine et entière des présentes CGV. Le Client déclare avoir la capacité légale de contracter et être majeur ou émancipé.</p>
             </div>
             </div>
 
             {{-- Article 3 --}}
-            @php cgvSection('article-3', '3', 'Menu et disponibilité') @endphp
+            @php cgvSection('article-3', '3', 'Catalogue et disponibilité') @endphp
             <div class="bg-white rounded-2xl border border-gray-100 p-5 text-sm text-gray-600 leading-relaxed space-y-3">
-                <p>Les plats proposés sont ceux figurant sur notre menu en ligne, dans la limite des disponibilités du jour. Le Restaurant se réserve le droit de modifier le menu à tout moment.</p>
-                <p>Chaque plat est accompagné d'une description, d'images représentatives et de son prix. Les photographies sont les plus fidèles possible mais peuvent légèrement différer du plat servi selon les arrivages.</p>
-                <p>En cas d'indisponibilité d'un plat après validation d'une commande, le Client sera informé dans les meilleurs délais et pourra choisir un plat de remplacement ou un remboursement intégral.</p>
+                <p>Les articles et produits proposés sont ceux figurant sur notre catalogue en ligne, dans la limite des stocks et disponibilités. Le Vendeur se réserve le droit de modifier le catalogue à tout moment.</p>
+                <p>Chaque article est accompagné d'une description, d'images représentatives et de son prix. Les photographies sont les plus fidèles possible mais peuvent comporter de légères variations.</p>
+                <p>En cas d'indisponibilité d'un produit après validation d'une commande, le Client sera informé dans les meilleurs délais et pourra choisir un produit de remplacement ou un remboursement intégral.</p>
             </div>
             </div>
 
             {{-- Article 4 --}}
             @php cgvSection('article-4', '4', 'Commandes') @endphp
             <div class="bg-white rounded-2xl border border-gray-100 p-5 text-sm text-gray-600 leading-relaxed space-y-3">
-                <p>La validation d'une commande vaut acceptation des prix, du menu et des présentes CGV. Un email de confirmation est envoyé au Client dès réception de la commande.</p>
-                <p>Le Restaurant se réserve le droit d'annuler toute commande suspecte, frauduleuse ou passée de mauvaise foi, ainsi que toute commande dont le paiement ne serait pas confirmé.</p>
+                <p>La validation d'une commande vaut acceptation des prix, des produits et des présentes CGV. Un récapitulatif de confirmation est généré dès validation de la commande.</p>
+                <p>Le Vendeur se réserve le droit d'annuler toute commande suspecte, frauduleuse ou passée de mauvaise foi, ainsi que toute commande dont le paiement ne serait pas confirmé.</p>
                 <p>Toute modification ou annulation après confirmation n'est acceptée que si la commande est encore au statut « En attente » et doit être signalée immédiatement par téléphone ou WhatsApp.</p>
             </div>
             </div>
@@ -133,8 +133,8 @@
             {{-- Article 5 --}}
             @php cgvSection('article-5', '5', 'Prix') @endphp
             <div class="bg-white rounded-2xl border border-gray-100 p-5 text-sm text-gray-600 leading-relaxed space-y-3">
-                <p>Les prix sont indiqués en Francs CFA (FCFA). Le Restaurant se réserve le droit de modifier ses prix à tout moment, étant entendu que le prix applicable est celui en vigueur au moment de la validation de la commande.</p>
-                <p>Les frais de livraison éventuels sont indiqués clairement lors du passage de commande avant confirmation définitive. Le retrait au restaurant est toujours gratuit.</p>
+                <p>Les prix sont indiqués en {{ $settings->devise ?? 'FCFA' }}. Le Vendeur se réserve le droit de modifier ses prix à tout moment, étant entendu que le prix applicable est celui en vigueur au moment de la validation de la commande.</p>
+                <p>Les frais de livraison éventuels sont indiqués clairement lors du passage de commande avant confirmation définitive. Le retrait en boutique ou point de vente est toujours gratuit.</p>
             </div>
             </div>
 
@@ -183,20 +183,19 @@
             </div>
 
             {{-- Article 8 --}}
-            @php cgvSection('article-8', '8', 'Hygiène et qualité') @endphp
+            @php cgvSection('article-8', '8', 'Qualité et conformité') @endphp
             <div class="bg-white rounded-2xl border border-gray-100 p-5 text-sm text-gray-600 leading-relaxed space-y-3">
-                <p>Le Restaurant s'engage à respecter les normes d'hygiène alimentaire en vigueur au Sénégal. Tous nos plats sont préparés avec des ingrédients frais et dans le respect des règles sanitaires.</p>
-                <p>Les plats sont préparés à la commande et doivent être consommés dans un délai raisonnable après livraison. Le Restaurant ne saurait être tenu responsable en cas de mauvaise conservation par le Client après réception.</p>
-                <p>Les allergènes présents dans nos plats sont indiqués dans la description lorsque disponible. En cas d'allergie ou d'intolérance alimentaire, le Client est prié de nous contacter avant de passer commande.</p>
+                <p>Le Vendeur s'engage à respecter les normes et standards de qualité en vigueur. Tous nos produits sont rigoureusement sélectionnés et manipulés dans le respect des règles sanitaires et professionnelles.</p>
+                <p>Les produits doivent être contrôlés et conservés selon les usages recommandés. Le Vendeur ne saurait être tenu responsable en cas de mauvaise conservation ou d'usage inapproprié par le Client après réception.</p>
             </div>
             </div>
 
             {{-- Article 9 --}}
-            @php cgvSection('article-9', '9', 'Réclamations et remboursements') @endphp
+            @php cgvSection('article-9', '9', 'Réclamations et retours') @endphp
             <div class="bg-white rounded-2xl border border-gray-100 p-5 text-sm text-gray-600 leading-relaxed space-y-3">
-                <p>En cas de commande non conforme (plat manquant, erreur de préparation), le Client doit signaler le problème dans l'heure suivant la livraison par téléphone ou WhatsApp avec une photo à l'appui.</p>
-                <p>Étant donné la nature périssable des denrées alimentaires, les retours ne sont pas acceptés. Toutefois, en cas de non-conformité avérée, le Restaurant s'engage à remplacer le plat ou à effectuer un remboursement.</p>
-                <p>En cas de remboursement accepté, il sera effectué dans les 5 jours ouvrables par le même moyen de paiement utilisé lors de l'achat.</p>
+                <p>En cas de commande non conforme (article manquant, erreur de référence, défaut avéré), le Client doit signaler le problème dans un délai raisonnable suivant la livraison par téléphone ou WhatsApp avec photo à l'appui.</p>
+                <p>En cas de non-conformité avérée, le Vendeur s'engage à remplacer le produit ou à émettre un avoir ou remboursement.</p>
+                <p>En cas de remboursement accepté, il sera effectué dans les 5 jours ouvrables par le moyen convenu d'un commun accord.</p>
             </div>
             </div>
 
@@ -204,14 +203,14 @@
             @php cgvSection('article-10', '10', 'Protection des données personnelles') @endphp
             <div class="bg-white rounded-2xl border border-gray-100 p-5 text-sm text-gray-600 leading-relaxed space-y-3">
                 <p>Les informations collectées lors de la commande sont nécessaires au traitement et à la livraison de celle-ci. Elles ne sont jamais revendues à des tiers.</p>
-                <p>Le Client dispose d'un droit d'accès, de rectification et de suppression de ses données en contactant le Vendeur à l'adresse email indiquée ci-dessus.</p>
+                <p>Le Client dispose d'un droit d'accès, de rectification et de suppression de ses données en contactant le Vendeur aux coordonnées indiquées ci-dessus.</p>
             </div>
             </div>
 
             {{-- Article 11 --}}
             @php cgvSection('article-11', '11', 'Limitation de responsabilité') @endphp
             <div class="bg-white rounded-2xl border border-gray-100 p-5 text-sm text-gray-600 leading-relaxed">
-                <p>Le Restaurant s'engage à mettre en œuvre tous les moyens nécessaires pour assurer la disponibilité du site et la qualité des plats. Cependant, sa responsabilité ne pourra être engagée en cas de force majeure, de dysfonctionnements du réseau Internet, ou de toute circonstance indépendante de sa volonté.</p>
+                <p>Le Vendeur s'engage à mettre en œuvre tous les moyens nécessaires pour assurer la disponibilité du service et la conformité des commandes. Cependant, sa responsabilité ne pourra être engagée en cas de force majeure, d'incidents techniques indépendants de sa volonté ou de retards imputables aux réseaux de télécommunications.</p>
             </div>
             </div>
 

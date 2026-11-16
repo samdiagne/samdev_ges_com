@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>@yield('title', 'Maffood')</title>
+    <title>@yield('title', config('app.name', 'svmdev_ges_com'))</title>
     @php $faviconLogo = App\Models\Parametre::first()?->logo; @endphp
     @if($faviconLogo && file_exists(storage_path('app/public/' . $faviconLogo)))
         <link rel="icon" type="image/png" sizes="32x32" href="{{ Storage::url($faviconLogo) }}"/>
@@ -40,24 +40,23 @@
             <div>
                 {{-- Logo --}}
                 <div class="flex items-center gap-3 mb-10">
-                    @php $logo = App\Models\Parametre::first()?->logo; @endphp
+                    @php $settings = App\Models\Parametre::first(); $logo = $settings?->logo; @endphp
                     @if($logo && file_exists(storage_path('app/public/' . $logo)))
                         <img src="{{ Storage::url($logo) }}" class="h-14 w-auto object-contain"/>
                     @else
-                        <div class="w-12 h-12 rounded-xl flex items-center justify-center
-                                    font-bold text-white text-lg flex-shrink-0"
-                             style="background: linear-gradient(135deg, #F27B20, #FF9F43);">
-                            MF
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-white text-lg flex-shrink-0 bg-primary">
+                            {{ strtoupper(substr($settings?->nom ?? config('app.name', 'SC'), 0, 2)) }}
                         </div>
+                        <span class="font-bold text-white text-base">{{ $settings?->nom ?? config('app.name', 'svmdev_ges_com') }}</span>
                     @endif
                 </div>
 
                 {{-- Accroche --}}
                 <div class="mb-8">
                     <h2 class="text-2xl xl:text-3xl font-bold text-white leading-tight mb-3">
-                        Commandez vos plats<br/>
-                        préférés<br/>
-                        <span style="color: #2DB667;">directement en ligne</span>
+                        Gérez vos commandes<br/>
+                        et vos achats<br/>
+                        <span class="text-secondary">directement en ligne</span>
                     </h2>
                     <p class="text-sm leading-relaxed text-stone-400">
                         Plats, desserts, jus et bien plus.<br/>
@@ -82,7 +81,7 @@
             </div>
 
             <p class="text-xs text-stone-600">
-                &copy; {{ date('Y') }} Maffood &middot; Dakar, Sénégal
+                &copy; {{ date('Y') }} {{ App\Models\Parametre::first()?->nom ?? config('app.name', 'svmdev_ges_com') }} &middot; {{ App\Models\Parametre::first()?->adresse ?? 'Dakar, Sénégal' }}
             </p>
         </div>
     </div>
@@ -97,18 +96,16 @@
                  style="background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
                         background-size: 24px 24px;"></div>
             <div class="relative z-10 flex flex-col items-center justify-center text-center px-6 py-8">
-                @php $logo = App\Models\Parametre::first()?->logo; @endphp
+                @php $settings = App\Models\Parametre::first(); $logo = $settings?->logo; @endphp
                 @if($logo && file_exists(storage_path('app/public/' . $logo)))
                     <img src="{{ Storage::url($logo) }}" class="h-14 w-auto object-contain mb-3"/>
                 @else
-                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center
-                                font-bold text-white text-xl mb-3"
-                         style="background: linear-gradient(135deg, #F27B20, #FF9F43);">
-                        MF
+                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-white text-xl mb-3 bg-primary">
+                        {{ strtoupper(substr($settings?->nom ?? config('app.name', 'SC'), 0, 2)) }}
                     </div>
                 @endif
-                <p class="font-bold text-white text-lg tracking-tight">Maffood</p>
-                <p class="text-xs mt-1 text-stone-500">Commandez en ligne</p>
+                <p class="font-bold text-white text-lg tracking-tight">{{ $settings?->nom ?? config('app.name', 'svmdev_ges_com') }}</p>
+                <p class="text-xs mt-1 text-stone-500">Espace Client</p>
             </div>
         </div>
 
@@ -118,7 +115,7 @@
                 @yield('content')
             </div>
             <p class="lg:hidden text-center text-gray-400 text-xs mt-8">
-                &copy; {{ date('Y') }} Maffood &middot; Dakar, Sénégal
+                &copy; {{ date('Y') }} {{ $settings?->nom ?? config('app.name', 'svmdev_ges_com') }} &middot; {{ $settings?->adresse ?? 'Dakar, Sénégal' }}
             </p>
         </div>
     </div>

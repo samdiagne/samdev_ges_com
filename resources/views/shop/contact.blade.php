@@ -103,8 +103,8 @@
                                     class="w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none transition-colors
                                            {{ $errors->has('subject') ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50 focus:border-primary' }}">
                                 <option value="">Choisir un sujet</option>
-                                <option value="Demande de devis"          {{ old('subject') === 'Demande de devis' ? 'selected' : '' }}>Demande de devis</option>
-                                <option value="Question sur un plat"   {{ old('subject') === 'Question sur un plat' ? 'selected' : '' }}>Question sur un plat</option>
+                                <option value="Demande de devis"          {{ old('subject') === 'Demande de devis' ? 'selected' : '' }}>Demande de devis / Tarif pro</option>
+                                <option value="Question sur un produit"   {{ old('subject') === 'Question sur un produit' ? 'selected' : '' }}>Question sur un produit / article</option>
                                 <option value="Suivi de commande"         {{ old('subject') === 'Suivi de commande' ? 'selected' : '' }}>Suivi de commande</option>
                                 <option value="Service après-vente"       {{ old('subject') === 'Service après-vente' ? 'selected' : '' }}>Service après-vente (SAV)</option>
                                 <option value="Partenariat"               {{ old('subject') === 'Partenariat' ? 'selected' : '' }}>Partenariat</option>

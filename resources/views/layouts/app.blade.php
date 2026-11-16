@@ -101,11 +101,11 @@ style="height: 100dvh;">
                                 font-extrabold text-white text-sm flex-shrink-0
                                 ring-2 ring-white/30"
                          style="background: rgba(255,255,255,0.2);">
-                        MF
+                        {{ strtoupper(substr(App\Models\Parametre::first()?->nom ?? config('app.name', 'SC'), 0, 2)) }}
                     </div>
                 @endif
                 <div x-show="sidebarOpen" x-transition.opacity class="overflow-hidden min-w-0">
-                    <p class="font-bold text-[15px] text-white truncate leading-tight tracking-tight">Maffood</p>
+                    <p class="font-bold text-[15px] text-white truncate leading-tight tracking-tight">{{ App\Models\Parametre::first()?->nom ?? config('app.name', 'svmdev_ges_com') }}</p>
                     <p class="text-[11px] font-medium truncate tracking-wide uppercase"
                        style="color: white;">Tableau de bord</p>
                 </div>
@@ -262,11 +262,11 @@ style="height: 100dvh;">
                                 font-extrabold text-white text-sm flex-shrink-0
                                 ring-2 ring-white/30"
                          style="background: rgba(255,255,255,0.2);">
-                        MF
+                        {{ strtoupper(substr(App\Models\Parametre::first()?->nom ?? config('app.name', 'SC'), 0, 2)) }}
                     </div>
                 @endif
                 <div>
-                    <p class="font-bold text-[15px] text-white leading-tight tracking-tight">Maffood</p>
+                    <p class="font-bold text-[15px] text-white leading-tight tracking-tight">{{ App\Models\Parametre::first()?->nom ?? config('app.name', 'svmdev_ges_com') }}</p>
                     <p class="text-[11px] font-medium tracking-wide uppercase"
                        style="color: white;">Tableau de bord</p>
                 </div>
