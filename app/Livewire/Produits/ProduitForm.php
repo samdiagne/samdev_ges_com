@@ -29,6 +29,12 @@ class ProduitForm extends Component
     // Prix
     public ?float $prix_vente  = 0;
 
+    // Configuration Menu Fast-Food / Formule personnalisable
+    public bool   $est_menu        = false;
+    public string $mode_prix_menu  = 'fixe'; // 'fixe' (prix de vente) ou 'supplement' (prix élément + supplément)
+    public ?float $supplement_menu = 0;
+    public array  $composants      = [];
+
     // Prix dégressif
     public ?int   $quantite_palier = null;
     public ?float $prix_palier     = null;
@@ -94,6 +100,54 @@ class ProduitForm extends Component
         }
     }
 
+    public function updatedCategorieId(): void
+    {
+        if ($this->categorie_id) {
+            $cat = Categorie::find($this->categorie_id);
+            if ($cat) {
+                $nomLower = strtolower($cat->nom);
+                $slugLower = strtolower($cat->slug ?? '');
+                if (str_contains($nomLower, 'menu') || str_contains($slugLower, 'menu')) {
+                    $this->est_menu = true;
+                    if (empty($this->composants)) {
+                        $this->composants = [
+                            ['titre' => 'Choix du sandwich / plat', 'type_selection' => 'categorie', 'categorie_id' => null, 'produit_fixe_id' => null],
+                            ['titre' => 'Accompagnement',           'type_selection' => 'categorie', 'categorie_id' => null, 'produit_fixe_id' => null],
+                            ['titre' => 'Boisson au choix',         'type_selection' => 'categorie', 'categorie_id' => null, 'produit_fixe_id' => null],
+                        ];
+                    }
+                }
+            }
+        }
+    }
+
+    public function updatedEstMenu(): void
+    {
+        if ($this->est_menu && empty($this->composants)) {
+            $this->composants = [
+                ['titre' => 'Choix du sandwich / plat', 'type_selection' => 'categorie', 'categorie_id' => null, 'produit_fixe_id' => null],
+                ['titre' => 'Accompagnement',           'type_selection' => 'categorie', 'categorie_id' => null, 'produit_fixe_id' => null],
+                ['titre' => 'Boisson au choix',         'type_selection' => 'categorie', 'categorie_id' => null, 'produit_fixe_id' => null],
+            ];
+        }
+    }
+
+    public function addComposant(): void
+    {
+        $this->composants[] = [
+            'titre'           => '',
+            'type_selection'  => 'categorie',
+            'categorie_id'    => null,
+            'produit_fixe_id' => null,
+        ];
+    }
+
+    public function removeComposant(int $index): void
+    {
+        array_splice($this->composants, $index, 1);
+        $this->composants = array_values($this->composants);
+    }
+
     public function mount(?int $produitId = null, ?string $returnUrl = null): void
     {
         // Priorité : URL de retour passée en paramètre, puis celle en session
@@ -127,6 +181,20 @@ class ProduitForm extends Component
         $this->est_actif          = $produit->est_actif;
         $this->est_mis_en_avant   = $produit->est_mis_en_avant;
         $this->imageActuelle      = $produit->image_principale;
+
+        // Charger configuration Menu
+        $this->est_menu        = (bool) ($produit->est_menu || $produit->isMenu());
+        $this->mode_prix_menu  = $produit->mode_prix_menu ?? 'fixe';
+        $this->supplement_menu = $produit->supplement_menu ? (float) $produit->supplement_menu : 0;
+        $this->composants      = $produit->composants()->orderBy('ordre')->get()->map(function ($c) {
+            return [
+                'id'              => $c->id,
+                'titre'           => $c->titre,
+                'type_selection'  => $c->type_selection ?? 'categorie',
+                'categorie_id'    => $c->categorie_id,
+                'produit_fixe_id' => $c->produit_fixe_id,
+            ];
+        })->toArray();
     }
 
     public function addIngredient(): void
@@ -181,6 +249,9 @@ class ProduitForm extends Component
             'sur_commande'       => $this->sur_commande,
             'est_actif'          => $this->est_actif,
             'est_mis_en_avant'   => $this->est_mis_en_avant,
+            'est_menu'           => $this->est_menu,
+            'mode_prix_menu'     => $this->mode_prix_menu,
+            'supplement_menu'    => $this->est_menu ? (float) $this->supplement_menu : 0,
             'image_principale'   => $cheminImage,
         ];
 
@@ -224,6 +295,22 @@ class ProduitForm extends Component
             session()->flash('success', 'Produit créé avec succès !');
         }
 
+        // Synchronisation des composants du menu
+        $produit->composants()->delete();
+        if ($this->est_menu) {
+            foreach ($this->composants as $index => $comp) {
+                if (! empty($comp['titre'])) {
+                    $produit->composants()->create([
+                        'titre'           => $comp['titre'],
+                        'type_selection'  => $comp['type_selection'] ?? 'categorie',
+                        'categorie_id'    => ! empty($comp['categorie_id']) ? (int) $comp['categorie_id'] : null,
+                        'produit_fixe_id' => ! empty($comp['produit_fixe_id']) ? (int) $comp['produit_fixe_id'] : null,
+                        'ordre'           => $index,
+                    ]);
+                }
+            }
+        }
+
         foreach ($this->imagesGalerie as $img) {
             $chemin = $img->store('produits/galerie', 'public');
             ProduitImage::create([
@@ -240,6 +327,10 @@ class ProduitForm extends Component
     {
         return view('livewire.produits.produit-form', [
             'categories'       => Categorie::where('est_active', true)->orderBy('nom')->get(),
+            'tousProduits'     => Produit::where('est_actif', true)
+                ->when($this->produitId, fn($q) => $q->where('id', '!=', $this->produitId))
+                ->orderBy('nom')
+                ->get(['id', 'nom', 'categorie_id']),
             'galerieExistante' => $this->produitId
                 ? ProduitImage::where('produit_id', $this->produitId)->orderBy('ordre')->get()
                 : collect(),
