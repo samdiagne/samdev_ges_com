@@ -18,6 +18,7 @@ class VenteManager extends Component
     use WithPagination;
 
     public string $search         = '';
+    public string $filtreDate     = '';
     public string $filtreMonth    = '';
     public string $filtreSource   = '';
     public string $filtrePaiement = '';
@@ -62,11 +63,41 @@ class VenteManager extends Component
     }
 
     public function updatingSearch(): void { $this->resetPage(); $this->clearSelection(); }
-    public function updatingFiltreMonth(): void { $this->resetPage(); $this->clearSelection(); }
+    public function updatingFiltreDate(): void {
+        $this->resetPage();
+        $this->clearSelection();
+        // Si l'utilisateur choisit une date précise, synchroniser le mois correspondant
+        if ($this->filtreDate) {
+            $this->filtreMonth = substr($this->filtreDate, 0, 7);
+        }
+    }
+    public function updatingFiltreMonth(): void {
+        $this->resetPage();
+        $this->clearSelection();
+        // Si l'utilisateur change le mois manuellement et qu'une date précise était sélectionnée mais hors du mois
+        if ($this->filtreDate && ! str_starts_with($this->filtreDate, $this->filtreMonth)) {
+            $this->filtreDate = '';
+        }
+    }
     public function updatingFiltreSource(): void { $this->resetPage(); $this->clearSelection(); }
     public function updatingFiltrePaiement(): void { $this->resetPage(); $this->clearSelection(); }
     public function updatingDateFrom(): void { $this->resetPage(); $this->clearSelection(); }
     public function updatingDateTo(): void { $this->resetPage(); $this->clearSelection(); }
+
+    public function filtrerAujourdhui(): void
+    {
+        $this->filtreDate = now()->toDateString();
+        $this->filtreMonth = now()->format('Y-m');
+        $this->resetPage();
+        $this->clearSelection();
+    }
+
+    public function reinitialiserDate(): void
+    {
+        $this->filtreDate = '';
+        $this->resetPage();
+        $this->clearSelection();
+    }
 
     // ── Gestion de la sélection multiple ───────────
     public function updatedSelectAll(bool $value): void
@@ -505,7 +536,10 @@ class VenteManager extends Component
             ->when($this->filtrePaiement, fn($q) =>
                 $q->where('mode_paiement', $this->filtrePaiement)
             )
-            ->when($this->filtreMonth && ! $this->dateFrom, fn($q) =>
+            ->when($this->filtreDate, fn($q) =>
+                $q->whereDate('vendu_le', $this->filtreDate)
+            )
+            ->when(! $this->filtreDate && $this->filtreMonth && ! $this->dateFrom, fn($q) =>
                 $q->whereYear('vendu_le', substr($this->filtreMonth, 0, 4))
                   ->whereMonth('vendu_le', substr($this->filtreMonth, 5, 2))
             )
@@ -519,7 +553,10 @@ class VenteManager extends Component
         $ventes = $this->getVentesQuery()->paginate(15);
 
         $statsQuery = Vente::where('statut', 'completee')
-            ->when($this->filtreMonth && ! $this->dateFrom, fn($q) =>
+            ->when($this->filtreDate, fn($q) =>
+                $q->whereDate('vendu_le', $this->filtreDate)
+            )
+            ->when(! $this->filtreDate && $this->filtreMonth && ! $this->dateFrom, fn($q) =>
                 $q->whereYear('vendu_le', substr($this->filtreMonth, 0, 4))
                   ->whereMonth('vendu_le', substr($this->filtreMonth, 5, 2))
             );

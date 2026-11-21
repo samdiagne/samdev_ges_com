@@ -39,7 +39,8 @@
 
     {{-- Filtres --}}
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            {{-- Recherche --}}
             <div class="relative">
                 <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,26 +53,88 @@
                        class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl
                               text-sm focus:outline-none focus:border-primary bg-gray-50"/>
             </div>
-            <input wire:model.live="filtreMonth"
-                   type="month"
-                   class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm
-                          focus:outline-none focus:border-primary bg-gray-50"/>
-            <select wire:model.live="filtrePaiement"
-                    class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm
-                           focus:outline-none focus:border-primary bg-gray-50">
-                <option value="">Tous paiements</option>
-                <option value="cash">Cash</option>
-                <option value="wave">Wave</option>
-                <option value="om">Orange Money</option>
-                <option value="carte">Carte bancaire</option>
-            </select>
-            <select wire:model.live="filtreSource"
-                    class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm
-                           focus:outline-none focus:border-primary bg-gray-50">
-                <option value="">Toutes sources</option>
-                <option value="boutique">Boutique</option>
-                <option value="en_ligne">Site web</option>
-            </select>
+
+            {{-- Filtre Jour Précis --}}
+            <div class="relative flex items-center">
+                <input wire:model.live="filtreDate"
+                       type="date"
+                       title="Filtrer par jour précis"
+                       class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary bg-gray-50 {{ $filtreDate ? 'border-primary ring-1 ring-primary/20 font-semibold text-primary' : '' }}"/>
+                @if($filtreDate)
+                    <button type="button"
+                            wire:click="reinitialiserDate"
+                            title="Effacer le filtre par jour"
+                            class="absolute right-2 text-gray-400 hover:text-red-500 p-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                @endif
+            </div>
+
+            {{-- Filtre Mois --}}
+            <div>
+                <input wire:model.live="filtreMonth"
+                       type="month"
+                       title="Filtrer par mois"
+                       class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary bg-gray-50 {{ ! $filtreDate && $filtreMonth ? 'font-semibold text-gray-800' : 'text-gray-500' }}"/>
+            </div>
+
+            {{-- Mode de paiement --}}
+            <div>
+                <select wire:model.live="filtrePaiement"
+                        class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm
+                               focus:outline-none focus:border-primary bg-gray-50">
+                    <option value="">Tous paiements</option>
+                    <option value="cash">Cash</option>
+                    <option value="wave">Wave</option>
+                    <option value="om">Orange Money</option>
+                    <option value="carte">Carte bancaire</option>
+                </select>
+            </div>
+
+            {{-- Source --}}
+            <div>
+                <select wire:model.live="filtreSource"
+                        class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm
+                               focus:outline-none focus:border-primary bg-gray-50">
+                    <option value="">Toutes sources</option>
+                    <option value="boutique">Boutique</option>
+                    <option value="en_ligne">Site web</option>
+                </select>
+            </div>
+        </div>
+
+        {{-- Raccourcis rapides de dates --}}
+        <div class="mt-3 pt-3 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-xs text-gray-400 font-medium mr-1">Raccourcis :</span>
+                <button type="button"
+                        wire:click="filtrerAujourdhui"
+                        class="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all {{ $filtreDate === now()->toDateString() ? 'bg-primary text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                    Aujourd'hui
+                </button>
+                <button type="button"
+                        wire:click="$set('filtreDate', '{{ now()->subDay()->toDateString() }}')"
+                        class="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all {{ $filtreDate === now()->subDay()->toDateString() ? 'bg-primary text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                    Hier
+                </button>
+                <button type="button"
+                        wire:click="reinitialiserDate"
+                        class="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all {{ empty($filtreDate) ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                    Tout le mois
+                </button>
+            </div>
+
+            @if($filtreDate)
+                <div class="inline-flex items-center gap-1.5 text-xs text-primary font-semibold bg-primary/10 px-2.5 py-1 rounded-lg">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <span>Ventes du {{ \Carbon\Carbon::parse($filtreDate)->translatedFormat('l d F Y') }}</span>
+                    <button type="button" wire:click="reinitialiserDate" class="ml-1 text-primary/70 hover:text-red-500">×</button>
+                </div>
+            @endif
         </div>
     </div>
 
