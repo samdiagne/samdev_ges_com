@@ -840,6 +840,25 @@
                      total: {{ (float) $total }},
                      canalMonnaie: 'especes',
                      partWave: 0,
+                     payCash: {{ (float) $montantCashMultiple }},
+                     payWave: {{ (float) $montantWaveMultiple }},
+                     payOm: {{ (float) $montantOmMultiple }},
+                     payCarte: {{ (float) $montantCarteMultiple }},
+                     get totalMulti() {
+                         return Math.round(((parseFloat(this.payCash) || 0) + (parseFloat(this.payWave) || 0) + (parseFloat(this.payOm) || 0) + (parseFloat(this.payCarte) || 0)) * 100) / 100;
+                     },
+                     get resteMulti() {
+                         return Math.max(0, Math.round((this.total - this.totalMulti) * 100) / 100);
+                     },
+                     get monnaieMulti() {
+                         return Math.max(0, Math.round((this.totalMulti - this.total) * 100) / 100);
+                     },
+                     affecterReste(champ) {
+                         let actuel = parseFloat(this[champ]) || 0;
+                         let autreTotal = this.totalMulti - actuel;
+                         let reste = Math.max(0, this.total - autreTotal);
+                         this[champ] = reste;
+                     },
                      get monnaie() {
                          let m = parseFloat(this.montant) || 0;
                          return m > this.total ? Math.round(m - this.total) : 0;
@@ -869,9 +888,18 @@
                          }
                      },
                      valider() {
-                         let m = parseFloat(this.montant) || 0;
-                         let mw = this.monnaieWave;
-                         $wire.processPayment(m, mw);
+                         if ('{{ $modePaiement }}' === 'multiple') {
+                             $wire.processPaymentMultiple(
+                                 parseFloat(this.payCash) || 0,
+                                 parseFloat(this.payWave) || 0,
+                                 parseFloat(this.payOm) || 0,
+                                 parseFloat(this.payCarte) || 0
+                             );
+                         } else {
+                             let m = parseFloat(this.montant) || 0;
+                             let mw = this.monnaieWave;
+                             $wire.processPayment(m, mw);
+                         }
                      }
                  }">
                 <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
@@ -917,21 +945,23 @@
                         <label class="block text-xs font-semibold text-gray-700 mb-1.5">Mode de paiement</label>
                         <div class="grid grid-cols-3 gap-2">
                             @foreach([
-                                ['value' => 'cash',     'label' => 'Cash'],
-                                ['value' => 'wave',     'label' => 'Wave'],
-                                ['value' => 'om',       'label' => 'Orange Money'],
-                                ['value' => 'mix',      'label' => 'Mixx by Yass'],
-                                ['value' => 'card',     'label' => 'Carte bancaire'],
-                                ['value' => 'a_regler', 'label' => 'À régler plus tard'],
+                                ['value' => 'cash',     'label' => '💵 Cash'],
+                                ['value' => 'wave',     'label' => '📱 Wave'],
+                                ['value' => 'om',       'label' => '🍊 OM'],
+                                ['value' => 'card',     'label' => '💳 Carte'],
+                                ['value' => 'multiple', 'label' => '🔀 Mixte'],
+                                ['value' => 'a_regler', 'label' => '⏳ À régler'],
                             ] as $method)
                                 <button type="button"
                                         wire:click="$set('modePaiement', '{{ $method['value'] }}')"
                                         @class([
                                             'py-2 px-2.5 rounded-xl text-xs font-bold transition-all border-2 text-center',
                                             'border-primary bg-primary text-white shadow-md shadow-primary/25'
-                                                => $modePaiement === $method['value'],
+                                                => $modePaiement === $method['value'] && !in_array($method['value'], ['a_regler', 'multiple']),
                                             'border-amber-400 bg-amber-500 text-white shadow-md shadow-amber-500/25'
                                                 => $modePaiement === 'a_regler' && $method['value'] === 'a_regler',
+                                            'border-purple-500 bg-purple-600 text-white shadow-md shadow-purple-600/25'
+                                                => $modePaiement === 'multiple' && $method['value'] === 'multiple',
                                             'border-gray-200 bg-gray-50 text-gray-600 hover:border-primary/40'
                                                 => $modePaiement !== $method['value'],
                                         ])>
@@ -953,6 +983,120 @@
                             <p class="text-amber-700 text-[11px] leading-relaxed">
                                 La vente sera enregistrée en attente. La facture générée affichera la mention officielle <strong>« À RÉGLER »</strong>. Vous pourrez la marquer comme payée plus tard en un clic.
                             </p>
+                        </div>
+                    @elseif($modePaiement === 'multiple')
+                        {{-- ── Formulaire de paiement mixte / multiple ── --}}
+                        <div class="space-y-3 bg-purple-50/50 border border-purple-200/80 rounded-2xl p-4">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-purple-900 uppercase tracking-wider flex items-center gap-1.5">
+                                    <span>🔀 Répartition du paiement</span>
+                                </span>
+                                <span class="text-xs font-bold text-gray-500">
+                                    Total : <span class="text-primary font-extrabold">{{ number_format($total, 0, ',', ' ') }} F</span>
+                                </span>
+                            </div>
+
+                            <div class="space-y-2">
+                                {{-- 1. Espèces (Cash) --}}
+                                <div class="bg-white p-2.5 rounded-xl border border-gray-200 focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500 transition-all flex items-center gap-2">
+                                    <span class="text-lg flex-shrink-0">💵</span>
+                                    <div class="flex-1 min-w-0">
+                                        <span class="text-[11px] font-bold text-gray-700 block">Espèces (Cash)</span>
+                                        <input type="number"
+                                               x-model.number="payCash"
+                                               x-on:focus="$event.target.select()"
+                                               placeholder="0"
+                                               class="w-full text-sm font-extrabold text-dark bg-transparent border-0 p-0 focus:ring-0 focus:outline-none"/>
+                                    </div>
+                                    <button type="button"
+                                            @click="affecterReste('payCash')"
+                                            title="Affecter le montant restant aux espèces"
+                                            class="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[11px] font-bold rounded-lg transition-colors border border-emerald-200">
+                                        Solde
+                                    </button>
+                                </div>
+
+                                {{-- 2. Wave --}}
+                                <div class="bg-white p-2.5 rounded-xl border border-gray-200 focus-within:border-sky-500 focus-within:ring-1 focus-within:ring-sky-500 transition-all flex items-center gap-2">
+                                    <span class="text-lg flex-shrink-0">📱</span>
+                                    <div class="flex-1 min-w-0">
+                                        <span class="text-[11px] font-bold text-gray-700 block">Wave</span>
+                                        <input type="number"
+                                               x-model.number="payWave"
+                                               x-on:focus="$event.target.select()"
+                                               placeholder="0"
+                                               class="w-full text-sm font-extrabold text-dark bg-transparent border-0 p-0 focus:ring-0 focus:outline-none"/>
+                                    </div>
+                                    <button type="button"
+                                            @click="affecterReste('payWave')"
+                                            title="Affecter le montant restant à Wave"
+                                            class="px-2 py-1 bg-sky-50 hover:bg-sky-100 text-sky-700 text-[11px] font-bold rounded-lg transition-colors border border-sky-200">
+                                        Solde
+                                    </button>
+                                </div>
+
+                                {{-- 3. Orange Money --}}
+                                <div class="bg-white p-2.5 rounded-xl border border-gray-200 focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500 transition-all flex items-center gap-2">
+                                    <span class="text-lg flex-shrink-0">🍊</span>
+                                    <div class="flex-1 min-w-0">
+                                        <span class="text-[11px] font-bold text-gray-700 block">Orange Money</span>
+                                        <input type="number"
+                                               x-model.number="payOm"
+                                               x-on:focus="$event.target.select()"
+                                               placeholder="0"
+                                               class="w-full text-sm font-extrabold text-dark bg-transparent border-0 p-0 focus:ring-0 focus:outline-none"/>
+                                    </div>
+                                    <button type="button"
+                                            @click="affecterReste('payOm')"
+                                            title="Affecter le montant restant à OM"
+                                            class="px-2 py-1 bg-orange-50 hover:bg-orange-100 text-orange-700 text-[11px] font-bold rounded-lg transition-colors border border-orange-200">
+                                        Solde
+                                    </button>
+                                </div>
+
+                                {{-- 4. Carte bancaire --}}
+                                <div class="bg-white p-2.5 rounded-xl border border-gray-200 focus-within:border-purple-500 focus-within:ring-1 focus-within:ring-purple-500 transition-all flex items-center gap-2">
+                                    <span class="text-lg flex-shrink-0">💳</span>
+                                    <div class="flex-1 min-w-0">
+                                        <span class="text-[11px] font-bold text-gray-700 block">Carte bancaire</span>
+                                        <input type="number"
+                                               x-model.number="payCarte"
+                                               x-on:focus="$event.target.select()"
+                                               placeholder="0"
+                                               class="w-full text-sm font-extrabold text-dark bg-transparent border-0 p-0 focus:ring-0 focus:outline-none"/>
+                                    </div>
+                                    <button type="button"
+                                            @click="affecterReste('payCarte')"
+                                            title="Affecter le montant restant à la Carte"
+                                            class="px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 text-[11px] font-bold rounded-lg transition-colors border border-purple-200">
+                                        Solde
+                                    </button>
+                                </div>
+                            </div>
+
+                            {{-- Bilan répartition --}}
+                            <div class="pt-2 border-t border-purple-200 space-y-1.5 text-xs">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600 font-semibold">Total saisi / payé :</span>
+                                    <span class="font-extrabold text-sm" :class="totalMulti >= total ? 'text-emerald-700' : 'text-amber-600'">
+                                        <span x-text="formatMoney(totalMulti)"></span> FCFA
+                                    </span>
+                                </div>
+
+                                <template x-if="resteMulti > 0">
+                                    <div class="flex items-center justify-between text-red-600 font-bold bg-red-50 p-2 rounded-lg">
+                                        <span>⚠️ Reste à régler :</span>
+                                        <span><span x-text="formatMoney(resteMulti)"></span> FCFA</span>
+                                    </div>
+                                </template>
+
+                                <template x-if="monnaieMulti > 0">
+                                    <div class="flex items-center justify-between text-emerald-700 font-bold bg-emerald-50 p-2 rounded-lg border border-emerald-200">
+                                        <span>💵 Monnaie à rendre (espèces) :</span>
+                                        <span><span x-text="formatMoney(monnaieMulti)"></span> FCFA</span>
+                                    </div>
+                                </template>
+                            </div>
                         </div>
                     @else
                         {{-- Montant reçu --}}
@@ -1098,7 +1242,7 @@
                     <button @click="valider()"
                             type="button"
                             class="flex-1 py-3 bg-primary hover:bg-primary/95 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2">
-                        <svg wire:loading wire:target="processPayment"
+                        <svg wire:loading wire:target="processPayment, processPaymentMultiple"
                              class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>

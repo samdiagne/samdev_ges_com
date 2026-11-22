@@ -220,7 +220,7 @@
             <div class="info-box-title">Paiement</div>
             @if($facture->estPayee())
                 <p>Statut : <strong style="color: #16A34A;">Réglée</strong></p>
-                <p>Mode : <strong>{{ ucfirst($vente->mode_paiement) }}</strong></p>
+                <p>Mode : <strong>{{ $vente->mode_paiement_libelle }}</strong></p>
                 <p>Date : {{ $vente->vendu_le->format('d/m/Y à H:i') }}</p>
             @else
                 <p>Statut : <strong style="color: #DC2626;">À régler</strong></p>
@@ -261,7 +261,17 @@
     @if($facture->estPayee())
         <div class="payment-note-paid">
             <strong>Facture acquittée</strong><br/>
-            Montant réglé : <strong>{{ number_format($facture->total, 0, ',', ' ') }} FCFA</strong> par {{ ucfirst($vente->mode_paiement) }} le {{ $vente->vendu_le->format('d/m/Y') }}.
+            Montant réglé : <strong>{{ number_format($facture->total, 0, ',', ' ') }} FCFA</strong> par {{ $vente->mode_paiement_libelle }} le {{ $vente->vendu_le->format('d/m/Y') }}.
+            @if($vente->mode_paiement === 'multiple')
+                @php
+                    $decompo = [];
+                    if($vente->montant_cash > 0) $decompo[] = 'Espèces: ' . number_format($vente->montant_cash, 0, ',', ' ') . ' F';
+                    if($vente->montant_wave > 0) $decompo[] = 'Wave: ' . number_format($vente->montant_wave, 0, ',', ' ') . ' F';
+                    if($vente->montant_om > 0) $decompo[] = 'OM: ' . number_format($vente->montant_om, 0, ',', ' ') . ' F';
+                    if($vente->montant_carte > 0) $decompo[] = 'Carte: ' . number_format($vente->montant_carte, 0, ',', ' ') . ' F';
+                @endphp
+                <br/><span style="font-size: 8.5pt; color: #555;">({{ implode(' · ', $decompo) }})</span>
+            @endif
         </div>
     @else
         <div class="payment-note-due">

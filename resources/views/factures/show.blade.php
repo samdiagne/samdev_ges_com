@@ -116,9 +116,17 @@
                 </div>
                 <div class="p-4">
                     <p class="text-xs text-gray-400">Règlement</p>
-                    <p class="text-sm font-semibold text-dark mt-0.5 capitalize">
-                        {{ $vente->facture->estPayee() ? ucfirst($vente->mode_paiement) : 'En attente' }}
+                    <p class="text-sm font-semibold text-dark mt-0.5">
+                        {{ $vente->facture->estPayee() ? $vente->mode_paiement_libelle : 'En attente' }}
                     </p>
+                    @if($vente->facture->estPayee() && $vente->mode_paiement === 'multiple')
+                        <div class="text-[11px] text-gray-500 mt-1 space-y-0.5">
+                            @if($vente->montant_cash > 0) <div>💵 Espèces : {{ number_format($vente->montant_cash, 0, ',', ' ') }} F</div> @endif
+                            @if($vente->montant_wave > 0) <div>📱 Wave : {{ number_format($vente->montant_wave, 0, ',', ' ') }} F</div> @endif
+                            @if($vente->montant_om > 0) <div>🍊 OM : {{ number_format($vente->montant_om, 0, ',', ' ') }} F</div> @endif
+                            @if($vente->montant_carte > 0) <div>💳 Carte : {{ number_format($vente->montant_carte, 0, ',', ' ') }} F</div> @endif
+                        </div>
+                    @endif
                 </div>
                 <div class="p-4">
                     <p class="text-xs text-gray-400">Total</p>

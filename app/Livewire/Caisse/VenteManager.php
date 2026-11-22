@@ -45,6 +45,10 @@ class VenteManager extends Component
     public ?int   $editClientId          = null;
     public string $editDate              = '';
     public string $editModePaiement      = 'cash';
+    public float  $editMontantCash       = 0;
+    public float  $editMontantWave       = 0;
+    public float  $editMontantOm         = 0;
+    public float  $editMontantCarte      = 0;
     public float  $editRemise            = 0;
     public float  $editMontantRecu       = 0;
     public ?string $editNotes            = '';
@@ -284,6 +288,20 @@ class VenteManager extends Component
         $this->editRemise       = (float) $vente->remise;
         $this->editMontantRecu  = (float) $vente->montant_recu;
         $this->editNotes        = $vente->notes ?? '';
+        $this->editMontantCash  = (float) $vente->montant_cash;
+        $this->editMontantWave  = (float) $vente->montant_wave;
+        $this->editMontantOm    = (float) $vente->montant_om;
+        $this->editMontantCarte = (float) $vente->montant_carte;
+
+        if ($this->editModePaiement === 'cash' && $this->editMontantCash == 0) {
+            $this->editMontantCash = (float) $vente->total;
+        } elseif ($this->editModePaiement === 'wave' && $this->editMontantWave == 0) {
+            $this->editMontantWave = (float) $vente->total;
+        } elseif ($this->editModePaiement === 'om' && $this->editMontantOm == 0) {
+            $this->editMontantOm = (float) $vente->total;
+        } elseif (in_array($this->editModePaiement, ['carte', 'card']) && $this->editMontantCarte == 0) {
+            $this->editMontantCarte = (float) $vente->total;
+        }
 
         $this->editLignes = $vente->lignes->map(fn($l) => [
             'id'            => $l->id,
@@ -392,6 +410,10 @@ class VenteManager extends Component
         if ($this->editModePaiement === 'a_regler') {
             $this->editMontantRecu   = 0;
             $this->editMonnaieRendue = 0;
+        } elseif ($this->editModePaiement === 'multiple') {
+            $sommeMulti = round($this->editMontantCash + $this->editMontantWave + $this->editMontantOm + $this->editMontantCarte, 2);
+            $this->editMontantRecu   = $sommeMulti;
+            $this->editMonnaieRendue = max(0, round($sommeMulti - $this->editTotal, 2));
         } else {
             if ($this->editMontantRecu < $this->editTotal) {
                 $this->editMontantRecu = $this->editTotal;
@@ -402,7 +424,39 @@ class VenteManager extends Component
 
     public function updatedEditRemise(): void { $this->recalculerEditTotaux(); }
     public function updatedEditMontantRecu(): void { $this->recalculerEditTotaux(); }
-    public function updatedEditModePaiement(): void { $this->recalculerEditTotaux(); }
+    public function updatedEditMontantCash(): void { $this->recalculerEditTotaux(); }
+    public function updatedEditMontantWave(): void { $this->recalculerEditTotaux(); }
+    public function updatedEditMontantOm(): void { $this->recalculerEditTotaux(); }
+    public function updatedEditMontantCarte(): void { $this->recalculerEditTotaux(); }
+
+    public function updatedEditModePaiement($value): void
+    {
+        if ($value === 'multiple') {
+            $totalSaisi = $this->editMontantCash + $this->editMontantWave + $this->editMontantOm + $this->editMontantCarte;
+            if ($totalSaisi == 0 && $this->editTotal > 0) {
+                $this->editMontantCash = $this->editTotal;
+            }
+        }
+        $this->recalculerEditTotaux();
+    }
+
+    public function affecterEditReste(string $mode): void
+    {
+        $autres = 0.0;
+        if ($mode !== 'cash')  $autres += $this->editMontantCash;
+        if ($mode !== 'wave')  $autres += $this->editMontantWave;
+        if ($mode !== 'om')    $autres += $this->editMontantOm;
+        if ($mode !== 'carte') $autres += $this->editMontantCarte;
+
+        $reste = max(0, round($this->editTotal - $autres, 2));
+
+        if ($mode === 'cash')  $this->editMontantCash  = $reste;
+        if ($mode === 'wave')  $this->editMontantWave  = $reste;
+        if ($mode === 'om')    $this->editMontantOm    = $reste;
+        if ($mode === 'carte') $this->editMontantCarte = $reste;
+
+        $this->recalculerEditTotaux();
+    }
 
     public function updateVente(): void
     {
@@ -414,6 +468,14 @@ class VenteManager extends Component
         if (empty($this->editLignes)) {
             $this->addError('editLignes', 'La vente doit comporter au moins un article.');
             return;
+        }
+
+        if ($this->editModePaiement === 'multiple') {
+            $sommeMulti = round($this->editMontantCash + $this->editMontantWave + $this->editMontantOm + $this->editMontantCarte, 2);
+            if ($sommeMulti < $this->editTotal) {
+                $this->addError('editModePaiement', 'Le total réparti (' . number_format($sommeMulti, 0, ',', ' ') . ' F) est inférieur au total de la vente (' . number_format($this->editTotal, 0, ',', ' ') . ' FCFA).');
+                return;
+            }
         }
 
         $vente = Vente::with(['lignes.produit', 'facture'])->findOrFail($this->modifierVenteId);
@@ -488,10 +550,32 @@ class VenteManager extends Component
             $estARegler = ($this->editModePaiement === 'a_regler');
             $venduLe = $this->editDate ? Carbon::parse($this->editDate) : $vente->vendu_le;
 
+            if ($this->editModePaiement === 'multiple') {
+                $monnaieRendueEspeces = max(0, round(($this->editMontantCash + $this->editMontantWave + $this->editMontantOm + $this->editMontantCarte) - $this->editTotal, 2));
+                $mCash  = max(0, round($this->editMontantCash - $monnaieRendueEspeces, 2));
+                $mWave  = (float) $this->editMontantWave;
+                $mOm    = (float) $this->editMontantOm;
+                $mCarte = (float) $this->editMontantCarte;
+            } elseif ($this->editModePaiement === 'cash') {
+                $mCash = (float) $this->editTotal; $mWave = 0; $mOm = 0; $mCarte = 0;
+            } elseif ($this->editModePaiement === 'wave') {
+                $mCash = 0; $mWave = (float) $this->editTotal; $mOm = 0; $mCarte = 0;
+            } elseif ($this->editModePaiement === 'om') {
+                $mCash = 0; $mWave = 0; $mOm = (float) $this->editTotal; $mCarte = 0;
+            } elseif (in_array($this->editModePaiement, ['carte', 'card'])) {
+                $mCash = 0; $mWave = 0; $mOm = 0; $mCarte = (float) $this->editTotal;
+            } else {
+                $mCash = 0; $mWave = 0; $mOm = 0; $mCarte = 0;
+            }
+
             $vente->update([
                 'client_id'      => $this->editClientId ?: null,
                 'statut'         => $estARegler ? 'en_attente' : 'completee',
                 'mode_paiement'  => $this->editModePaiement,
+                'montant_cash'   => $estARegler ? 0 : $mCash,
+                'montant_wave'   => $estARegler ? 0 : $mWave,
+                'montant_om'     => $estARegler ? 0 : $mOm,
+                'montant_carte'  => $estARegler ? 0 : $mCarte,
                 'total'          => $this->editTotal,
                 'remise'         => $this->editRemise,
                 'montant_recu'   => $estARegler ? 0 : $this->editMontantRecu,
@@ -533,9 +617,21 @@ class VenteManager extends Component
             ->when($this->filtreSource, fn($q) =>
                 $q->where('source', $this->filtreSource)
             )
-            ->when($this->filtrePaiement, fn($q) =>
-                $q->where('mode_paiement', $this->filtrePaiement)
-            )
+            ->when($this->filtrePaiement, function ($q) {
+                if ($this->filtrePaiement === 'multiple') {
+                    $q->where('mode_paiement', 'multiple');
+                } elseif ($this->filtrePaiement === 'cash') {
+                    $q->where(fn($sq) => $sq->where('mode_paiement', 'cash')->orWhere('montant_cash', '>', 0));
+                } elseif ($this->filtrePaiement === 'wave') {
+                    $q->where(fn($sq) => $sq->where('mode_paiement', 'wave')->orWhere('montant_wave', '>', 0));
+                } elseif ($this->filtrePaiement === 'om') {
+                    $q->where(fn($sq) => $sq->where('mode_paiement', 'om')->orWhere('montant_om', '>', 0));
+                } elseif (in_array($this->filtrePaiement, ['carte', 'card'])) {
+                    $q->where(fn($sq) => $sq->whereIn('mode_paiement', ['carte', 'card'])->orWhere('montant_carte', '>', 0));
+                } else {
+                    $q->where('mode_paiement', $this->filtrePaiement);
+                }
+            })
             ->when($this->filtreDate, fn($q) =>
                 $q->whereDate('vendu_le', $this->filtreDate)
             )
@@ -564,10 +660,10 @@ class VenteManager extends Component
         $stats = [
             'count' => $statsQuery->count(),
             'total' => $statsQuery->sum('total'),
-            'cash'  => (clone $statsQuery)->where('mode_paiement', 'cash')->sum('total'),
-            'wave'  => (clone $statsQuery)->where('mode_paiement', 'wave')->sum('total'),
-            'om'    => (clone $statsQuery)->where('mode_paiement', 'om')->sum('total'),
-            'carte' => (clone $statsQuery)->where('mode_paiement', 'carte')->sum('total'),
+            'cash'  => (float) (clone $statsQuery)->sum(DB::raw("CASE WHEN mode_paiement = 'multiple' THEN montant_cash WHEN mode_paiement = 'cash' THEN total ELSE 0 END")),
+            'wave'  => (float) (clone $statsQuery)->sum(DB::raw("CASE WHEN mode_paiement = 'multiple' THEN montant_wave WHEN mode_paiement = 'wave' THEN total ELSE 0 END")),
+            'om'    => (float) (clone $statsQuery)->sum(DB::raw("CASE WHEN mode_paiement = 'multiple' THEN montant_om WHEN mode_paiement = 'om' THEN total ELSE 0 END")),
+            'carte' => (float) (clone $statsQuery)->sum(DB::raw("CASE WHEN mode_paiement = 'multiple' THEN montant_carte WHEN mode_paiement IN ('carte', 'card') THEN total ELSE 0 END")),
         ];
 
         $voirVente = $this->voirVenteId

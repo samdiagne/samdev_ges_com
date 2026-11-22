@@ -138,10 +138,10 @@ class SessionCaisse extends Model
         }
 
         $ventesQuery = $this->ventes()->where('statut', 'completee');
-        $ventesCash  = (float) (clone $ventesQuery)->where('mode_paiement', 'cash')->sum('total');
-        $ventesWave  = (float) (clone $ventesQuery)->where('mode_paiement', 'wave')->sum('total');
-        $ventesOm    = (float) (clone $ventesQuery)->where('mode_paiement', 'om')->sum('total');
-        $ventesCarte = (float) (clone $ventesQuery)->where('mode_paiement', 'carte')->sum('total');
+        $ventesCash  = (float) (clone $ventesQuery)->sum(\Illuminate\Support\Facades\DB::raw("CASE WHEN mode_paiement = 'multiple' THEN montant_cash WHEN mode_paiement = 'cash' THEN total ELSE 0 END"));
+        $ventesWave  = (float) (clone $ventesQuery)->sum(\Illuminate\Support\Facades\DB::raw("CASE WHEN mode_paiement = 'multiple' THEN montant_wave WHEN mode_paiement = 'wave' THEN total ELSE 0 END"));
+        $ventesOm    = (float) (clone $ventesQuery)->sum(\Illuminate\Support\Facades\DB::raw("CASE WHEN mode_paiement = 'multiple' THEN montant_om WHEN mode_paiement = 'om' THEN total ELSE 0 END"));
+        $ventesCarte = (float) (clone $ventesQuery)->sum(\Illuminate\Support\Facades\DB::raw("CASE WHEN mode_paiement = 'multiple' THEN montant_carte WHEN mode_paiement IN ('carte', 'card') THEN total ELSE 0 END"));
         $totalVentes = (float) $ventesQuery->sum('total');
 
         // Monnaies rendues au client via Wave (sur ventes en espèces par manque de monnaie)

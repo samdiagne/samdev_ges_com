@@ -30,6 +30,10 @@ class PointOfSale extends Component
 
     public string $modePaiement          = 'cash';
     public float  $montantRecu           = 0;
+    public float  $montantCashMultiple   = 0;
+    public float  $montantWaveMultiple   = 0;
+    public float  $montantOmMultiple     = 0;
+    public float  $montantCarteMultiple  = 0;
     public float  $remise                = 0;
     public string $notes                 = '';
     public string $dateVente             = '';
@@ -652,6 +656,10 @@ class PointOfSale extends Component
 
         $this->erreurPaiement        = '';
         $this->montantRecu           = $this->total;
+        $this->montantCashMultiple   = 0;
+        $this->montantWaveMultiple   = 0;
+        $this->montantOmMultiple     = 0;
+        $this->montantCarteMultiple  = 0;
         $this->canalMonnaie          = 'especes';
         $this->partMonnaieWave       = 0;
         $this->afficherModalPaiement = true;
@@ -836,6 +844,16 @@ class PointOfSale extends Component
     public function processPayment($montantSaisi = null, $monnaieWaveSaisie = null): void
     {
         if (empty($this->panier)) return;
+
+        if ($this->modePaiement === 'multiple') {
+            $this->processPaymentMultiple(
+                $this->montantCashMultiple,
+                $this->montantWaveMultiple,
+                $this->montantOmMultiple,
+                $this->montantCarteMultiple
+            );
+            return;
+        }
         
         if (! $this->sessionCaisseId) {
             $this->verifierSession();
@@ -887,6 +905,79 @@ class PointOfSale extends Component
                 ],
                 clientId: $clientId
             );
+            $this->derniereVenteId          = $vente->id;
+            $this->derniereReference        = $vente->reference;
+            $this->monnaieRendue            = (float) $vente->monnaie_rendue;
+            $this->monnaieRendueEspeces     = (float) $vente->monnaie_rendue_especes;
+            $this->monnaieRendueWave        = (float) $vente->monnaie_rendue_wave;
+            $this->afficherModalPaiement    = false;
+            $this->afficherModalSucces      = true;
+            $this->clearCart();
+            $this->loadProducts();
+
+            $this->dispatch('imprimer-ticket', url: route('caisse.ticket', $vente->id) . '?auto=1');
+        } catch (\Exception $e) {
+            $this->erreurPaiement = $e->getMessage();
+        }
+    }
+
+    public function processPaymentMultiple($cash = 0, $wave = 0, $om = 0, $carte = 0): void
+    {
+        if (empty($this->panier)) return;
+
+        if (! $this->sessionCaisseId) {
+            $this->verifierSession();
+            if (! $this->sessionCaisseId) {
+                session()->flash('pos_error', 'Veuillez ouvrir votre session de caisse avant d\'encaisser !');
+                $this->afficherModalPaiement = false;
+                $this->afficherModalOuverture = true;
+                return;
+            }
+        }
+
+        $cash  = max(0, (float) $cash);
+        $wave  = max(0, (float) $wave);
+        $om    = max(0, (float) $om);
+        $carte = max(0, (float) $carte);
+
+        $totalRecu = round($cash + $wave + $om + $carte, 2);
+
+        if ($totalRecu < $this->total) {
+            $this->addError('montantRecu', 'Le montant total saisi (' . number_format($totalRecu, 0, ',', ' ') . ' F) est inférieur au montant à payer (' . number_format($this->total, 0, ',', ' ') . ' FCFA).');
+            return;
+        }
+
+        $this->montantCashMultiple  = $cash;
+        $this->montantWaveMultiple  = $wave;
+        $this->montantOmMultiple    = $om;
+        $this->montantCarteMultiple = $carte;
+
+        try {
+            $venteService = app(VenteService::class);
+            $clientId = $this->clientSelectionneId;
+            if (! $clientId && $this->utiliserClientRapide && $this->clientRapideNom) {
+                $client   = Client::create(['nom' => $this->clientRapideNom, 'telephone' => $this->clientRapideTel ?: null]);
+                $clientId = $client->id;
+            }
+
+            $vente = $venteService->creerVente(
+                panier: $this->panier,
+                paiement: [
+                    'mode_paiement'          => 'multiple',
+                    'montant_recu'           => $totalRecu,
+                    'montant_cash'           => $cash,
+                    'montant_wave'           => $wave,
+                    'montant_om'             => $om,
+                    'montant_carte'          => $carte,
+                    'monnaie_rendue_wave'    => 0,
+                    'remise'                 => $this->remise,
+                    'notes'                  => $this->notes,
+                    'date_vente'             => $this->dateVente ?: now()->toDateString(),
+                    'session_caisse_id'      => $this->sessionCaisseId,
+                ],
+                clientId: $clientId
+            );
+
             $this->derniereVenteId          = $vente->id;
             $this->derniereReference        = $vente->reference;
             $this->monnaieRendue            = (float) $vente->monnaie_rendue;

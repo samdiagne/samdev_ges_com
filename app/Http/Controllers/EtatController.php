@@ -43,10 +43,10 @@ class EtatController extends Controller
         $stats = [
             'total'         => $ventes->sum('total'),
             'count'         => $ventes->count(),
-            'cash'          => $ventes->where('mode_paiement', 'cash')->sum('total'),
-            'wave'          => $ventes->where('mode_paiement', 'wave')->sum('total'),
-            'om'            => $ventes->where('mode_paiement', 'om')->sum('total'),
-            'carte'         => $ventes->where('mode_paiement', 'carte')->sum('total'),
+            'cash'          => $ventes->sum(fn($v) => $v->mode_paiement === 'multiple' ? (float)$v->montant_cash : ($v->mode_paiement === 'cash' ? (float)$v->total : 0)),
+            'wave'          => $ventes->sum(fn($v) => $v->mode_paiement === 'multiple' ? (float)$v->montant_wave : ($v->mode_paiement === 'wave' ? (float)$v->total : 0)),
+            'om'            => $ventes->sum(fn($v) => $v->mode_paiement === 'multiple' ? (float)$v->montant_om : ($v->mode_paiement === 'om' ? (float)$v->total : 0)),
+            'carte'         => $ventes->sum(fn($v) => $v->mode_paiement === 'multiple' ? (float)$v->montant_carte : (in_array($v->mode_paiement, ['carte', 'card']) ? (float)$v->total : 0)),
             'panier_moyen'  => $ventes->count() > 0
                 ? round($ventes->sum('total') / $ventes->count()) : 0,
         ];

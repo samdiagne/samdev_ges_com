@@ -86,10 +86,12 @@
                         class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm
                                focus:outline-none focus:border-primary bg-gray-50">
                     <option value="">Tous paiements</option>
-                    <option value="cash">Cash</option>
+                    <option value="cash">Cash (Espèces)</option>
                     <option value="wave">Wave</option>
                     <option value="om">Orange Money</option>
                     <option value="carte">Carte bancaire</option>
+                    <option value="multiple">🔀 Mixte / Multiple</option>
+                    <option value="a_regler">⏳ À régler</option>
                 </select>
             </div>
 
@@ -251,25 +253,47 @@
                             <td class="px-4 py-3 text-center hidden md:table-cell">
                                 @php
                                     $paymentColors = [
-                                        'cash'  => 'bg-green-100 text-green-700',
-                                        'wave'  => 'bg-blue-100 text-blue-700',
-                                        'om'    => 'bg-orange-100 text-orange-700',
-                                        'mix'   => 'bg-yellow-100 text-yellow-700',
-                                        'card'  => 'bg-purple-100 text-purple-700',
+                                        'cash'     => 'bg-green-100 text-green-700',
+                                        'wave'     => 'bg-blue-100 text-blue-700',
+                                        'om'       => 'bg-orange-100 text-orange-700',
+                                        'mix'      => 'bg-yellow-100 text-yellow-700',
+                                        'carte'    => 'bg-purple-100 text-purple-700',
+                                        'card'     => 'bg-purple-100 text-purple-700',
+                                        'multiple' => 'bg-purple-100 text-purple-800 font-bold border border-purple-200',
+                                        'a_regler' => 'bg-amber-100 text-amber-800',
                                     ];
                                     $paymentLabels = [
-                                        'cash'  => '💵 Cash',
-                                        'wave'  => 'Wave',
-                                        'om'    => 'OM',
-                                        'mix'   => 'Mixx by Yass',
-                                        'card'  => '💳 Carte',
+                                        'cash'     => '💵 Cash',
+                                        'wave'     => '📱 Wave',
+                                        'om'       => '🍊 OM',
+                                        'mix'      => 'Mixx',
+                                        'carte'    => '💳 Carte',
+                                        'card'     => '💳 Carte',
+                                        'multiple' => '🔀 Mixte',
+                                        'a_regler' => '⏳ À régler',
                                     ];
                                 @endphp
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-full
-                                             text-xs font-medium
-                                             {{ $paymentColors[$vente->mode_paiement] ?? 'bg-gray-100 text-gray-600' }}">
-                                    {{ $paymentLabels[$vente->mode_paiement] ?? $vente->mode_paiement }}
-                                </span>
+                                <div class="flex flex-col items-center">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $paymentColors[$vente->mode_paiement] ?? 'bg-gray-100 text-gray-600' }}">
+                                        {{ $paymentLabels[$vente->mode_paiement] ?? $vente->mode_paiement }}
+                                    </span>
+                                    @if($vente->mode_paiement === 'multiple')
+                                        <div class="text-[10px] text-gray-500 font-semibold mt-1 flex flex-wrap justify-center gap-1 max-w-[150px]">
+                                            @if($vente->montant_cash > 0)
+                                                <span class="bg-gray-100 px-1 rounded text-gray-700">💵 {{ number_format($vente->montant_cash, 0, ',', ' ') }}</span>
+                                            @endif
+                                            @if($vente->montant_wave > 0)
+                                                <span class="bg-sky-50 px-1 rounded text-sky-800">📱 {{ number_format($vente->montant_wave, 0, ',', ' ') }}</span>
+                                            @endif
+                                            @if($vente->montant_om > 0)
+                                                <span class="bg-orange-50 px-1 rounded text-orange-800">🍊 {{ number_format($vente->montant_om, 0, ',', ' ') }}</span>
+                                            @endif
+                                            @if($vente->montant_carte > 0)
+                                                <span class="bg-purple-50 px-1 rounded text-purple-800">💳 {{ number_format($vente->montant_carte, 0, ',', ' ') }}</span>
+                                            @endif
+                                        </div>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-4 py-3 text-center hidden lg:table-cell">
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-full
@@ -424,8 +448,8 @@
                         </div>
                         <div class="text-right">
                             <p class="text-xs text-gray-400">Paiement</p>
-                            <p class="text-sm font-semibold text-dark capitalize">
-                                {{ $voirVente->mode_paiement }}
+                            <p class="text-sm font-semibold text-dark">
+                                {{ $voirVente->mode_paiement_libelle }}
                             </p>
                         </div>
                     </div>
@@ -476,6 +500,37 @@
                                 {{ number_format($voirVente->total, 0, ',', ' ') }} FCFA
                             </span>
                         </div>
+                        @if($voirVente->mode_paiement === 'multiple')
+                            <div class="bg-purple-50/70 border border-purple-100 rounded-xl p-3 text-xs space-y-1.5 my-2">
+                                <p class="font-bold text-purple-900 uppercase tracking-wider text-[10px]">Détail du paiement mixte</p>
+                                <div class="grid grid-cols-2 gap-2">
+                                    @if($voirVente->montant_cash > 0)
+                                        <div class="flex justify-between bg-white px-2 py-1 rounded border border-gray-100">
+                                            <span class="text-gray-600">💵 Espèces :</span>
+                                            <span class="font-bold text-dark">{{ number_format($voirVente->montant_cash, 0, ',', ' ') }} F</span>
+                                        </div>
+                                    @endif
+                                    @if($voirVente->montant_wave > 0)
+                                        <div class="flex justify-between bg-white px-2 py-1 rounded border border-gray-100">
+                                            <span class="text-gray-600">📱 Wave :</span>
+                                            <span class="font-bold text-sky-700">{{ number_format($voirVente->montant_wave, 0, ',', ' ') }} F</span>
+                                        </div>
+                                    @endif
+                                    @if($voirVente->montant_om > 0)
+                                        <div class="flex justify-between bg-white px-2 py-1 rounded border border-gray-100">
+                                            <span class="text-gray-600">🍊 OM :</span>
+                                            <span class="font-bold text-orange-700">{{ number_format($voirVente->montant_om, 0, ',', ' ') }} F</span>
+                                        </div>
+                                    @endif
+                                    @if($voirVente->montant_carte > 0)
+                                        <div class="flex justify-between bg-white px-2 py-1 rounded border border-gray-100">
+                                            <span class="text-gray-600">💳 Carte :</span>
+                                            <span class="font-bold text-purple-700">{{ number_format($voirVente->montant_carte, 0, ',', ' ') }} F</span>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
                         <div class="flex justify-between text-sm text-gray-500">
                             <span>Montant reçu</span>
                             <span>{{ number_format($voirVente->montant_recu, 0, ',', ' ') }} FCFA</span>
@@ -651,12 +706,98 @@
                                 <option value="cash">💵 Cash (Espèces)</option>
                                 <option value="wave">Wave</option>
                                 <option value="om">Orange Money</option>
-                                <option value="mix">Mixx by Yass</option>
                                 <option value="carte">💳 Carte bancaire</option>
+                                <option value="multiple">🔀 Mixte / Multiple</option>
                                 <option value="a_regler">⏳ À régler (Crédit / Facture)</option>
                             </select>
                         </div>
                     </div>
+
+                    {{-- Répartition paiement mixte si sélectionné --}}
+                    @if($editModePaiement === 'multiple')
+                        <div class="bg-purple-50/60 border border-purple-200/80 rounded-2xl p-3.5 space-y-2.5">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-purple-900 uppercase tracking-wider flex items-center gap-1.5">
+                                    <span>🔀 Répartition du paiement mixte</span>
+                                </span>
+                                <span class="text-xs font-semibold text-gray-500">
+                                    Total net : <strong class="text-primary font-bold">{{ number_format($editTotal, 0, ',', ' ') }} FCFA</strong>
+                                </span>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                                {{-- 1. Espèces --}}
+                                <div class="bg-white p-2 rounded-xl border border-gray-200 focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-[11px] font-bold text-gray-700">💵 Espèces</span>
+                                        <button type="button" wire:click="affecterEditReste('cash')" class="text-[10px] text-emerald-700 bg-emerald-50 hover:bg-emerald-100 font-bold px-1.5 py-0.5 rounded border border-emerald-200">
+                                            Solde
+                                        </button>
+                                    </div>
+                                    <input type="number" min="0" step="50"
+                                           wire:model.live.debounce.300ms="editMontantCash"
+                                           class="w-full text-xs font-bold text-dark border-0 p-0 focus:ring-0 focus:outline-none"/>
+                                </div>
+
+                                {{-- 2. Wave --}}
+                                <div class="bg-white p-2 rounded-xl border border-gray-200 focus-within:border-sky-500 focus-within:ring-1 focus-within:ring-sky-500">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-[11px] font-bold text-gray-700">📱 Wave</span>
+                                        <button type="button" wire:click="affecterEditReste('wave')" class="text-[10px] text-sky-700 bg-sky-50 hover:bg-sky-100 font-bold px-1.5 py-0.5 rounded border border-sky-200">
+                                            Solde
+                                        </button>
+                                    </div>
+                                    <input type="number" min="0" step="50"
+                                           wire:model.live.debounce.300ms="editMontantWave"
+                                           class="w-full text-xs font-bold text-dark border-0 p-0 focus:ring-0 focus:outline-none"/>
+                                </div>
+
+                                {{-- 3. OM --}}
+                                <div class="bg-white p-2 rounded-xl border border-gray-200 focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-[11px] font-bold text-gray-700">🍊 Orange Money</span>
+                                        <button type="button" wire:click="affecterEditReste('om')" class="text-[10px] text-orange-700 bg-orange-50 hover:bg-orange-100 font-bold px-1.5 py-0.5 rounded border border-orange-200">
+                                            Solde
+                                        </button>
+                                    </div>
+                                    <input type="number" min="0" step="50"
+                                           wire:model.live.debounce.300ms="editMontantOm"
+                                           class="w-full text-xs font-bold text-dark border-0 p-0 focus:ring-0 focus:outline-none"/>
+                                </div>
+
+                                {{-- 4. Carte --}}
+                                <div class="bg-white p-2 rounded-xl border border-gray-200 focus-within:border-purple-500 focus-within:ring-1 focus-within:ring-purple-500">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-[11px] font-bold text-gray-700">💳 Carte</span>
+                                        <button type="button" wire:click="affecterEditReste('carte')" class="text-[10px] text-purple-700 bg-purple-50 hover:bg-purple-100 font-bold px-1.5 py-0.5 rounded border border-purple-200">
+                                            Solde
+                                        </button>
+                                    </div>
+                                    <input type="number" min="0" step="50"
+                                           wire:model.live.debounce.300ms="editMontantCarte"
+                                           class="w-full text-xs font-bold text-dark border-0 p-0 focus:ring-0 focus:outline-none"/>
+                                </div>
+                            </div>
+
+                            @php
+                                $totalMultiSaisi = $editMontantCash + $editMontantWave + $editMontantOm + $editMontantCarte;
+                                $diffMulti = round($totalMultiSaisi - $editTotal, 2);
+                            @endphp
+                            <div class="flex items-center justify-between pt-1 border-t border-purple-200 text-xs">
+                                <span class="text-gray-600 font-medium">Total réparti : <strong class="{{ $diffMulti >= 0 ? 'text-emerald-700' : 'text-amber-600' }}">{{ number_format($totalMultiSaisi, 0, ',', ' ') }} FCFA</strong></span>
+                                @if($diffMulti < 0)
+                                    <span class="text-red-600 font-bold">⚠️ Reste à affecter : {{ number_format(abs($diffMulti), 0, ',', ' ') }} FCFA</span>
+                                @elseif($diffMulti > 0)
+                                    <span class="text-emerald-700 font-bold">💵 Excédent : {{ number_format($diffMulti, 0, ',', ' ') }} FCFA</span>
+                                @else
+                                    <span class="text-emerald-700 font-bold">✓ Montant exact</span>
+                                @endif
+                            </div>
+                            @error('editModePaiement')
+                                <p class="text-xs text-red-500 font-semibold">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    @endif
 
                     {{-- Section Articles / Lignes --}}
                     <div class="pt-4 space-y-3">

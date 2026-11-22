@@ -52,6 +52,29 @@ class VenteService
             $modePaiement = $paiement['mode_paiement'] ?? 'cash';
             $estARegler   = ($modePaiement === 'a_regler');
 
+            // ── Répartition des montants par moyen de paiement ──
+            $montantCash  = 0.0;
+            $montantWave  = 0.0;
+            $montantOm    = 0.0;
+            $montantCarte = 0.0;
+
+            if ($modePaiement === 'multiple') {
+                $rawCash      = (float) ($paiement['montant_cash'] ?? 0);
+                $montantWave  = round((float) ($paiement['montant_wave'] ?? 0), 2);
+                $montantOm    = round((float) ($paiement['montant_om'] ?? 0), 2);
+                $montantCarte = round((float) ($paiement['montant_carte'] ?? 0), 2);
+                // La part nette espèces correspond au montant espèces diminué de la monnaie rendue en espèces
+                $montantCash  = round(max(0, $rawCash - $monnaieEspeces), 2);
+            } elseif ($modePaiement === 'cash') {
+                $montantCash  = $total;
+            } elseif ($modePaiement === 'wave') {
+                $montantWave  = $total;
+            } elseif ($modePaiement === 'om') {
+                $montantOm    = $total;
+            } elseif (in_array($modePaiement, ['carte', 'card'])) {
+                $montantCarte = $total;
+            }
+
             $sessionCaisseId = $paiement['session_caisse_id'] ?? null;
             if (! $sessionCaisseId && Auth::check()) {
                 $sessionCaisseId = \App\Models\SessionCaisse::where('user_id', Auth::id())
@@ -75,6 +98,10 @@ class VenteService
                 'monnaie_rendue_especes' => $estARegler ? 0 : $monnaieEspeces,
                 'monnaie_rendue_wave'    => $estARegler ? 0 : $monnaieWave,
                 'mode_paiement'          => $modePaiement,
+                'montant_cash'           => $estARegler ? 0 : $montantCash,
+                'montant_wave'           => $estARegler ? 0 : $montantWave,
+                'montant_om'             => $estARegler ? 0 : $montantOm,
+                'montant_carte'          => $estARegler ? 0 : $montantCarte,
                 'notes'                  => $paiement['notes'] ?? null,
                 'vendu_le'               => $venduLe,
             ]);

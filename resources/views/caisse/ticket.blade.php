@@ -160,7 +160,16 @@
         @if($vente->client)
             <div><span class="bold">Client :</span> {{ $vente->client->nom }}</div>
         @endif
-        <div><span class="bold">Paiement :</span> {{ ucfirst($vente->mode_paiement) }}</div>
+        <div><span class="bold">Paiement :</span> {{ $vente->mode_paiement_libelle }}
+            @if($vente->mode_paiement === 'multiple')
+                <div style="font-size: 11px; color: #333; margin-top: 2px; padding-left: 4px;">
+                    @if($vente->montant_cash > 0) <div>• Espèces : {{ number_format($vente->montant_cash, 0, ',', ' ') }} {{ $devise }}</div> @endif
+                    @if($vente->montant_wave > 0) <div>• Wave : {{ number_format($vente->montant_wave, 0, ',', ' ') }} {{ $devise }}</div> @endif
+                    @if($vente->montant_om > 0) <div>• OM : {{ number_format($vente->montant_om, 0, ',', ' ') }} {{ $devise }}</div> @endif
+                    @if($vente->montant_carte > 0) <div>• Carte : {{ number_format($vente->montant_carte, 0, ',', ' ') }} {{ $devise }}</div> @endif
+                </div>
+            @endif
+        </div>
     </div>
 
     <hr class="sep"/>

@@ -65,10 +65,10 @@ class DashboardStats extends Component
             'total_clients'   => Client::count(),
             'stock_faible'    => Produit::whereColumn('stock', '<=', 'seuil_alerte_stock')->where('stock', '>', 0)->where('sur_commande', false)->count(),
             'stock_rupture'   => Produit::where('stock', '<=', 0)->where('sur_commande', false)->count(),
-            'cash_total'     => (clone $ventesQuery)->where('mode_paiement', 'cash')->sum('total'),
-            'wave_total'     => (clone $ventesQuery)->where('mode_paiement', 'wave')->sum('total'),
-            'om_total'       => (clone $ventesQuery)->where('mode_paiement', 'om')->sum('total'),
-            'carte_total'    => (clone $ventesQuery)->where('mode_paiement', 'carte')->sum('total'),
+            'cash_total'     => (clone $ventesQuery)->sum(\Illuminate\Support\Facades\DB::raw("CASE WHEN mode_paiement = 'multiple' THEN montant_cash WHEN mode_paiement = 'cash' THEN total ELSE 0 END")),
+            'wave_total'     => (clone $ventesQuery)->sum(\Illuminate\Support\Facades\DB::raw("CASE WHEN mode_paiement = 'multiple' THEN montant_wave WHEN mode_paiement = 'wave' THEN total ELSE 0 END")),
+            'om_total'       => (clone $ventesQuery)->sum(\Illuminate\Support\Facades\DB::raw("CASE WHEN mode_paiement = 'multiple' THEN montant_om WHEN mode_paiement = 'om' THEN total ELSE 0 END")),
+            'carte_total'    => (clone $ventesQuery)->sum(\Illuminate\Support\Facades\DB::raw("CASE WHEN mode_paiement = 'multiple' THEN montant_carte WHEN mode_paiement IN ('carte', 'card') THEN total ELSE 0 END")),
         ];
     }
 
@@ -95,11 +95,13 @@ class DashboardStats extends Component
         }
 
         [$from, $to] = $this->getDateRange();
-        $paiements = Vente::where('statut', 'completee')
-            ->whereBetween('vendu_le', [$from, $to])
-            ->selectRaw('mode_paiement, SUM(total) as total')
-            ->groupBy('mode_paiement')
-            ->get()->pluck('total', 'mode_paiement')->toArray();
+        $ventesPaiementQuery = Vente::where('statut', 'completee')->whereBetween('vendu_le', [$from, $to]);
+        $paiements = [
+            'cash'  => (float) (clone $ventesPaiementQuery)->sum(DB::raw("CASE WHEN mode_paiement = 'multiple' THEN montant_cash WHEN mode_paiement = 'cash' THEN total ELSE 0 END")),
+            'wave'  => (float) (clone $ventesPaiementQuery)->sum(DB::raw("CASE WHEN mode_paiement = 'multiple' THEN montant_wave WHEN mode_paiement = 'wave' THEN total ELSE 0 END")),
+            'om'    => (float) (clone $ventesPaiementQuery)->sum(DB::raw("CASE WHEN mode_paiement = 'multiple' THEN montant_om WHEN mode_paiement = 'om' THEN total ELSE 0 END")),
+            'carte' => (float) (clone $ventesPaiementQuery)->sum(DB::raw("CASE WHEN mode_paiement = 'multiple' THEN montant_carte WHEN mode_paiement IN ('carte', 'card') THEN total ELSE 0 END")),
+        ];
 
         return [
             'labels_jours'   => $jours,
