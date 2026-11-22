@@ -23,10 +23,58 @@ class RapportManager extends Component
         $this->dateTo   = now()->format('Y-m-d');
     }
 
+    // ─── Raccourcis période ────────────────────────────────────────────────────
+
+    public function periodeAujourdhui(): void
+    {
+        $this->dateFrom = now()->toDateString();
+        $this->dateTo   = now()->toDateString();
+    }
+
+    public function periode7Jours(): void
+    {
+        $this->dateFrom = now()->subDays(6)->toDateString();
+        $this->dateTo   = now()->toDateString();
+    }
+
+    public function periodeCeMois(): void
+    {
+        $this->dateFrom = now()->startOfMonth()->toDateString();
+        $this->dateTo   = now()->toDateString();
+    }
+
+    public function periodeMoisDernier(): void
+    {
+        $this->dateFrom = now()->subMonth()->startOfMonth()->toDateString();
+        $this->dateTo   = now()->subMonth()->endOfMonth()->toDateString();
+    }
+
+    /**
+     * Applique le filtre de date — appelé par le bouton "Appliquer"
+     * ou déclenché automatiquement via wire:change.
+     */
+    public function appliquerFiltre(): void
+    {
+        // Validation légère : s'assurer que les dates sont cohérentes
+        if ($this->dateFrom && $this->dateTo && $this->dateFrom > $this->dateTo) {
+            $this->dateTo = $this->dateFrom;
+        }
+        // Le re-rendu se fait automatiquement
+    }
+
     public function render()
     {
-        $from = Carbon::parse($this->dateFrom)->startOfDay();
-        $to   = Carbon::parse($this->dateTo)->endOfDay();
+        // Protection contre dates vides ou invalides
+        $dateFrom = $this->dateFrom ?: now()->startOfMonth()->format('Y-m-d');
+        $dateTo   = $this->dateTo   ?: now()->format('Y-m-d');
+
+        $from = Carbon::parse($dateFrom)->startOfDay();
+        $to   = Carbon::parse($dateTo)->endOfDay();
+
+        // Cohérence : from ne peut pas être après to
+        if ($from->gt($to)) {
+            $to = $from->copy()->endOfDay();
+        }
 
         $rapport = match ($this->typeRapport) {
             'ventes'     => $this->rapportVentes($from, $to),

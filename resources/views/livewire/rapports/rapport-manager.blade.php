@@ -4,16 +4,56 @@
         <div class="flex flex-wrap items-end gap-4">
             <div>
                 <label class="block text-xs text-gray-400 mb-1">Du</label>
-                <input wire:model.live="dateFrom" type="date"
+                <input wire:model="dateFrom" wire:change="appliquerFiltre" type="date"
                        class="px-3 py-2 border border-gray-200 rounded-xl text-sm
                               focus:outline-none focus:border-primary bg-gray-50"/>
             </div>
             <div>
                 <label class="block text-xs text-gray-400 mb-1">Au</label>
-                <input wire:model.live="dateTo" type="date"
+                <input wire:model="dateTo" wire:change="appliquerFiltre" type="date"
                        class="px-3 py-2 border border-gray-200 rounded-xl text-sm
                               focus:outline-none focus:border-primary bg-gray-50"/>
             </div>
+            {{-- Raccourcis rapides --}}
+            <div class="flex items-center gap-2 flex-wrap">
+                <button wire:click="periodeAujourdhui"
+                        class="px-3 py-2 text-xs font-medium bg-gray-100 hover:bg-primary hover:text-white
+                               text-gray-600 rounded-xl transition-all">
+                    Aujourd'hui
+                </button>
+                <button wire:click="periode7Jours"
+                        class="px-3 py-2 text-xs font-medium bg-gray-100 hover:bg-primary hover:text-white
+                               text-gray-600 rounded-xl transition-all">
+                    7 jours
+                </button>
+                <button wire:click="periodeCeMois"
+                        class="px-3 py-2 text-xs font-medium bg-gray-100 hover:bg-primary hover:text-white
+                               text-gray-600 rounded-xl transition-all">
+                    Ce mois
+                </button>
+                <button wire:click="periodeMoisDernier"
+                        class="px-3 py-2 text-xs font-medium bg-gray-100 hover:bg-primary hover:text-white
+                               text-gray-600 rounded-xl transition-all">
+                    Mois dernier
+                </button>
+            </div>
+            {{-- Bouton Appliquer --}}
+            <button wire:click="appliquerFiltre"
+                    class="px-4 py-2 bg-primary text-white text-sm font-medium rounded-xl
+                           hover:bg-primary/90 transition-all flex items-center gap-2 ml-auto">
+                <svg wire:loading wire:target="appliquerFiltre,periodeAujourdhui,periode7Jours,periodeCeMois,periodeMoisDernier"
+                     class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
+                <svg wire:loading.remove
+                     wire:target="appliquerFiltre,periodeAujourdhui,periode7Jours,periodeCeMois,periodeMoisDernier"
+                     class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
+                </svg>
+                Filtrer
+            </button>
         </div>
     </div>
 
