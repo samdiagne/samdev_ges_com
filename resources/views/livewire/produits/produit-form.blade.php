@@ -290,6 +290,146 @@
                         </p>
                     @endif
                 </div>
+
+                {{-- ── 🍔 Configuration Menu Fast-Food / Formule ── --}}
+                <div class="bg-white rounded-2xl border shadow-sm p-6 transition-colors
+                            {{ $est_menu ? 'border-orange-300 bg-orange-50/20' : 'border-gray-100' }}">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="w-7 h-7 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center text-base">🍔</span>
+                            <div>
+                                <h3 class="text-sm font-bold text-dark">Menu Fast-Food / Formule composée</h3>
+                                <p class="text-xs text-gray-500">Permet au client de personnaliser son menu (choix du sandwich, boisson, etc.)</p>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input wire:model.live="est_menu" type="checkbox" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer
+                                        peer-checked:after:translate-x-full peer-checked:after:border-white
+                                        after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                                        after:bg-white after:border-gray-300 after:border after:rounded-full
+                                        after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500">
+                            </div>
+                        </label>
+                    </div>
+
+                    @if($est_menu)
+                        <div class="space-y-5 pt-3 border-t border-orange-100">
+                            {{-- Mode de calcul du prix --}}
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                                        Tarification du Menu
+                                    </label>
+                                    <select wire:model.live="mode_prix_menu"
+                                            class="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs bg-white focus:outline-none focus:border-orange-500">
+                                        <option value="fixe">Prix fixe (défini dans "Prix de vente")</option>
+                                        <option value="supplement">Prix de l'article principal + supplément</option>
+                                    </select>
+                                </div>
+
+                                @if($mode_prix_menu === 'supplement')
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                                            Supplément Menu (FCFA)
+                                        </label>
+                                        <div class="relative">
+                                            <input wire:model="supplement_menu" type="number" step="50" min="0"
+                                                   placeholder="Ex: 1000"
+                                                   class="w-full px-3 py-2 pr-12 border border-gray-200 rounded-xl text-xs bg-white focus:outline-none focus:border-orange-500"/>
+                                            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-bold">FCFA</span>
+                                        </div>
+                                        <p class="text-[10px] text-gray-400 mt-1">Ex: si sandwich à 2 000 et supplément à 1 000 = Menu à 3 000 FCFA</p>
+                                    </div>
+                                @endif
+                            </div>
+
+                            {{-- Liste des composants / Étapes --}}
+                            <div>
+                                <div class="flex items-center justify-between mb-2.5">
+                                    <label class="text-xs font-extrabold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
+                                        <span>Composants & Étapes du Menu</span>
+                                        <span class="text-[11px] font-normal text-gray-400">({{ count($composants) }} étape{{ count($composants) > 1 ? 's' : '' }})</span>
+                                    </label>
+                                    <button type="button"
+                                            wire:click="addComposant"
+                                            class="px-2.5 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-1 shadow-sm">
+                                        <span>+ Ajouter une étape</span>
+                                    </button>
+                                </div>
+
+                                @if(count($composants) === 0)
+                                    <div class="p-4 border-2 border-dashed border-orange-200 rounded-xl text-center bg-white">
+                                        <p class="text-xs text-gray-500 font-medium">Aucune étape définie pour ce menu.</p>
+                                        <p class="text-[11px] text-gray-400 mt-0.5">Cliquez sur "+ Ajouter une étape" pour choisir les catégories (ex: Burgers, Frites, Jus...).</p>
+                                    </div>
+                                @else
+                                    <div class="space-y-3">
+                                        @foreach($composants as $index => $comp)
+                                            <div class="p-3.5 bg-white border border-orange-100 rounded-xl shadow-xs space-y-3"
+                                                 wire:key="composant-{{ $index }}">
+                                                <div class="flex items-center justify-between gap-2">
+                                                    <div class="flex items-center gap-2 flex-1">
+                                                        <span class="w-5 h-5 rounded-full bg-orange-100 text-orange-600 font-black text-[10px] flex items-center justify-center flex-shrink-0">
+                                                            {{ $index + 1 }}
+                                                        </span>
+                                                        <input type="text"
+                                                               wire:model="composants.{{ $index }}.titre"
+                                                               placeholder="Titre de l'étape (ex: Choix du sandwich, Accompagnement, Boisson...)"
+                                                               class="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-orange-500 font-semibold"/>
+                                                    </div>
+                                                    <button type="button"
+                                                            wire:click="removeComposant({{ $index }})"
+                                                            class="w-7 h-7 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                                                            title="Supprimer cette étape">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+
+                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-gray-100">
+                                                    <div>
+                                                        <label class="block text-[11px] font-medium text-gray-600 mb-1">Type de sélection</label>
+                                                        <select wire:model.live="composants.{{ $index }}.type_selection"
+                                                                class="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs bg-gray-50 focus:bg-white focus:outline-none focus:border-orange-500">
+                                                            <option value="categorie">Choix parmi une Catégorie</option>
+                                                            <option value="produit_fixe">Produit fixe imposé</option>
+                                                        </select>
+                                                    </div>
+
+                                                    @if(($comp['type_selection'] ?? 'categorie') === 'categorie')
+                                                        <div>
+                                                            <label class="block text-[11px] font-medium text-gray-600 mb-1">Catégorie source</label>
+                                                            <select wire:model="composants.{{ $index }}.categorie_id"
+                                                                    class="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs bg-gray-50 focus:bg-white focus:outline-none focus:border-orange-500">
+                                                                <option value="">Sélectionner une catégorie...</option>
+                                                                @foreach($categories as $cat)
+                                                                    <option value="{{ $cat->id }}">{{ $cat->nom }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                        </div>
+                                                    @else
+                                                        <div>
+                                                            <label class="block text-[11px] font-medium text-gray-600 mb-1">Produit inclus</label>
+                                                            <select wire:model="composants.{{ $index }}.produit_fixe_id"
+                                                                    class="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs bg-gray-50 focus:bg-white focus:outline-none focus:border-orange-500">
+                                                                <option value="">Sélectionner un produit...</option>
+                                                                @foreach($tousProduits as $prod)
+                                                                    <option value="{{ $prod->id }}">{{ $prod->nom }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+                </div>
             </div>
 
             {{-- ── Colonne latérale (1/3) ────────────────── --}}
@@ -307,7 +447,7 @@
                             <label class="block text-sm font-medium text-dark mb-1.5">
                                 Catégorie <span class="text-red-500">*</span>
                             </label>
-                            <select wire:model="categorie_id"
+                            <select wire:model.live="categorie_id"
                                     class="w-full px-3 py-2.5 border rounded-xl text-sm
                                            focus:outline-none transition-colors
                                            {{ $errors->has('categorie_id')

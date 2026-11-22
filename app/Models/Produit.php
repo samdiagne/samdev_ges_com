@@ -33,6 +33,9 @@ class Produit extends Model
         'est_actif',
         'est_mis_en_avant',
         'est_variante',
+        'est_menu',
+        'mode_prix_menu',
+        'supplement_menu',
         'image_principale',
     ];
 
@@ -49,6 +52,8 @@ class Produit extends Model
             'est_actif'         => 'boolean',
             'est_mis_en_avant'  => 'boolean',
             'est_variante'      => 'boolean',
+            'est_menu'          => 'boolean',
+            'supplement_menu'   => 'decimal:2',
         ];
     }
 
@@ -64,6 +69,11 @@ class Produit extends Model
     public function categorie(): BelongsTo
     {
         return $this->belongsTo(Categorie::class, 'categorie_id');
+    }
+
+    public function composants(): HasMany
+    {
+        return $this->hasMany(MenuComposant::class, 'produit_id')->orderBy('ordre');
     }
 
     public function images(): HasMany
@@ -125,6 +135,15 @@ class Produit extends Model
         }
 
         return (float) $this->prix_vente;
+    }
+
+    public function isMenu(): bool
+    {
+        if ($this->est_menu) return true;
+        if ($this->relationLoaded('composants') ? $this->composants->isNotEmpty() : $this->composants()->exists()) return true;
+        $catNom = strtolower($this->categorie?->nom ?? '');
+        $catSlug = strtolower($this->categorie?->slug ?? '');
+        return str_contains($catNom, 'menu') || str_contains($catSlug, 'menu');
     }
 
     public function peutAvoirSupplements(): bool
