@@ -11,6 +11,7 @@ use App\Models\Produit;
 use App\Models\Client;
 use App\Models\Commande;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class DashboardStats extends Component
 {
