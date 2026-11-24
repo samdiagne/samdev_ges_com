@@ -105,14 +105,22 @@
             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-4">
                 <h3 class="text-sm font-bold text-dark mb-4">Répartition par mode de paiement</h3>
                 <div class="space-y-3">
+                    @php
+                        $modeLabels = [
+                            'cash'  => '💵 Cash',
+                            'wave'  => '🌊 Wave',
+                            'om'    => '🟠 Orange Money',
+                            'carte' => '💳 Carte bancaire',
+                        ];
+                    @endphp
                     @foreach($rapport['par_mode'] as $mode => $data)
                         <div class="flex items-center justify-between">
-                            <span class="text-sm font-medium text-dark capitalize">{{ $mode }}</span>
+                            <span class="text-sm font-medium text-dark">{{ $modeLabels[$mode] ?? ucfirst($mode) }}</span>
                             <div class="text-right">
                                 <span class="text-sm font-bold text-primary">
                                     {{ number_format($data['total'], 0, ',', ' ') }} FCFA
                                 </span>
-                                <span class="text-xs text-gray-400 ml-2">({{ $data['count'] }} ventes)</span>
+                                <span class="text-xs text-gray-400 ml-2">({{ $data['count'] }} paiements)</span>
                             </div>
                         </div>
                     @endforeach
@@ -141,11 +149,17 @@
     @if($typeRapport === 'produits' && $rapport)
         <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-                <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">CA Total</p>
+                <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">CA Brut Produits</p>
                 <p class="text-xl font-bold text-primary mt-1">
                     {{ number_format($rapport['total_ca'], 0, ',', ' ') }}
                     <span class="text-sm font-normal text-gray-400">FCFA</span>
                 </p>
+                @if(($rapport['remises_globales'] ?? 0) > 0)
+                    <p class="text-xs text-gray-400 mt-1">
+                        Net après remises ({{ number_format($rapport['remises_globales'], 0, ',', ' ') }} F) :
+                        <span class="font-semibold text-dark">{{ number_format($rapport['ca_ventes'], 0, ',', ' ') }} FCFA</span>
+                    </p>
+                @endif
             </div>
             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
                 <p class="text-xs font-medium text-gray-400 uppercase tracking-wider">Portions vendues</p>

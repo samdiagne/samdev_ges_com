@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\Vente;
 use App\Models\VenteLigne;
 use App\Models\Achat;
+use App\Models\AchatReglement;
 use App\Models\Depense;
 use App\Models\Produit;
 use App\Models\Client;
@@ -93,17 +94,48 @@ class RapportManager extends Component
         $ventes = Vente::with(['client', 'lignes'])
             ->where('statut', 'completee')
             ->whereBetween('vendu_le', [$from, $to])
+            ->orderBy('vendu_le')
             ->get();
+
+        // Ventiler les paiements multiples par moyen de paiement réel
+        $parMode = [];
+        $canauxMultiple = [
+            'cash'  => 'montant_cash',
+            'wave'  => 'montant_wave',
+            'om'    => 'montant_om',
+            'carte' => 'montant_carte',
+        ];
+
+        foreach ($ventes as $vente) {
+            if ($vente->mode_paiement === 'multiple') {
+                foreach ($canauxMultiple as $modeKey => $colonne) {
+                    $montant = (float) ($vente->{$colonne} ?? 0);
+                    if ($montant > 0) {
+                        if (!isset($parMode[$modeKey])) {
+                            $parMode[$modeKey] = ['total' => 0.0, 'count' => 0];
+                        }
+                        $parMode[$modeKey]['total'] += $montant;
+                        $parMode[$modeKey]['count'] += 1;
+                    }
+                }
+            } else {
+                $modeKey = $vente->mode_paiement === 'card' ? 'carte' : $vente->mode_paiement;
+                if (!isset($parMode[$modeKey])) {
+                    $parMode[$modeKey] = ['total' => 0.0, 'count' => 0];
+                }
+                $parMode[$modeKey]['total'] += (float) $vente->total;
+                $parMode[$modeKey]['count'] += 1;
+            }
+        }
 
         return [
             'total'         => $ventes->sum('total'),
             'count'         => $ventes->count(),
             'panier_moyen'  => $ventes->count() > 0 ? round($ventes->sum('total') / $ventes->count()) : 0,
-            'par_mode'      => $ventes->groupBy('mode_paiement')
-                ->map(fn($g) => ['total' => $g->sum('total'), 'count' => $g->count()]),
+            'par_mode'      => $parMode,
             'par_source'    => $ventes->groupBy('source')
                 ->map(fn($g) => ['total' => $g->sum('total'), 'count' => $g->count()]),
-            'par_jour'      => $ventes->groupBy(fn($v) => $v->vendu_le->format('d/m/Y'))
+            'par_jour'      => $ventes->groupBy(fn($v) => $v->vendu_le?->format('d/m/Y') ?? 'Inconnue')
                 ->map(fn($g) => $g->sum('total')),
         ];
     }
@@ -119,11 +151,20 @@ class RapportManager extends Component
             ->orderByDesc('total_ca')
             ->get();
 
+        $caVentes = (float) Vente::where('statut', 'completee')
+            ->whereBetween('vendu_le', [$from, $to])
+            ->sum('total');
+        $remisesGlobales = (float) Vente::where('statut', 'completee')
+            ->whereBetween('vendu_le', [$from, $to])
+            ->sum('remise');
+
         return [
-            'lignes'         => $lignes,
-            'total_ca'       => $lignes->sum('total_ca'),
-            'total_portions' => $lignes->sum('total_qte'),
-            'par_categorie'  => $lignes->groupBy(fn($l) => $l->produit?->categorie?->nom ?? 'Non catégorisé')
+            'lignes'           => $lignes,
+            'total_ca'         => $lignes->sum('total_ca'),
+            'ca_ventes'        => $caVentes,
+            'remises_globales' => $remisesGlobales,
+            'total_portions'   => $lignes->sum('total_qte'),
+            'par_categorie'    => $lignes->groupBy(fn($l) => $l->produit?->categorie?->nom ?? 'Non catégorisé')
                 ->map(fn($g) => ['ca' => $g->sum('total_ca'), 'qte' => $g->sum('total_qte')]),
         ];
     }
@@ -174,8 +215,8 @@ class RapportManager extends Component
         $recettes = Vente::where('statut', 'completee')
             ->whereBetween('vendu_le', [$from, $to])->sum('total');
 
-        $achats = Achat::whereBetween('date_achat',
-            [$from->toDateString(), $to->toDateString()])->sum('montant_paye');
+        $achats = AchatReglement::whereBetween('date_reglement', [$from, $to])
+            ->sum('montant');
 
         $depenses = Depense::whereBetween('date_depense',
             [$from->toDateString(), $to->toDateString()])->sum('montant');

@@ -64,8 +64,8 @@ class DashboardStats extends Component
             'panier_moyen'   => $nbVentes > 0 ? round($ca / $nbVentes) : 0,
             'total_produits'  => Produit::where('est_actif', true)->count(),
             'total_clients'   => Client::count(),
-            'stock_faible'    => Produit::whereColumn('stock', '<=', 'seuil_alerte_stock')->where('stock', '>', 0)->where('sur_commande', false)->count(),
-            'stock_rupture'   => Produit::where('stock', '<=', 0)->where('sur_commande', false)->count(),
+            'stock_faible'    => Produit::where('est_actif', true)->whereColumn('stock', '<=', 'seuil_alerte_stock')->where('stock', '>', 0)->where('sur_commande', false)->count(),
+            'stock_rupture'   => Produit::where('est_actif', true)->where('stock', '<=', 0)->where('sur_commande', false)->count(),
             'cash_total'     => (clone $ventesQuery)->sum(\Illuminate\Support\Facades\DB::raw("CASE WHEN mode_paiement = 'multiple' THEN montant_cash WHEN mode_paiement = 'cash' THEN total ELSE 0 END")),
             'wave_total'     => (clone $ventesQuery)->sum(\Illuminate\Support\Facades\DB::raw("CASE WHEN mode_paiement = 'multiple' THEN montant_wave WHEN mode_paiement = 'wave' THEN total ELSE 0 END")),
             'om_total'       => (clone $ventesQuery)->sum(\Illuminate\Support\Facades\DB::raw("CASE WHEN mode_paiement = 'multiple' THEN montant_om WHEN mode_paiement = 'om' THEN total ELSE 0 END")),
@@ -118,11 +118,13 @@ class DashboardStats extends Component
     {
         return [
             'stock_faible' => Produit::with('categorie')
+                ->where('est_actif', true)
                 ->whereColumn('stock', '<=', 'seuil_alerte_stock')
                 ->where('stock', '>', 0)
                 ->where('sur_commande', false)
                 ->orderBy('stock')->limit(5)->get(),
             'stock_rupture' => Produit::with('categorie')
+                ->where('est_actif', true)
                 ->where('stock', '<=', 0)->where('sur_commande', false)->limit(5)->get(),
         ];
     }
@@ -136,7 +138,9 @@ class DashboardStats extends Component
                 ->latest()->limit(6)->get(),
             'top_produits' => VenteLigne::selectRaw('produit_id, nom_produit, SUM(quantite) as total_qty, SUM(total) as total_ca')
                 ->whereHas('vente', fn($q) =>
-                    $q->where('statut', 'completee')->whereMonth('vendu_le', now()->month)
+                    $q->where('statut', 'completee')
+                      ->whereYear('vendu_le', now()->year)
+                      ->whereMonth('vendu_le', now()->month)
                 )
                 ->groupBy('produit_id', 'nom_produit')
                 ->orderByDesc('total_qty')
