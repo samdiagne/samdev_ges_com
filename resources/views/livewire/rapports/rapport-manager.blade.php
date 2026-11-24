@@ -108,8 +108,8 @@
                     @php
                         $modeLabels = [
                             'cash'  => '💵 Cash',
-                            'wave'  => '🌊 Wave',
-                            'om'    => '🟠 Orange Money',
+                            'wave'  => 'Wave',
+                            'om'    => 'Orange Money',
                             'carte' => '💳 Carte bancaire',
                         ];
                     @endphp

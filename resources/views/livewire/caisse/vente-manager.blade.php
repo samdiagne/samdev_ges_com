@@ -264,8 +264,8 @@
                                     ];
                                     $paymentLabels = [
                                         'cash'     => '💵 Cash',
-                                        'wave'     => '📱 Wave',
-                                        'om'       => '🍊 OM',
+                                        'wave'     => 'Wave',
+                                        'om'       => 'OM',
                                         'mix'      => 'Mixx',
                                         'carte'    => '💳 Carte',
                                         'card'     => '💳 Carte',
@@ -512,13 +512,13 @@
                                     @endif
                                     @if($voirVente->montant_wave > 0)
                                         <div class="flex justify-between bg-white px-2 py-1 rounded border border-gray-100">
-                                            <span class="text-gray-600">📱 Wave :</span>
+                                            <span class="text-gray-600">Wave :</span>
                                             <span class="font-bold text-sky-700">{{ number_format($voirVente->montant_wave, 0, ',', ' ') }} F</span>
                                         </div>
                                     @endif
                                     @if($voirVente->montant_om > 0)
                                         <div class="flex justify-between bg-white px-2 py-1 rounded border border-gray-100">
-                                            <span class="text-gray-600">🍊 OM :</span>
+                                            <span class="text-gray-600">OM :</span>
                                             <span class="font-bold text-orange-700">{{ number_format($voirVente->montant_om, 0, ',', ' ') }} F</span>
                                         </div>
                                     @endif
@@ -742,7 +742,7 @@
                                 {{-- 2. Wave --}}
                                 <div class="bg-white p-2 rounded-xl border border-gray-200 focus-within:border-sky-500 focus-within:ring-1 focus-within:ring-sky-500">
                                     <div class="flex items-center justify-between mb-1">
-                                        <span class="text-[11px] font-bold text-gray-700">📱 Wave</span>
+                                        <span class="text-[11px] font-bold text-gray-700">Wave</span>
                                         <button type="button" wire:click="affecterEditReste('wave')" class="text-[10px] text-sky-700 bg-sky-50 hover:bg-sky-100 font-bold px-1.5 py-0.5 rounded border border-sky-200">
                                             Solde
                                         </button>
@@ -755,7 +755,7 @@
                                 {{-- 3. OM --}}
                                 <div class="bg-white p-2 rounded-xl border border-gray-200 focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500">
                                     <div class="flex items-center justify-between mb-1">
-                                        <span class="text-[11px] font-bold text-gray-700">🍊 Orange Money</span>
+                                        <span class="text-[11px] font-bold text-gray-700">Orange Money</span>
                                         <button type="button" wire:click="affecterEditReste('om')" class="text-[10px] text-orange-700 bg-orange-50 hover:bg-orange-100 font-bold px-1.5 py-0.5 rounded border border-orange-200">
                                             Solde
                                         </button>

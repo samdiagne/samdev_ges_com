@@ -862,8 +862,8 @@
                         <div class="grid grid-cols-3 gap-2">
                             @foreach([
                                 ['value' => 'cash',     'label' => '💵 Cash'],
-                                ['value' => 'wave',     'label' => '📱 Wave'],
-                                ['value' => 'om',       'label' => '🍊 OM'],
+                                ['value' => 'wave',     'label' => 'Wave'],
+                                ['value' => 'om',       'label' => 'OM'],
                                 ['value' => 'card',     'label' => '💳 Carte'],
                                 ['value' => 'multiple', 'label' => '🔀 Mixte'],
                                 ['value' => 'a_regler', 'label' => '⏳ À régler'],
@@ -934,7 +934,6 @@
 
                                 {{-- 2. Wave --}}
                                 <div class="bg-white p-2.5 rounded-xl border border-gray-200 focus-within:border-sky-500 focus-within:ring-1 focus-within:ring-sky-500 transition-all flex items-center gap-2">
-                                    <span class="text-lg flex-shrink-0">📱</span>
                                     <div class="flex-1 min-w-0">
                                         <span class="text-[11px] font-bold text-gray-700 block">Wave</span>
                                         <input type="number"
@@ -953,7 +952,6 @@
 
                                 {{-- 3. Orange Money --}}
                                 <div class="bg-white p-2.5 rounded-xl border border-gray-200 focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500 transition-all flex items-center gap-2">
-                                    <span class="text-lg flex-shrink-0">🍊</span>
                                     <div class="flex-1 min-w-0">
                                         <span class="text-[11px] font-bold text-gray-700 block">Orange Money</span>
                                         <input type="number"
@@ -1096,7 +1094,7 @@
                                             @click="setCanal('wave')"
                                             :class="canalMonnaie === 'wave' ? 'bg-sky-600 text-white shadow-md border-sky-600' : 'bg-white text-gray-700 border-gray-200 hover:border-sky-300'"
                                             class="py-1.5 px-1 rounded-xl text-xs font-bold border transition-all text-center flex flex-col items-center gap-0.5">
-                                        <span>📱 Wave</span>
+                                        <span>Wave</span>
                                         <span class="text-[9px] font-normal opacity-85">100% transfert</span>
                                     </button>
 
@@ -1134,7 +1132,7 @@
                                     <span class="text-emerald-700"><span x-text="formatMoney(monnaieEspeces)"></span> F</span>
                                 </div>
                                 <div class="bg-sky-50 p-2 rounded-lg border border-sky-100 flex items-center justify-between">
-                                    <span class="text-sky-800 font-medium">📱 Wave :</span>
+                                    <span class="text-sky-800 font-medium">Wave :</span>
                                     <span class="text-sky-700"><span x-text="formatMoney(monnaieWave)"></span> F</span>
                                 </div>
                             </div>
