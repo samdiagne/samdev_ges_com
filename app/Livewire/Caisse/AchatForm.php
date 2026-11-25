@@ -8,6 +8,7 @@ use App\Models\AchatLigne;
 use App\Models\AchatReglement;
 use App\Models\Fournisseur;
 use App\Models\SessionCaisse;
+use App\Services\AchatService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -26,6 +27,7 @@ class AchatForm extends Component
     public array  $lignes           = [];
     public float  $montantTotal     = 0;
     public float  $montantDu        = 0;
+    public float  $detteFournisseur = 0;
 
     protected function rules(): array
     {
@@ -83,6 +85,22 @@ class AchatForm extends Component
         ])->toArray();
 
         $this->recalcTotals();
+        $this->rafraichirDetteFournisseur();
+    }
+
+    public function updatedFournisseurId(): void
+    {
+        $this->rafraichirDetteFournisseur();
+    }
+
+    private function rafraichirDetteFournisseur(): void
+    {
+        if ($this->fournisseur_id) {
+            $this->detteFournisseur = app(AchatService::class)
+                ->soldeDuFournisseur((int) $this->fournisseur_id, $this->isEditing ? $this->achatId : null);
+        } else {
+            $this->detteFournisseur = 0;
+        }
     }
 
     public function addLine(): void
@@ -126,8 +144,22 @@ class AchatForm extends Component
     public function save(): void
     {
         $this->validate();
+        $this->rafraichirDetteFournisseur();
 
-        DB::transaction(function () {
+        $montantPayeSaisi = max(0, (float) ($this->montant_paye ?? 0));
+        $maxAutorise = $this->montantTotal + (!$this->isEditing && $this->fournisseur_id ? $this->detteFournisseur : 0);
+
+        if ($montantPayeSaisi > $maxAutorise + 0.01) {
+            $this->addError(
+                'montant_paye',
+                'Le montant versé (' . number_format($montantPayeSaisi, 0, ',', ' ') . ' F) dépasse le total à payer (' . number_format($maxAutorise, 0, ',', ' ') . ' F).'
+            );
+            return;
+        }
+
+        $resultatFifo = null;
+
+        DB::transaction(function () use ($montantPayeSaisi, &$resultatFifo) {
             // Récupérer la session de caisse active du caissier connecté (ou toute session active)
             $sessionActive = SessionCaisse::where('user_id', Auth::id())
                 ->where('statut', 'ouverte')
@@ -135,16 +167,16 @@ class AchatForm extends Component
                 ->first()
                 ?? SessionCaisse::where('statut', 'ouverte')->latest('ouvert_le')->first();
 
-            $montantPayeSaisi = max(0, (float) ($this->montant_paye ?? 0));
-            $montantDuInitial = max(0, round($this->montantTotal - $montantPayeSaisi, 2));
+            $payeSurCetAchat = min($montantPayeSaisi, $this->montantTotal);
+            $montantDuInitial = max(0, round($this->montantTotal - $payeSurCetAchat, 2));
 
             $data = [
-                'fournisseur_id'   => $this->fournisseur_id,
+                'fournisseur_id'   => $this->fournisseur_id ?: null,
                 'user_id'          => Auth::id(),
                 'session_caisse_id'=> $sessionActive?->id,
                 'statut'           => $this->statut,
                 'montant_total'    => $this->montantTotal,
-                'montant_paye'     => $montantPayeSaisi,
+                'montant_paye'     => $payeSurCetAchat,
                 'montant_du'       => $montantDuInitial,
                 'mode_paiement'    => $this->mode_paiement ?: null,
                 'date_achat'       => $this->date_achat,
@@ -161,22 +193,22 @@ class AchatForm extends Component
 
                 // Gestion des règlements en modification
                 $nbReglements = $achat->reglements()->count();
-                if ($nbReglements === 0 && $montantPayeSaisi > 0) {
+                if ($nbReglements === 0 && $payeSurCetAchat > 0) {
                     AchatReglement::create([
                         'reference'         => AchatReglement::genererReference(),
                         'achat_id'          => $achat->id,
                         'session_caisse_id' => $sessionActive?->id,
                         'user_id'           => Auth::id(),
-                        'montant'           => $montantPayeSaisi,
+                        'montant'           => $payeSurCetAchat,
                         'mode_paiement'     => $this->mode_paiement ?: 'cash',
                         'date_reglement'    => now(),
                         'notes'             => 'Paiement initial',
                     ]);
                 } elseif ($nbReglements === 1) {
                     $regl = $achat->reglements()->first();
-                    if ($montantPayeSaisi > 0) {
+                    if ($payeSurCetAchat > 0) {
                         $regl->update([
-                            'montant'       => $montantPayeSaisi,
+                            'montant'       => $payeSurCetAchat,
                             'mode_paiement' => $this->mode_paiement ?: 'cash',
                         ]);
                     } else {
@@ -186,21 +218,38 @@ class AchatForm extends Component
                 $achat->recalculerPaiement();
             } else {
                 $data['reference'] = $this->generateRef();
-                $achat             = Achat::create($data);
 
-                // Si un paiement a été effectué à la création, créer le règlement correspondant
-                if ($montantPayeSaisi > 0) {
-                    AchatReglement::create([
-                        'reference'         => AchatReglement::genererReference(),
-                        'achat_id'          => $achat->id,
-                        'session_caisse_id' => $sessionActive?->id,
-                        'user_id'           => Auth::id(),
-                        'montant'           => $montantPayeSaisi,
-                        'mode_paiement'     => $this->mode_paiement ?: 'cash',
-                        'date_reglement'    => now(),
-                        'notes'             => 'Paiement initial lors de l\'enregistrement',
-                    ]);
-                    $achat->recalculerPaiement();
+                // Si versement global supérieur à l'achat du jour avec un fournisseur ayant une dette
+                if ($montantPayeSaisi > $this->montantTotal && $this->fournisseur_id && $this->detteFournisseur > 0) {
+                    $data['montant_paye'] = 0;
+                    $data['montant_du']   = $this->montantTotal;
+                    $achat = Achat::create($data);
+
+                    $resultatFifo = app(AchatService::class)->reglerFournisseurFIFO(
+                        fournisseurId: (int) $this->fournisseur_id,
+                        montantVerse: $montantPayeSaisi,
+                        modePaiement: $this->mode_paiement ?: 'cash',
+                        session: $sessionActive,
+                        notes: "Versement global lors de l'achat {$achat->reference}",
+                        prioriteAchatId: $achat->id
+                    );
+                } else {
+                    $achat = Achat::create($data);
+
+                    // Si un paiement a été effectué à la création, créer le règlement correspondant
+                    if ($payeSurCetAchat > 0) {
+                        AchatReglement::create([
+                            'reference'         => AchatReglement::genererReference(),
+                            'achat_id'          => $achat->id,
+                            'session_caisse_id' => $sessionActive?->id,
+                            'user_id'           => Auth::id(),
+                            'montant'           => $payeSurCetAchat,
+                            'mode_paiement'     => $this->mode_paiement ?: 'cash',
+                            'date_reglement'    => now(),
+                            'notes'             => 'Paiement initial lors de l\'enregistrement',
+                        ]);
+                        $achat->recalculerPaiement();
+                    }
                 }
             }
 
@@ -216,10 +265,20 @@ class AchatForm extends Component
             }
         });
 
-        session()->flash('success', $this->isEditing
-            ? 'Achat modifié avec succès !'
-            : 'Achat enregistré avec succès !'
-        );
+        if ($resultatFifo && count($resultatFifo['details']) > 1) {
+            $nbAnciennes = count($resultatFifo['details']) - 1;
+            $surplus = $montantPayeSaisi - $this->montantTotal;
+            session()->flash(
+                'success',
+                'Achat enregistré ! ' . number_format($this->montantTotal, 0, ',', ' ') . ' F ont soldé cet achat et '
+                . number_format($surplus, 0, ',', ' ') . " F ont été imputés sur {$nbAnciennes} ancienne(s) facture(s) du fournisseur."
+            );
+        } else {
+            session()->flash('success', $this->isEditing
+                ? 'Achat modifié avec succès !'
+                : 'Achat enregistré avec succès !'
+            );
+        }
 
         $this->redirect(route('caisse.achats.index'));
     }

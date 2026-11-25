@@ -8,6 +8,7 @@ use App\Models\Achat;
 use App\Models\AchatReglement;
 use App\Models\Fournisseur;
 use App\Models\SessionCaisse;
+use App\Services\AchatService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -26,13 +27,20 @@ class AchatManager extends Component
     public bool   $afficherModalSuppression = false;
     public ?int   $suppressionId            = null;
 
-    // Modal de règlement / paiement
+    // Modal de règlement / paiement d'une facture
     public bool   $afficherModalPaiement = false;
     public ?int   $reglementAchatId      = null;
     public ?float $reglementMontant      = null;
     public string $reglementMode         = 'cash';
     public string $reglementNotes        = '';
     public ?int   $activeSessionId       = null;
+
+    // Modal de règlement global fournisseur (FIFO)
+    public bool   $afficherModalReglementFournisseur = false;
+    public ?int   $fournisseurReglementId            = null;
+    public ?float $fournisseurReglementMontant       = null;
+    public string $fournisseurReglementMode          = 'cash';
+    public string $fournisseurReglementNotes         = '';
 
     public function mount(): void
     {
@@ -144,6 +152,98 @@ class AchatManager extends Component
         $this->reglementNotes        = '';
     }
 
+    /**
+     * Ouvre la modale de règlement global pour un fournisseur (imputation FIFO).
+     */
+    public function ouvrirReglementFournisseur(?int $fournisseurId = null): void
+    {
+        $this->fournisseurReglementId    = $fournisseurId;
+        $this->fournisseurReglementMode  = 'cash';
+        $this->fournisseurReglementNotes = '';
+        $this->fournisseurReglementMontant = $fournisseurId
+            ? app(AchatService::class)->soldeDuFournisseur($fournisseurId)
+            : null;
+
+        $this->afficherModalReglementFournisseur = true;
+    }
+
+    public function updatedFournisseurReglementId(): void
+    {
+        if ($this->fournisseurReglementId) {
+            $this->fournisseurReglementMontant = app(AchatService::class)
+                ->soldeDuFournisseur((int) $this->fournisseurReglementId);
+        } else {
+            $this->fournisseurReglementMontant = null;
+        }
+    }
+
+    /**
+     * Enregistre un versement global fournisseur et l'impute en FIFO sur ses factures impayées.
+     */
+    public function validerReglementFournisseur(): void
+    {
+        $this->validate([
+            'fournisseurReglementId' => 'required|exists:fournisseurs,id',
+        ], [
+            'fournisseurReglementId.required' => 'Veuillez sélectionner un fournisseur.',
+        ]);
+
+        $achatService = app(AchatService::class);
+        $soldeDu = $achatService->soldeDuFournisseur((int) $this->fournisseurReglementId);
+
+        if ($soldeDu <= 0) {
+            $this->addError('fournisseurReglementMontant', 'Ce fournisseur n\'a aucun solde dû.');
+            return;
+        }
+
+        $this->validate([
+            'fournisseurReglementMontant' => 'required|numeric|min:1|max:' . $soldeDu,
+            'fournisseurReglementMode'    => 'required|in:cash,wave,om,carte',
+            'fournisseurReglementNotes'   => 'nullable|string|max:255',
+        ], [
+            'fournisseurReglementMontant.required' => 'Le montant versé est obligatoire.',
+            'fournisseurReglementMontant.min'      => 'Le montant doit être au moins de 1 F.',
+            'fournisseurReglementMontant.max'      => 'Le montant ne peut pas dépasser la dette totale (' . number_format($soldeDu, 0, ',', ' ') . ' F).',
+        ]);
+
+        $session = SessionCaisse::where('user_id', Auth::id())
+            ->where('statut', 'ouverte')
+            ->latest('ouvert_le')
+            ->first()
+            ?? SessionCaisse::where('statut', 'ouverte')->latest('ouvert_le')->first();
+
+        if (! $session) {
+            $this->addError('sessionFournisseur', 'Aucune session de caisse n\'est actuellement ouverte. Veuillez ouvrir une caisse pour décaisser ce montant.');
+            return;
+        }
+
+        $resultat = $achatService->reglerFournisseurFIFO(
+            fournisseurId: (int) $this->fournisseurReglementId,
+            montantVerse: (float) $this->fournisseurReglementMontant,
+            modePaiement: $this->fournisseurReglementMode,
+            session: $session,
+            notes: $this->fournisseurReglementNotes ?: null
+        );
+
+        $nbFactures = count($resultat['details']);
+        session()->flash(
+            'success',
+            'Versement de ' . number_format($resultat['total_impute'], 0, ',', ' ') . " FCFA enregistré et imputé sur {$nbFactures} facture(s) (session {$session->reference})."
+        );
+
+        $this->afficherModalReglementFournisseur = false;
+        $this->fournisseurReglementId            = null;
+        $this->fournisseurReglementMontant       = null;
+        $this->fournisseurReglementNotes         = '';
+    }
+
+    public function voirDettesFournisseur(int $fournisseurId): void
+    {
+        $this->filtreFournisseur = (string) $fournisseurId;
+        $this->filtreMonth       = '';
+        $this->resetPage();
+    }
+
     public function render()
     {
         $achats = Achat::with(['fournisseur', 'user', 'lignes', 'reglements'])
@@ -194,7 +294,37 @@ class AchatManager extends Component
             ->first()
             ?? SessionCaisse::where('statut', 'ouverte')->latest('ouvert_le')->first();
 
-        return view('livewire.caisse.achat-manager',
-            compact('achats', 'stats', 'fournisseurs', 'voirAchat', 'achatEnReglement', 'activeSession'));
+        $soldesFournisseurs = Achat::with('fournisseur')
+            ->whereNotNull('fournisseur_id')
+            ->where('statut', '!=', 'annule')
+            ->where('montant_du', '>', 0)
+            ->get()
+            ->groupBy('fournisseur_id')
+            ->map(function ($group) {
+                $f = $group->first()->fournisseur;
+                return [
+                    'fournisseur_id' => $group->first()->fournisseur_id,
+                    'nom'            => $f?->nom ?? 'Fournisseur',
+                    'nb_factures'    => $group->count(),
+                    'total_du'       => (float) $group->sum('montant_du'),
+                ];
+            })
+            ->sortByDesc('total_du')
+            ->values();
+
+        $achatsFournisseurImpayes = $this->fournisseurReglementId
+            ? app(AchatService::class)->achatsImpayesFournisseur((int) $this->fournisseurReglementId)
+            : collect();
+
+        return view('livewire.caisse.achat-manager', compact(
+            'achats',
+            'stats',
+            'fournisseurs',
+            'voirAchat',
+            'achatEnReglement',
+            'activeSession',
+            'soldesFournisseurs',
+            'achatsFournisseurImpayes'
+        ));
     }
 }

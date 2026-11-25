@@ -168,7 +168,7 @@
                                 Fournisseur
                                 <span class="text-xs font-normal text-gray-400 ml-1">— optionnel</span>
                             </label>
-                            <select wire:model="fournisseur_id"
+                            <select wire:model.live="fournisseur_id"
                                     class="w-full px-3 py-2.5 border border-gray-200 rounded-xl
                                            text-sm bg-gray-50 focus:outline-none focus:border-primary
                                            transition-colors">
@@ -248,13 +248,54 @@
                                 <span class="absolute right-3 top-1/2 -translate-y-1/2
                                              text-xs text-gray-400">FCFA</span>
                             </div>
+                            @error('montant_paye')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
+
+                        {{-- Situation compte fournisseur (si fournisseur sélectionné avec dette ou versement global) --}}
+                        @if($fournisseur_id && $detteFournisseur > 0)
+                            @php
+                                $versement = max(0, (float) ($montant_paye ?? 0));
+                                $nouveauSoldeGlobal = max(0, $detteFournisseur + $montantTotal - $versement);
+                                $surplusAncien = (!$isEditing && $versement > $montantTotal)
+                                    ? min($detteFournisseur, $versement - $montantTotal)
+                                    : 0;
+                            @endphp
+                            <div class="p-3.5 bg-amber-50 border border-amber-200 rounded-xl space-y-1.5 text-xs">
+                                <p class="font-bold text-amber-900 uppercase tracking-wider text-[10px]">
+                                    Compte courant fournisseur
+                                </p>
+                                <div class="flex justify-between text-amber-800">
+                                    <span>Dette antérieure :</span>
+                                    <span class="font-semibold">{{ number_format($detteFournisseur, 0, ',', ' ') }} FCFA</span>
+                                </div>
+                                <div class="flex justify-between text-amber-800">
+                                    <span>Achat du jour :</span>
+                                    <span class="font-semibold">{{ number_format($montantTotal, 0, ',', ' ') }} FCFA</span>
+                                </div>
+                                <div class="flex justify-between text-amber-800">
+                                    <span>Versement saisi :</span>
+                                    <span class="font-semibold">- {{ number_format($versement, 0, ',', ' ') }} FCFA</span>
+                                </div>
+                                <div class="flex justify-between font-bold text-amber-950 border-t border-amber-200 pt-1.5">
+                                    <span>Nouveau solde dû global :</span>
+                                    <span>{{ number_format($nouveauSoldeGlobal, 0, ',', ' ') }} FCFA</span>
+                                </div>
+                                @if($surplusAncien > 0)
+                                    <p class="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg p-2 mt-1 font-medium">
+                                        💡 {{ number_format($montantTotal, 0, ',', ' ') }} F solderont cet achat et
+                                        <strong>{{ number_format($surplusAncien, 0, ',', ' ') }} F</strong> réduiront automatiquement les anciennes factures impayées (FIFO).
+                                    </p>
+                                @endif
+                            </div>
+                        @endif
 
                         {{-- Résumé paiement --}}
                         @if($montantTotal > 0)
                             @if($montantDu > 0)
                                 <div class="p-3 bg-red-50 rounded-xl">
-                                    <p class="text-xs text-red-500 font-medium">Restant dû</p>
+                                    <p class="text-xs text-red-500 font-medium">Restant dû (sur cet achat)</p>
                                     <p class="text-lg font-bold text-red-600">
                                         {{ number_format($montantDu, 0, ',', ' ') }}
                                         <span class="text-sm font-normal">FCFA</span>
@@ -262,7 +303,7 @@
                                 </div>
                             @else
                                 <div class="p-3 bg-green-50 rounded-xl">
-                                    <p class="text-sm font-medium text-green-600">✅ Entièrement payé</p>
+                                    <p class="text-sm font-medium text-green-600">✅ Cet achat est entièrement couvert</p>
                                 </div>
                             @endif
                         @endif

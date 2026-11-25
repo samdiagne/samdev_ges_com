@@ -30,22 +30,78 @@
     </div>
 
     {{-- Header --}}
-    <div class="flex items-center justify-between mb-4">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
             <h3 class="text-lg font-bold text-dark">Achats fournisseurs</h3>
             <p class="text-sm text-gray-400">{{ $achats->total() }} achat(s)</p>
         </div>
-        <a href="{{ route('caisse.achats.create') }}"
-           class="inline-flex items-center gap-2 bg-primary hover:bg-primary/90
-                  text-white font-medium px-4 py-2.5 rounded-xl transition-all
-                  shadow-lg shadow-primary/25 text-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                      stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            Nouvel achat
-        </a>
+        <div class="flex items-center gap-2">
+            @if($soldesFournisseurs->isNotEmpty())
+                <button type="button"
+                        wire:click="ouvrirReglementFournisseur"
+                        class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700
+                               text-white font-medium px-4 py-2.5 rounded-xl transition-all
+                               shadow-sm text-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    Régler un fournisseur
+                </button>
+            @endif
+            <a href="{{ route('caisse.achats.create') }}"
+               class="inline-flex items-center gap-2 bg-primary hover:bg-primary/90
+                      text-white font-medium px-4 py-2.5 rounded-xl transition-all
+                      shadow-lg shadow-primary/25 text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Nouvel achat
+            </a>
+        </div>
     </div>
+
+    {{-- Soldes dus par fournisseur --}}
+    @if($soldesFournisseurs->isNotEmpty())
+        <div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 mb-4">
+            <div class="flex items-center justify-between mb-3">
+                <h4 class="text-xs font-bold text-amber-900 uppercase tracking-wider">
+                    Dettes en cours par fournisseur
+                </h4>
+                <span class="text-xs font-bold text-red-600">
+                    Total dû : {{ number_format($soldesFournisseurs->sum('total_du'), 0, ',', ' ') }} FCFA
+                </span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                @foreach($soldesFournisseurs as $sf)
+                    <div class="bg-white rounded-xl border border-amber-100 p-3 flex items-center justify-between gap-2 shadow-sm">
+                        <div class="min-w-0">
+                            <p class="text-xs font-bold text-dark truncate">{{ $sf['nom'] }}</p>
+                            <p class="text-[11px] text-gray-500">
+                                {{ $sf['nb_factures'] }} facture(s) impayée(s)
+                            </p>
+                            <p class="text-sm font-extrabold text-red-600 mt-0.5">
+                                {{ number_format($sf['total_du'], 0, ',', ' ') }} FCFA
+                            </p>
+                        </div>
+                        <div class="flex flex-col gap-1 flex-shrink-0">
+                            <button type="button"
+                                    wire:click="ouvrirReglementFournisseur({{ $sf['fournisseur_id'] }})"
+                                    class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg transition-colors">
+                                Régler
+                            </button>
+                            <button type="button"
+                                    wire:click="voirDettesFournisseur({{ $sf['fournisseur_id'] }})"
+                                    class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-[11px] font-medium rounded-lg transition-colors">
+                                Voir
+                            </button>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
 
     {{-- Filtres --}}
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-4">
@@ -543,6 +599,135 @@
                                 class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-sm">
                             <span wire:loading.remove>Valider le paiement</span>
                             <span wire:loading>Traitement...</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
+
+    {{-- Modal Règlement Global Fournisseur (FIFO) --}}
+    @if($afficherModalReglementFournisseur)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                 wire:click="$set('afficherModalReglementFournisseur', false)"></div>
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 overflow-hidden max-h-[90vh] overflow-y-auto">
+                <div class="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-dark">Régler un fournisseur</h3>
+                        <p class="text-xs text-gray-500">Imputation automatique sur les plus anciennes factures</p>
+                    </div>
+                    <button wire:click="$set('afficherModalReglementFournisseur', false)"
+                            class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400">
+                        ✕
+                    </button>
+                </div>
+
+                @if(! $activeSession)
+                    <div class="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2">
+                        <span class="text-base leading-none">⚠️</span>
+                        <div>
+                            <p class="font-bold">Aucune session de caisse ouverte !</p>
+                            <p class="mt-0.5">Ouvrez d'abord une caisse pour enregistrer le décaissement.</p>
+                        </div>
+                    </div>
+                @else
+                    <div class="mb-4 p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between">
+                        <span>Session active :</span>
+                        <span class="font-bold">{{ $activeSession->reference }}</span>
+                    </div>
+                @endif
+
+                @error('sessionFournisseur')
+                    <div class="mb-4 p-2.5 rounded-xl bg-red-50 text-red-700 text-xs font-semibold">{{ $message }}</div>
+                @enderror
+
+                <form wire:submit.prevent="validerReglementFournisseur" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Fournisseur *</label>
+                        <select wire:model.live="fournisseurReglementId"
+                                class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:border-primary">
+                            <option value="">Sélectionner un fournisseur...</option>
+                            @foreach($soldesFournisseurs as $sf)
+                                <option value="{{ $sf['fournisseur_id'] }}">
+                                    {{ $sf['nom'] }} — Dû : {{ number_format($sf['total_du'], 0, ',', ' ') }} FCFA
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('fournisseurReglementId')
+                            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    @if($achatsFournisseurImpayes->isNotEmpty())
+                        <div class="bg-gray-50 rounded-xl p-3 space-y-1.5 text-xs">
+                            <p class="font-bold text-gray-700 text-[11px] uppercase tracking-wider">
+                                Factures qui seront imputées (ordre FIFO)
+                            </p>
+                            <div class="max-h-32 overflow-y-auto space-y-1">
+                                @foreach($achatsFournisseurImpayes as $imp)
+                                    <div class="flex justify-between text-gray-600">
+                                        <span>{{ $imp->date_achat->format('d/m/Y') }} — {{ $imp->reference }}</span>
+                                        <span class="font-bold text-red-600">{{ number_format($imp->montant_du, 0, ',', ' ') }} F</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="block text-xs font-bold text-gray-700">Montant versé (FCFA) *</label>
+                                @php $totalDuF = (float) $achatsFournisseurImpayes->sum('montant_du'); @endphp
+                                <button type="button"
+                                        wire:click="$set('fournisseurReglementMontant', {{ $totalDuF }})"
+                                        class="text-[11px] text-primary hover:underline font-semibold">
+                                    Tout solder ({{ number_format($totalDuF, 0, ',', ' ') }} F)
+                                </button>
+                            </div>
+                            <input type="number" step="1" min="1" max="{{ $totalDuF }}"
+                                   wire:model.live="fournisseurReglementMontant"
+                                   class="w-full text-base font-extrabold text-gray-900 rounded-xl border border-gray-300 focus:border-primary py-2 px-3"
+                                   placeholder="0">
+                            @error('fournisseurReglementMontant')
+                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    @endif
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1.5">Mode de paiement *</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button type="button"
+                                    wire:click="$set('fournisseurReglementMode', 'cash')"
+                                    class="py-2 px-3 rounded-xl border text-xs font-bold transition-all {{ $fournisseurReglementMode === 'cash' ? 'border-amber-500 bg-amber-50 text-amber-800 ring-2 ring-amber-500/20' : 'border-gray-200 text-gray-700 hover:bg-gray-50' }}">
+                                💵 Espèces
+                            </button>
+                            <button type="button"
+                                    wire:click="$set('fournisseurReglementMode', 'wave')"
+                                    class="py-2 px-3 rounded-xl border text-xs font-bold transition-all {{ $fournisseurReglementMode === 'wave' ? 'border-sky-500 bg-sky-50 text-sky-800 ring-2 ring-sky-500/20' : 'border-gray-200 text-gray-700 hover:bg-gray-50' }}">
+                                Wave
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Notes</label>
+                        <input type="text" wire:model="fournisseurReglementNotes"
+                               placeholder="Ex: Acompte fournisseur..."
+                               class="w-full text-xs rounded-xl border border-gray-300 focus:border-primary py-2 px-3">
+                    </div>
+
+                    <div class="flex gap-3 pt-2">
+                        <button type="button"
+                                wire:click="$set('afficherModalReglementFournisseur', false)"
+                                class="flex-1 py-2.5 text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-xl">
+                            Annuler
+                        </button>
+                        <button type="submit"
+                                wire:loading.attr="disabled"
+                                @if(! $activeSession || $achatsFournisseurImpayes->isEmpty()) disabled @endif
+                                class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-sm">
+                            Valider le versement
                         </button>
                     </div>
                 </form>
